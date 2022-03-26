@@ -19,6 +19,9 @@
 #![feature(never_type)]
 #![allow(unused)]
 
+/// Todo type, replace every occurrence of this type with a proper type
+type Todo = !;
+
 pub mod spaced_lists;
 
 pub(crate) use spaced_lists::SpacedListSkeleton;
