@@ -1,3 +1,9 @@
+use std::ops::{Add, AddAssign, Sub, SubAssign};
+
+use num_traits::{Zero, zero};
+
+trait Spacing = Add<Output = Self> + AddAssign + Sub<Output = Self> + SubAssign + Zero + Ord + Copy;
+
 mod spaced_list_skeleton;
 
 mod spaced_list;

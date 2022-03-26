@@ -15,7 +15,8 @@
 //! 4. FilledRangeSpacedList: A filled spaced list whose nodes are semantically interpreted as
 //!    ranges with a start and an end, storing an element value for each range.
 
-#[allow(unused)]
+#![feature(trait_alias)]
+#![allow(unused)]
 
 pub mod spaced_lists;
 
