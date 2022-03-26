@@ -1,9 +1,11 @@
-use crate::spaced_lists::spaced_list::SpacedList;
+use crate::SpacedList;
+use crate::SpacedListSkeleton;
+use crate::Spacing;
 
-pub struct FilledRangeSpacedList {
-
+pub struct FilledRangeSpacedList<S: Spacing> {
+    skeleton: SpacedListSkeleton<S>
 }
 
-impl SpacedList for FilledRangeSpacedList {
+impl<S: Spacing> SpacedList<S> for FilledRangeSpacedList<S> {
 
 }

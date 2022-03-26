@@ -1,3 +1,5 @@
-pub trait SpacedList {
+use crate::Spacing;
+
+pub trait SpacedList<S: Spacing> {
 
 }

@@ -1,9 +1,11 @@
-use crate::spaced_lists::spaced_list::SpacedList;
+use crate::SpacedList;
+use crate::SpacedListSkeleton;
+use crate::Spacing;
 
-pub struct HollowSpacedList {
-
+pub struct HollowSpacedList<S: Spacing> {
+    skeleton: SpacedListSkeleton<S>
 }
 
-impl SpacedList for HollowSpacedList {
+impl<S: Spacing> SpacedList<S> for HollowSpacedList<S> {
 
 }
