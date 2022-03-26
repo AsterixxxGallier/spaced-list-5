@@ -20,6 +20,9 @@
 
 pub mod spaced_lists;
 
+pub(crate) use spaced_lists::SpacedListSkeleton;
+
+pub use spaced_lists::Spacing;
 pub use spaced_lists::SpacedList;
 pub use spaced_lists::HollowSpacedList;
 pub use spaced_lists::FilledSpacedList;
