@@ -16,6 +16,7 @@
 //!    ranges with a start and an end, storing an element value for each range.
 
 #![feature(trait_alias)]
+#![feature(never_type)]
 #![allow(unused)]
 
 pub mod spaced_lists;
