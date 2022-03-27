@@ -1,4 +1,5 @@
 use std::marker::PhantomData;
+use num_traits::zero;
 use crate::{SpacedList, Spacing};
 
 pub(crate) struct SpacedListSkeleton<S: Spacing, Sub: SpacedList<S>> {
@@ -7,4 +8,16 @@ pub(crate) struct SpacedListSkeleton<S: Spacing, Sub: SpacedList<S>> {
 	size: usize,
 	depth: usize,
 	length: S
+}
+
+impl<S: Spacing, Sub: SpacedList<S>> Default for SpacedListSkeleton<S, Sub> {
+	fn default() -> Self {
+		Self {
+			link_lengths: vec![],
+			sublists: vec![],
+			size: 0,
+			depth: 0,
+			length: zero()
+		}
+	}
 }

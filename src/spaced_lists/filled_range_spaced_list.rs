@@ -1,3 +1,4 @@
+use std::default::default;
 use crate::{SpacedList, Todo};
 use crate::SpacedListSkeleton;
 use crate::Spacing;
@@ -8,6 +9,10 @@ pub struct FilledRangeSpacedList<S: Spacing, T> {
 }
 
 impl<S: Spacing, T> FilledRangeSpacedList<S, T> {
+    pub fn new() -> Self {
+        default()
+    }
+
     fn append_range(&mut self, distance: S, span: S, element: T) -> Todo {
         todo!()
     }
@@ -118,6 +123,15 @@ impl<S: Spacing, T> FilledRangeSpacedList<S, T> {
 
     fn range_ending_after_mut(&mut self, position: S) -> &mut T {
         todo!()
+    }
+}
+
+impl<S: Spacing, T> Default for FilledRangeSpacedList<S, T> {
+    fn default() -> Self {
+        Self {
+            skeleton: default(),
+            elements: vec![]
+        }
     }
 }
 

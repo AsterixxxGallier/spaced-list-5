@@ -2,7 +2,7 @@ use std::ops::Neg;
 
 use crate::{Spacing, Todo};
 
-pub trait SpacedList<S: Spacing> {
+pub trait SpacedList<S: Spacing>: Default {
 	fn append_node(&mut self, distance: S) {
 		todo!()
 	}

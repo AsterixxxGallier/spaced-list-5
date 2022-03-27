@@ -1,3 +1,4 @@
+use std::default::default;
 use crate::{SpacedList, Todo};
 use crate::SpacedListSkeleton;
 use crate::Spacing;
@@ -8,6 +9,10 @@ pub struct FilledSpacedList<S: Spacing, T> {
 }
 
 impl<S: Spacing, T> FilledSpacedList<S, T> {
+    pub fn new() -> Self {
+        default()
+    }
+
     fn element(&self, index: Todo) -> &T {
         todo!()
     }
@@ -62,6 +67,15 @@ impl<S: Spacing, T> FilledSpacedList<S, T> {
 
     fn element_after_mut(&mut self, position: S) -> &mut T {
         self.element_mut(self.node_after(position))
+    }
+}
+
+impl<S: Spacing, T> Default for FilledSpacedList<S, T> {
+    fn default() -> Self {
+        Self {
+            skeleton: default(),
+            elements: vec![]
+        }
     }
 }
 

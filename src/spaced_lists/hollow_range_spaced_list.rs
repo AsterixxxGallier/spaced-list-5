@@ -1,3 +1,4 @@
+use std::default::default;
 use std::ops::Neg;
 use crate::{SpacedList, Todo};
 use crate::SpacedListSkeleton;
@@ -8,6 +9,10 @@ pub struct HollowRangeSpacedList<S: Spacing> {
 }
 
 impl<S: Spacing> HollowRangeSpacedList<S> {
+    pub fn new() -> Self {
+        default()
+    }
+
     fn append_range(&mut self, distance: S, span: S) -> Todo {
         todo!()
     }
@@ -78,6 +83,14 @@ impl<S: Spacing> HollowRangeSpacedList<S> {
 
     fn range_ending_after(&self, position: S) -> Todo {
         todo!()
+    }
+}
+
+impl<S: Spacing> Default for HollowRangeSpacedList<S> {
+    fn default() -> Self {
+        Self {
+            skeleton: default()
+        }
     }
 }
 
