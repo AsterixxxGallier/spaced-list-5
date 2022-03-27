@@ -19,8 +19,15 @@
 #![feature(never_type)]
 #![allow(unused)]
 
+use bitvec::prelude::*;
+
 /// Todo type, replace every occurrence of this type with a proper type
 type Todo = !;
+
+pub struct Index {
+	bits: usize,
+	sublist_depth: usize
+}
 
 pub mod spaced_lists;
 

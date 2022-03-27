@@ -1,8 +1,9 @@
 use std::ops::Neg;
 
-use crate::{Spacing, Todo};
+use crate::{Index, Spacing, Todo};
+use crate::spaced_lists::CrateSpacedList;
 
-pub trait SpacedList<S: Spacing> {
+pub trait SpacedList<S: Spacing>: CrateSpacedList<S> {
 	fn append_node(&mut self, distance: S) {
 		todo!()
 	}
@@ -11,19 +12,19 @@ pub trait SpacedList<S: Spacing> {
 		todo!()
 	}
 
-	fn inflate_after(&mut self, node_index: Todo, amount: S) {
+	fn inflate_after(&mut self, node_index: Index, amount: S) {
 		todo!()
 	}
 
-	fn inflate_before(&mut self, node_index: Todo, amount: S) {
+	fn inflate_before(&mut self, node_index: Index, amount: S) {
 		todo!()
 	}
 
-	fn deflate_after(&mut self, node_index: Todo, amount: S) where S: Neg<Output = S> {
+	fn deflate_after(&mut self, node_index: Index, amount: S) where S: Neg<Output = S> {
 		self.inflate_after(node_index, -amount)
 	}
 
-	fn deflate_before(&mut self, node_index: Todo, amount: S) where S: Neg<Output = S> {
+	fn deflate_before(&mut self, node_index: Index, amount: S) where S: Neg<Output = S> {
 		self.inflate_before(node_index, -amount)
 	}
 
