@@ -18,6 +18,7 @@
 #![feature(trait_alias)]
 #![feature(never_type)]
 #![feature(default_free_fn)]
+#![feature(option_get_or_insert_default)]
 #![allow(unused)]
 
 pub use spaced_lists::FilledRangeSpacedList;
