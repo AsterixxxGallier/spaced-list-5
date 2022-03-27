@@ -95,5 +95,11 @@ impl<S: Spacing> Default for HollowRangeSpacedList<S> {
 }
 
 impl<S: Spacing> SpacedList<S> for HollowRangeSpacedList<S> {
+    fn skeleton(&self) -> &SpacedListSkeleton<S, Self> {
+        &self.skeleton
+    }
 
+    fn skeleton_mut(&mut self) -> &mut SpacedListSkeleton<S, Self> {
+        &mut self.skeleton
+    }
 }

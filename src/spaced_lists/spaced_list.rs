@@ -1,8 +1,12 @@
 use std::ops::Neg;
 
-use crate::{Spacing, Todo};
+use crate::{SpacedListSkeleton, Spacing, Todo};
 
 pub trait SpacedList<S: Spacing>: Default {
+	fn skeleton(&self) -> &SpacedListSkeleton<S, Self>;
+
+	fn skeleton_mut(&mut self) -> &mut SpacedListSkeleton<S, Self>;
+
 	fn append_node(&mut self, distance: S) {
 		todo!()
 	}
