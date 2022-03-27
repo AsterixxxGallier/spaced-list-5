@@ -1,8 +1,6 @@
 use std::default::default;
 
-use crate::{SpacedList, Todo};
-use crate::SpacedListSkeleton;
-use crate::Spacing;
+use crate::{SpacedList, SpacedListSkeleton, Spacing, Todo};
 
 pub struct FilledRangeSpacedList<S: Spacing, T> {
     skeleton: SpacedListSkeleton<S, Self>,

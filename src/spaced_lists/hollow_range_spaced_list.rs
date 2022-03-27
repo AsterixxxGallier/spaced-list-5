@@ -1,9 +1,6 @@
 use std::default::default;
-use std::ops::Neg;
 
-use crate::{SpacedList, Todo};
-use crate::SpacedListSkeleton;
-use crate::Spacing;
+use crate::{SpacedList, SpacedListSkeleton, Spacing, Todo};
 
 pub struct HollowRangeSpacedList<S: Spacing> {
     skeleton: SpacedListSkeleton<S, Self>,
