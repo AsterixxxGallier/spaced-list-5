@@ -7,6 +7,14 @@ pub trait SpacedList<S: Spacing>: Default {
 
 	fn skeleton_mut(&mut self) -> &mut SpacedListSkeleton<S, Self>;
 
+	fn size(&self) -> usize;
+
+	fn size_mut(&mut self) -> &mut usize;
+
+	fn deep_size(&self) -> usize;
+
+	fn deep_size_mut(&mut self) -> &mut usize;
+
 	fn append_node(&mut self, distance: S) {
 		todo!()
 	}
