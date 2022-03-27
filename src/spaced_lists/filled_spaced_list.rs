@@ -1,4 +1,5 @@
 use std::default::default;
+
 use crate::{SpacedList, Todo};
 use crate::SpacedListSkeleton;
 use crate::Spacing;
@@ -7,7 +8,44 @@ pub struct FilledSpacedList<S: Spacing, T> {
     skeleton: SpacedListSkeleton<S, Self>,
     elements: Vec<T>,
     size: usize,
-    deep_size: usize
+    deep_size: usize,
+}
+
+impl<S: Spacing, T> Default for FilledSpacedList<S, T> {
+    fn default() -> Self {
+        Self {
+            skeleton: default(),
+            elements: vec![],
+            size: 0,
+            deep_size: 0,
+        }
+    }
+}
+
+impl<S: Spacing, T> SpacedList<S> for FilledSpacedList<S, T> {
+    fn skeleton(&self) -> &SpacedListSkeleton<S, Self> {
+        &self.skeleton
+    }
+
+    fn skeleton_mut(&mut self) -> &mut SpacedListSkeleton<S, Self> {
+        &mut self.skeleton
+    }
+
+    fn size(&self) -> usize {
+        self.size
+    }
+
+    fn size_mut(&mut self) -> &mut usize {
+        &mut self.size
+    }
+
+    fn deep_size(&self) -> usize {
+        self.deep_size
+    }
+
+    fn deep_size_mut(&mut self) -> &mut usize {
+        &mut self.deep_size
+    }
 }
 
 impl<S: Spacing, T> FilledSpacedList<S, T> {
@@ -69,42 +107,5 @@ impl<S: Spacing, T> FilledSpacedList<S, T> {
 
     pub fn element_after_mut(&mut self, position: S) -> &mut T {
         self.element_mut(self.node_after(position))
-    }
-}
-
-impl<S: Spacing, T> Default for FilledSpacedList<S, T> {
-    fn default() -> Self {
-        Self {
-            skeleton: default(),
-            elements: vec![],
-            size: 0,
-            deep_size: 0
-        }
-    }
-}
-
-impl<S: Spacing, T> SpacedList<S> for FilledSpacedList<S, T> {
-    fn skeleton(&self) -> &SpacedListSkeleton<S, Self> {
-        &self.skeleton
-    }
-
-    fn skeleton_mut(&mut self) -> &mut SpacedListSkeleton<S, Self> {
-        &mut self.skeleton
-    }
-
-    fn size(&self) -> usize {
-        self.size
-    }
-
-    fn size_mut(&mut self) -> &mut usize {
-        &mut self.size
-    }
-
-    fn deep_size(&self) -> usize {
-        self.deep_size
-    }
-
-    fn deep_size_mut(&mut self) -> &mut usize {
-        &mut self.deep_size
     }
 }
