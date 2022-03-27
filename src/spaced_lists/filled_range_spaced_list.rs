@@ -13,115 +13,115 @@ impl<S: Spacing, T> FilledRangeSpacedList<S, T> {
         default()
     }
 
-    fn append_range(&mut self, distance: S, span: S, element: T) -> Todo {
+    pub fn append_range(&mut self, distance: S, span: S, element: T) -> Todo {
         todo!()
     }
 
-    fn insert_range(&mut self, position: S, span: S, element: T) -> Todo {
+    pub fn insert_range(&mut self, position: S, span: S, element: T) -> Todo {
         todo!()
     }
 
-    fn inflate_after_range(&mut self, range_index: Todo, amount: S) {
+    pub fn inflate_after_range(&mut self, range_index: Todo, amount: S) {
         todo!()
     }
 
-    fn inflate_before_range(&mut self, range_index: Todo, amount: S) {
+    pub fn inflate_before_range(&mut self, range_index: Todo, amount: S) {
         todo!()
     }
 
-    fn inflate_range(&mut self, range_index: Todo, amount: S) {
+    pub fn inflate_range(&mut self, range_index: Todo, amount: S) {
         todo!()
     }
 
-    fn deflate_after_range(&mut self, range_index: Todo, amount: S) {
+    pub fn deflate_after_range(&mut self, range_index: Todo, amount: S) {
         todo!()
     }
 
-    fn deflate_before_range(&mut self, range_index: Todo, amount: S) {
+    pub fn deflate_before_range(&mut self, range_index: Todo, amount: S) {
         todo!()
     }
 
-    fn deflate_range(&mut self, range_index: Todo, amount: S) {
+    pub fn deflate_range(&mut self, range_index: Todo, amount: S) {
         todo!()
     }
 
-    fn range_starting_before(&self, position: S) -> &T {
+    pub fn range_starting_before(&self, position: S) -> &T {
         todo!()
     }
 
-    fn range_starting_at_or_before(&self, position: S) -> &T {
+    pub fn range_starting_at_or_before(&self, position: S) -> &T {
         todo!()
     }
 
-    fn range_starting_at(&self, position: S) -> &T {
+    pub fn range_starting_at(&self, position: S) -> &T {
         todo!()
     }
 
-    fn range_starting_at_or_after(&self, position: S) -> &T {
+    pub fn range_starting_at_or_after(&self, position: S) -> &T {
         todo!()
     }
 
-    fn range_starting_after(&self, position: S) -> &T {
+    pub fn range_starting_after(&self, position: S) -> &T {
         todo!()
     }
 
-    fn range_ending_before(&self, position: S) -> &T {
+    pub fn range_ending_before(&self, position: S) -> &T {
         todo!()
     }
 
-    fn range_ending_at_or_before(&self, position: S) -> &T {
+    pub fn range_ending_at_or_before(&self, position: S) -> &T {
         todo!()
     }
 
-    fn range_ending_at(&self, position: S) -> &T {
+    pub fn range_ending_at(&self, position: S) -> &T {
         todo!()
     }
 
-    fn range_ending_at_or_after(&self, position: S) -> &T {
+    pub fn range_ending_at_or_after(&self, position: S) -> &T {
         todo!()
     }
 
-    fn range_ending_after(&self, position: S) -> &T {
+    pub fn range_ending_after(&self, position: S) -> &T {
         todo!()
     }
 
-    fn range_starting_before_mut(&mut self, position: S) -> &mut T {
+    pub fn range_starting_before_mut(&mut self, position: S) -> &mut T {
         todo!()
     }
 
-    fn range_starting_at_or_before_mut(&mut self, position: S) -> &mut T {
+    pub fn range_starting_at_or_before_mut(&mut self, position: S) -> &mut T {
         todo!()
     }
 
-    fn range_starting_at_mut(&mut self, position: S) -> &mut T {
+    pub fn range_starting_at_mut(&mut self, position: S) -> &mut T {
         todo!()
     }
 
-    fn range_starting_at_or_after_mut(&mut self, position: S) -> &mut T {
+    pub fn range_starting_at_or_after_mut(&mut self, position: S) -> &mut T {
         todo!()
     }
 
-    fn range_starting_after_mut(&mut self, position: S) -> &mut T {
+    pub fn range_starting_after_mut(&mut self, position: S) -> &mut T {
         todo!()
     }
 
-    fn range_ending_before_mut(&mut self, position: S) -> &mut T {
+    pub fn range_ending_before_mut(&mut self, position: S) -> &mut T {
         todo!()
     }
 
-    fn range_ending_at_or_before_mut(&mut self, position: S) -> &mut T {
+    pub fn range_ending_at_or_before_mut(&mut self, position: S) -> &mut T {
         todo!()
     }
 
-    fn range_ending_at_mut(&mut self, position: S) -> &mut T {
+    pub fn range_ending_at_mut(&mut self, position: S) -> &mut T {
         todo!()
     }
 
-    fn range_ending_at_or_after_mut(&mut self, position: S) -> &mut T {
+    pub fn range_ending_at_or_after_mut(&mut self, position: S) -> &mut T {
         todo!()
     }
 
-    fn range_ending_after_mut(&mut self, position: S) -> &mut T {
+    pub fn range_ending_after_mut(&mut self, position: S) -> &mut T {
         todo!()
     }
 }
