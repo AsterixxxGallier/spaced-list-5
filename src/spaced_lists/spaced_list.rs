@@ -19,12 +19,12 @@ pub trait SpacedList<S: Spacing> {
 		todo!()
 	}
 
-	fn deflate_after(&mut self, node_index: Todo, amount: S) where S: Neg<Output = S> {
-		self.inflate_after(node_index, -amount)
+	fn deflate_after(&mut self, node_index: Todo, amount: S) {
+		todo!()
 	}
 
-	fn deflate_before(&mut self, node_index: Todo, amount: S) where S: Neg<Output = S> {
-		self.inflate_before(node_index, -amount)
+	fn deflate_before(&mut self, node_index: Todo, amount: S) {
+		todo!()
 	}
 
 	fn node_before(&self, position: S) -> Todo {
