@@ -13,6 +13,14 @@ impl<S: Spacing, T> FilledRangeSpacedList<S, T> {
         default()
     }
 
+    pub fn element(&self, range_index: Todo) -> &T {
+        todo!()
+    }
+
+    pub fn element_mut(&mut self, range_index: Todo) -> &mut T {
+        todo!()
+    }
+
     pub fn append_range(&mut self, distance: S, span: S, element: T) -> Todo {
         todo!()
     }
