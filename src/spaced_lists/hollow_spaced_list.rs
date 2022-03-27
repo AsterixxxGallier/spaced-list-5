@@ -51,7 +51,7 @@ impl<S: Spacing> HollowSpacedList<S> {
     }
 
     pub fn append_node(&mut self, distance: S) {
-        todo!()
+        <Self as SpacedList<S>>::append_node(self, distance);
     }
 
     pub fn insert_node(&mut self, position: S) {
