@@ -7,8 +7,8 @@ use crate::{SpacedList, Spacing};
 
 #[derive(Clone, Eq, PartialEq)]
 pub struct SpacedListSkeleton<S: Spacing, Sub: SpacedList<S>> {
-    link_lengths: Vec<S>,
-    sublists: Vec<Option<Sub>>,
+    pub(crate) link_lengths: Vec<S>,
+    pub(crate) sublists: Vec<Option<Sub>>,
     size: usize,
     depth: usize,
     length: S,
