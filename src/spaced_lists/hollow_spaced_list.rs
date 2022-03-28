@@ -2,6 +2,7 @@ use std::default::default;
 
 use crate::{SpacedList, SpacedListSkeleton, Spacing, Todo};
 
+#[derive(Clone, Eq, PartialEq)]
 pub struct HollowSpacedList<S: Spacing> {
     skeleton: SpacedListSkeleton<S, Self>,
     size: usize,

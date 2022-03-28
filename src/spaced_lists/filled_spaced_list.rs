@@ -2,6 +2,7 @@ use std::default::default;
 
 use crate::{SpacedList, SpacedListSkeleton, Spacing, Todo};
 
+#[derive(Clone, Eq, PartialEq)]
 pub struct FilledSpacedList<S: Spacing, T> {
     skeleton: SpacedListSkeleton<S, Self>,
     elements: Vec<T>,

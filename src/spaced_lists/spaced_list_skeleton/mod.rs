@@ -5,6 +5,7 @@ use num_traits::zero;
 
 use crate::{SpacedList, Spacing};
 
+#[derive(Clone, Eq, PartialEq)]
 pub struct SpacedListSkeleton<S: Spacing, Sub: SpacedList<S>> {
     link_lengths: Vec<S>,
     sublists: Vec<Option<Sub>>,
