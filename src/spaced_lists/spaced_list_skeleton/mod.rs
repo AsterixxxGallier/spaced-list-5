@@ -77,6 +77,10 @@ impl<S: Spacing, Sub: SpacedList<S>> SpacedListSkeleton<S, Sub> {
         index < self.size()
     }
 
+    pub(crate) fn sublist_index_is_in_bounds(&self, index: usize) -> bool {
+        index < self.size()
+    }
+
     pub(crate) fn node_index_is_in_bounds(&self, index: usize) -> bool {
         index <= self.size()
     }
