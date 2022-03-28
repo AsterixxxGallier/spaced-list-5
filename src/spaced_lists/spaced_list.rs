@@ -17,6 +17,9 @@ pub trait SpacedList<S: Spacing>: Default {
 
     fn append_node(&mut self, distance: S) {
         let size = self.size();
+        if size == self.skeleton().size() {
+            self.skeleton_mut().grow();
+        }
         self.skeleton_mut().inflate_at(size, distance);
         *self.size_mut() += 1;
         *self.deep_size_mut() += 1;
