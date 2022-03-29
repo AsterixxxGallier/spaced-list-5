@@ -45,6 +45,20 @@ pub trait SpacedList<S: Spacing>: Default {
         todo!()
     }
 
+    // All possible queries:
+    // - first
+    // - last before
+    // - first at or last before
+    // - last at or last before
+    // - first at
+    // - last at
+    // - first at or first after
+    // - last at or first after
+    // - first after
+    // - last
+    //
+    // TODO long term implement all of these
+
     fn node_before(&self, position: S) -> Todo {
         todo!()
     }
