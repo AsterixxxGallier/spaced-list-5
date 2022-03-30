@@ -1,4 +1,5 @@
 use std::ops::Neg;
+use num_traits::zero;
 
 use crate::{SpacedListSkeleton, Spacing, Todo};
 
@@ -15,6 +16,14 @@ pub trait SpacedList<S: Spacing>: Default {
 
     fn deep_size_mut(&mut self) -> &mut usize;
 
+    fn length(&self) -> S {
+        self.skeleton().length()
+    }
+
+    fn deep_length(&self) -> S;
+
+    fn deep_length_mut(&mut self) -> &mut S;
+
     fn append_node(&mut self, distance: S) {
         let size = self.size();
         if size == self.skeleton().size() {
@@ -23,6 +32,7 @@ pub trait SpacedList<S: Spacing>: Default {
         self.skeleton_mut().inflate_at(size, distance);
         *self.size_mut() += 1;
         *self.deep_size_mut() += 1;
+        *self.deep_length_mut() += distance;
     }
 
     fn insert_node(&mut self, position: S) {

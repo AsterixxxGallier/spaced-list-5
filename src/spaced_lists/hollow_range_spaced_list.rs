@@ -1,4 +1,5 @@
 use std::default::default;
+use num_traits::zero;
 
 use crate::{SpacedList, SpacedListSkeleton, Spacing, Todo};
 
@@ -7,6 +8,7 @@ pub struct HollowRangeSpacedList<S: Spacing> {
     skeleton: SpacedListSkeleton<S, Self>,
     size: usize,
     deep_size: usize,
+    deep_length: S
 }
 
 impl<S: Spacing> Default for HollowRangeSpacedList<S> {
@@ -15,6 +17,7 @@ impl<S: Spacing> Default for HollowRangeSpacedList<S> {
             skeleton: default(),
             size: 0,
             deep_size: 0,
+            deep_length: zero(),
         }
     }
 }
@@ -42,6 +45,14 @@ impl<S: Spacing> SpacedList<S> for HollowRangeSpacedList<S> {
 
     fn deep_size_mut(&mut self) -> &mut usize {
         &mut self.deep_size
+    }
+
+    fn deep_length(&self) -> S {
+        self.deep_length
+    }
+
+    fn deep_length_mut(&mut self) -> &mut S {
+        &mut self.deep_length
     }
 }
 

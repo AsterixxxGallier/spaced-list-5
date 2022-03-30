@@ -1,4 +1,5 @@
 use std::default::default;
+use num_traits::zero;
 
 use crate::{SpacedList, SpacedListSkeleton, Spacing, Todo};
 
@@ -8,6 +9,7 @@ pub struct FilledRangeSpacedList<S: Spacing, T> {
     elements: Vec<T>,
     size: usize,
     deep_size: usize,
+    deep_length: S
 }
 
 impl<S: Spacing, T> Default for FilledRangeSpacedList<S, T> {
@@ -17,6 +19,7 @@ impl<S: Spacing, T> Default for FilledRangeSpacedList<S, T> {
             elements: vec![],
             size: 0,
             deep_size: 0,
+            deep_length: zero(),
         }
     }
 }
@@ -44,6 +47,14 @@ impl<S: Spacing, T> SpacedList<S> for FilledRangeSpacedList<S, T> {
 
     fn deep_size_mut(&mut self) -> &mut usize {
         &mut self.deep_size
+    }
+
+    fn deep_length(&self) -> S {
+        self.deep_length
+    }
+
+    fn deep_length_mut(&mut self) -> &mut S {
+        &mut self.deep_length
     }
 }
 
