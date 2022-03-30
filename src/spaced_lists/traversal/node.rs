@@ -170,7 +170,7 @@ mod tests {
         le_30.run();
         assert_eq!(le_30.position, 30);
         assert_eq!(le_30.node_index, 2);
-        assert_eq!(le_30.link_index, 3);
+        assert_eq!(le_30.link_index, 2);
         assert_eq!(le_30.local_offset, 0);
         assert_eq!(le_30.local_mask, 0b111);
         assert_eq!(le_30.degree, 0);
@@ -207,7 +207,7 @@ mod tests {
         le_30.run();
         assert_eq!(le_30.position, 30);
         assert_eq!(le_30.node_index, 2);
-        assert_eq!(le_30.link_index, 3);
+        assert_eq!(le_30.link_index, 2);
         assert_eq!(le_30.local_offset, 0);
         assert_eq!(le_30.local_mask, 0b111);
         assert_eq!(le_30.degree, 0);
