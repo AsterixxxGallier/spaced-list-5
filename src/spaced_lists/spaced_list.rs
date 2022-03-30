@@ -2,6 +2,8 @@ use std::ops::Neg;
 use num_traits::zero;
 
 use crate::{SpacedListSkeleton, Spacing, Todo};
+use crate::spaced_lists::traversal::node::Traversal;
+use crate::spaced_lists::traversal::Position;
 
 pub trait SpacedList<S: Spacing>: Default {
     fn skeleton(&self) -> &SpacedListSkeleton<S, Self>;
@@ -82,19 +84,60 @@ pub trait SpacedList<S: Spacing>: Default {
         Traversal::new(self, continue_condition, Some(stop_condition))
     }
 
-    fn node_at_or_before(&self, position: S) -> Todo {
-        todo!()
+    fn node_before<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
+        if position <= zero() {
+            return None
+        }
+        let mut traversal = self.traversal(|pos| pos < position);
+        traversal.run();
+        Some(traversal.position())
     }
 
-    fn node_at(&self, position: S) -> Todo {
-        todo!()
+    fn node_at_or_before<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
+        if position < zero() {
+            return None
+        }
+        let mut traversal = self.traversal(|pos| pos <= position);
+        traversal.run();
+        Some(traversal.position())
     }
 
-    fn node_at_or_after(&self, position: S) -> Todo {
-        todo!()
+    fn node_at<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
+        if position < zero() || position > self.length() {
+            return None
+        }
+        let mut traversal = self.traversal(|pos| pos <= position);
+        traversal.run();
+        let result = traversal.position();
+        if result.position == position {
+            Some(result)
+        } else {
+            None
+        }
     }
 
-    fn node_after(&self, position: S) -> Todo {
-        todo!()
+    fn node_at_or_after<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
+        if position > self.length() {
+            return None
+        }
+        let mut traversal = self.traversal(|pos| pos <= position);
+        traversal.run();
+        let result = traversal.position();
+        if result.position == position {
+            Some(result)
+        } else {
+            traversal.next();
+            Some(traversal.position())
+        }
+    }
+
+    fn node_after<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
+        if position >= self.length() {
+            return None
+        }
+        let mut traversal = self.traversal(|pos| pos <= position);
+        traversal.run();
+        traversal.next();
+        Some(traversal.position())
     }
 }
