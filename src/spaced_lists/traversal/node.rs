@@ -150,46 +150,6 @@ impl<'a, S, List, Continue, Stop> Traversal<'a, S, List, Continue, Stop>
             }
         }
 
-        ///
-        ///
-        ///
-        ///
-        ///
-        ///
-        ///
-        ///
-        ///
-        ///
-        /// ╭───────────────────╮
-        /// ├───────────╮       │
-        /// ├───╮       ├───╮   │
-        /// ╵ 0 │     1 ╵ 2 ╵ 3 ╵
-        /// 0   ├───╮  30  50  80
-        ///     ╵ 0 ╵
-        ///    20  25
-        ///
-        /// 3   x   1   x  (2) = trailing zeros
-        /// ╭───────────────╮
-        /// ├───────╮       │
-        /// ├───╮   ├───╮   │
-        /// ╵ 0 ╵ 1 ╵ 2 ╵ 3 ╵
-        ///000 001 010 011 100
-        /// 0  20  30  50  80
-        ///
-        /// move up-left until there is a link to follow, then follow that link
-        ///
-        /// move up left:
-        /// (move link index left)
-        /// move position left (- link length at node_index-1)
-        /// move node index left
-        /// move degree up
-        ///
-        /// there is a link to follow:
-        /// self.degree < node_index.trailing_zeros()
-        ///
-        /// follow that link:
-        /// TODOOO
-
         let degree_before = self.degree;
         let local_skeleton = self.lists.last().unwrap().skeleton();
         loop {
