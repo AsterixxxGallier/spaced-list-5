@@ -25,6 +25,7 @@ pub use spaced_lists::FilledRangeSpacedList;
 pub use spaced_lists::FilledSpacedList;
 pub use spaced_lists::HollowRangeSpacedList;
 pub use spaced_lists::HollowSpacedList;
+pub use spaced_lists::Position;
 pub(crate) use spaced_lists::SpacedList;
 pub(crate) use spaced_lists::SpacedListSkeleton;
 pub use spaced_lists::Spacing;

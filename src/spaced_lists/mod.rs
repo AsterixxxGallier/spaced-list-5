@@ -6,7 +6,7 @@ pub use filled_range_spaced_list::FilledRangeSpacedList;
 pub use filled_spaced_list::FilledSpacedList;
 pub use hollow_range_spaced_list::HollowRangeSpacedList;
 pub use hollow_spaced_list::HollowSpacedList;
-pub use traversal::Position;
+pub use traversal::node::Position;
 pub(crate) use spaced_list::SpacedList;
 pub(crate) use spaced_list_skeleton::SpacedListSkeleton;
 

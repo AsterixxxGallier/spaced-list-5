@@ -1,7 +1,6 @@
 use num_traits::zero;
 
 use crate::{SpacedList, Spacing};
-use crate::spaced_lists::traversal::Position;
 
 pub struct Traversal<'a, S, List, Continue, Stop>
     where S: 'a + Spacing,
@@ -180,6 +179,15 @@ impl<'a, S, List, Continue, Stop> Traversal<'a, S, List, Continue, Stop>
             mask: self.local_mask
         }
     }
+}
+
+pub struct Position<'a, S: Spacing, List: SpacedList<S>> {
+    lists: Vec<&'a List>,
+    pub index: usize,
+    pub position: S,
+    link_index: usize,
+    offset: usize,
+    mask: usize,
 }
 
 #[cfg(test)]
