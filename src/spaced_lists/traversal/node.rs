@@ -2,7 +2,7 @@ use num_traits::zero;
 
 use crate::{SpacedList, Spacing};
 
-struct Traversal<'a, S, List, Continue, Stop>
+pub struct Traversal<'a, S, List, Continue, Stop>
     where S: 'a + Spacing,
           List: SpacedList<S>,
           Continue: Fn(S) -> bool,
@@ -27,7 +27,7 @@ impl<'a, S, List, Continue, Stop> Traversal<'a, S, List, Continue, Stop>
           List: SpacedList<S>,
           Continue: Fn(S) -> bool,
           Stop: Fn(S) -> bool {
-    fn new(list: &'a List, continue_condition: Continue, stop_condition: Option<Stop>) -> Self {
+    pub fn new(list: &'a List, continue_condition: Continue, stop_condition: Option<Stop>) -> Self {
         Self {
             lists: vec![list],
             continue_condition,
@@ -54,7 +54,7 @@ impl<'a, S, List, Continue, Stop> Traversal<'a, S, List, Continue, Stop>
         index >> self.local_offset & self.local_mask
     }
 
-    fn run(&mut self) {
+    pub fn run(&mut self) {
         // ┌──┬──┬──┬── 0000
         //A│  │  │  │0000
         // │  │  │  ╰── 0001
