@@ -1,6 +1,7 @@
 use num_traits::zero;
 
 use crate::{SpacedList, Spacing};
+use crate::spaced_lists::traversal::Position;
 
 pub struct Traversal<'a, S, List, Continue, Stop>
     where S: 'a + Spacing,
@@ -129,6 +130,96 @@ impl<'a, S, List, Continue, Stop> Traversal<'a, S, List, Continue, Stop>
             false
         }
     }
+
+    pub fn next(&mut self) -> Result<(), &str> {
+        let local_list = *self.lists.last().unwrap();
+        let local_skeleton = local_list.skeleton();
+        if self.localize(self.node_index) == local_list.size() {
+            return if self.lists.len() > 1 {
+                self.link_index &= !(self.local_mask << self.local_offset);
+                self.node_index &= !(self.local_mask << self.local_offset);
+                self.position -= local_skeleton.length();
+                self.degree = 0;
+                self.lists.pop();
+                let local_skeleton = self.lists.last().unwrap().skeleton();
+                self.local_offset -= local_skeleton.depth();
+                self.local_mask = mask(local_skeleton.depth());
+                return self.next();
+            } else {
+                Err("Called next on a Traversal that is already at the end of the list")
+            }
+        }
+
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        ///
+        /// ╭───────────────────╮
+        /// ├───────────╮       │
+        /// ├───╮       ├───╮   │
+        /// ╵ 0 │     1 ╵ 2 ╵ 3 ╵
+        /// 0   ├───╮  30  50  80
+        ///     ╵ 0 ╵
+        ///    20  25
+        ///
+        /// 3   x   1   x  (2) = trailing zeros
+        /// ╭───────────────╮
+        /// ├───────╮       │
+        /// ├───╮   ├───╮   │
+        /// ╵ 0 ╵ 1 ╵ 2 ╵ 3 ╵
+        ///000 001 010 011 100
+        /// 0  20  30  50  80
+        ///
+        /// move up-left until there is a link to follow, then follow that link
+        ///
+        /// move up left:
+        /// (move link index left)
+        /// move position left (- link length at node_index-1)
+        /// move node index left
+        /// move degree up
+        ///
+        /// there is a link to follow:
+        /// self.degree < node_index.trailing_zeros()
+        ///
+        /// follow that link:
+        /// TODOOO
+
+        let degree_before = self.degree;
+        let local_skeleton = self.lists.last().unwrap().skeleton();
+        loop {
+            let local_node_index = self.localize(self.node_index);
+            if self.degree < local_node_index.trailing_zeros() as usize {
+                break
+            }
+            self.position -= local_skeleton.get_link_length_at(local_node_index - 1);
+            self.node_index -= 1 << self.degree << self.local_offset;
+            self.degree += 1;
+        }
+
+        self.node_index += 1 << self.degree << self.local_offset;
+        self.link_index = self.node_index + (1 << degree_before << self.local_offset) - 1;
+        self.position += local_skeleton.get_link_length_at(self.node_index - 1);
+        self.degree = degree_before;
+
+        Ok(())
+    }
+
+    pub fn position(&self) -> Position<'a, S, List> {
+        Position {
+            lists: self.lists.clone(),
+            index: self.node_index,
+            position: self.position,
+            link_index: self.link_index,
+            offset: self.local_offset,
+            mask: self.local_mask
+        }
+    }
 }
 
 #[cfg(test)]
@@ -202,6 +293,15 @@ mod tests {
         assert_eq!(lt_30.degree, 0);
         assert!(lt_30.lists[0] == &list);
         assert!(lt_30.lists[1] == sublist);
+
+        lt_30.next();
+        assert_eq!(lt_30.position, 30);
+        assert_eq!(lt_30.node_index, 2);
+        assert_eq!(lt_30.link_index, 2);
+        assert_eq!(lt_30.local_offset, 0);
+        assert_eq!(lt_30.local_mask, 0b111);
+        assert_eq!(lt_30.degree, 0);
+        assert!(lt_30.lists[0] == &list);
 
         let mut le_30 = Traversal::new(&list, |pos| pos <= 30, None::<fn(_) -> _>);
         le_30.run();
