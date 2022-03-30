@@ -80,6 +80,7 @@ impl<'a, S, List, Continue, Stop> Traversal<'a, S, List, Continue, Stop>
             if let Some(condition) = &self.stop_condition {
                 if condition(self.position) {
                     while self.descend() {
+                        // TODO maybe change link index?
                         // condition has side effects
                     }
                     break;
@@ -99,6 +100,7 @@ impl<'a, S, List, Continue, Stop> Traversal<'a, S, List, Continue, Stop>
                 // TODO check that this branch actually makes sense
                 self.link_index -= 1 << self.local_offset;
             }
+            // TODO maybe change link index?
             if self.descend() {
                 continue;
             } else {
