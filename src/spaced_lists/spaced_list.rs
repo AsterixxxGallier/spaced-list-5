@@ -69,8 +69,17 @@ pub trait SpacedList<S: Spacing>: Default {
     //
     // TODO long term implement all of these
 
-    fn node_before(&self, position: S) -> Todo {
-        todo!()
+    fn traversal<Continue>(&self, continue_condition: Continue)
+                           -> Traversal<S, Self, Continue, fn(S) -> bool>
+        where Continue: Fn(S) -> bool {
+        Traversal::new(self, continue_condition, None)
+    }
+
+    fn stopping_traversal<Continue, Stop>(&self, continue_condition: Continue, stop_condition: Stop)
+                                          -> Traversal<S, Self, Continue, Stop>
+        where Continue: Fn(S) -> bool,
+              Stop: Fn(S) -> bool {
+        Traversal::new(self, continue_condition, Some(stop_condition))
     }
 
     fn node_at_or_before(&self, position: S) -> Todo {
