@@ -95,6 +95,9 @@ impl<'a, S, List, Continue, Stop> Traversal<'a, S, List, Continue, Stop>
                 self.link_index += 1 << self.degree << self.local_offset;
             } else if self.degree > 0 {
                 self.link_index -= 1 << (self.degree - 1) << self.local_offset;
+            } else if self.link_index >> self.local_offset > 0 {
+                // TODO check that this branch actually makes sense
+                self.link_index -= 1 << self.local_offset;
             }
             if self.descend() {
                 continue;
