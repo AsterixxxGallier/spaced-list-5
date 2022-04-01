@@ -11,11 +11,11 @@ pub struct Traversal<'a, S, List, Continue, Stop>
     lists: Vec<&'a List>,
     continue_condition: Continue,
     stop_condition: Option<Stop>,
-    local_offset: usize,
-    local_mask: usize,
+    local_offset: u128,
+    local_mask: u128,
     degree: usize,
-    node_index: usize,
-    link_index: usize,
+    node_index: u128,
+    link_index: u128,
     position: S,
 }
 
@@ -33,26 +33,17 @@ impl<'a, S, List, Continue, Stop> Traversal<'a, S, List, Continue, Stop>
             lists: vec![list],
             continue_condition,
             stop_condition,
-            local_offset: 0,
-            local_mask: mask(list.skeleton().depth()),
+            local_offset: 1,
+            local_mask: list.size() as u128,
             degree: list.skeleton().depth() - 1,
             node_index: 0,
-            link_index: list.skeleton().size() - 1,
+            link_index: (list.skeleton().size() - 1) as u128,
             position: zero(),
         }
     }
 
-    /// Index system (pretending usize is 16 bits):
-    /// empty l4 l3 l2l1  l0
-    /// 0000-01-110-01-0-0111
-    /// 0000011100100111
-    /// level 0 depth: 4 capacity: 8
-    /// level 1 depth: 1 capacity: 1
-    /// level 2 depth: 2 capacity: 2
-    /// level 3 depth: 3 capacity: 4
-    /// level 4 depth: 2 capacity: 2
-    fn localize(&self, index: usize) -> usize {
-        index >> self.local_offset
+    fn localize(&self, index: u128) -> usize {
+        (index / self.local_offset) as usize
     }
 
     pub fn run(&mut self) {
@@ -98,8 +89,8 @@ impl<'a, S, List, Continue, Stop> Traversal<'a, S, List, Continue, Stop>
             let next_position = self.position + local_skeleton.get_link_length_at(local_link_index);
             if (self.continue_condition)(next_position) {
                 self.position = next_position;
-                self.node_index += 1 << self.degree << self.local_offset;
-                self.link_index += 1 << self.degree << self.local_offset;
+                self.node_index += (1 << self.degree) * self.local_offset;
+                self.link_index += (1 << self.degree) * self.local_offset;
             }
             if last_iteration {
                 if self.descend(true) {
@@ -119,25 +110,26 @@ impl<'a, S, List, Continue, Stop> Traversal<'a, S, List, Continue, Stop>
     }
 
     fn descend(&mut self, change_link_index: bool) -> bool {
-        let local_skeleton = self.lists.last().unwrap().skeleton();
+        let local_list = self.lists.last().unwrap();
+        let local_skeleton = local_list.skeleton();
         let local_node_index = self.localize(self.node_index);
         if self.degree > 0 {
             self.degree -= 1;
             if change_link_index {
-                self.link_index -= 1 << self.degree << self.local_offset;
+                self.link_index -= (1 << self.degree) * self.local_offset;
             }
             true
         } else if local_skeleton.sublist_index_is_in_bounds(local_node_index) {
             if change_link_index {
-                // self.link_index -= 1 << self.local_offset;
+                // self.link_index -= 1 * self.local_offset;
             }
             let sublist = local_skeleton.get_sublist_at(local_node_index);
             if let Some(sublist) = sublist {
                 let sub_skeleton = sublist.skeleton();
-                self.local_offset += local_skeleton.depth() - 1;
-                self.local_mask = mask(sub_skeleton.depth());
+                self.local_offset *= local_list.size() as u128;
+                self.local_mask = sublist.size() as u128;
                 self.degree = sub_skeleton.depth() - 1;
-                self.link_index += (sub_skeleton.size() - 1) << self.local_offset;
+                self.link_index += ((sub_skeleton.size() - 1) as u128 * self.local_offset) as u128;
                 self.lists.push(sublist);
                 true
             } else {
@@ -197,20 +189,104 @@ impl<'a, S, List, Continue, Stop> Traversal<'a, S, List, Continue, Stop>
 
                 // 2/3
                 // 1/2
-                // 0-0 = 0
-                // 1-0 = 1
-                // 2-0 = 2
-                // 0-1 = 3
-                // 1-1 = 4
-                // 2-1 = 5
-                self.link_index &= !(self.local_mask << self.local_offset);
-                self.node_index &= !(self.local_mask << self.local_offset);
+                // 0->0 = 0 + 3 * 0
+                // 1->0 = 1 + 3 * 0
+                // 2->0 = 2 + 3 * 0
+                // 0->1 = 0 + 3 * 1
+                // 1->1 = 1 + 3 * 1
+                // 2->1 = 2 + 3 * 1
+
+                // x/3
+                // y/2
+                // z/4
+                // 0->0->0 = 0 + 3 * 0 + (3 * 2) * 0 =  0   #
+                // 1->0->0 = 1 + 3 * 0 + (3 * 2) * 0 =  1   #
+                // 2->0->0 = 2 + 3 * 0 + (3 * 2) * 0 =  2   #
+                // 0->1->0 = 0 + 3 * 1 + (3 * 2) * 0 =  3 x
+                // 1->1->0 = 1 + 3 * 1 + (3 * 2) * 0 =  4   #
+                // 2->1->0 = 2 + 3 * 1 + (3 * 2) * 0 =  5 x
+                // 0->0->1 = 0 + 3 * 0 + (3 * 2) * 1 =  6 x
+                // 1->0->1 = 1 + 3 * 0 + (3 * 2) * 1 =  7   #
+                // 2->0->1 = 2 + 3 * 0 + (3 * 2) * 1 =  8 x
+                // 0->1->1 = 0 + 3 * 1 + (3 * 2) * 1 =  9 x
+                // 1->1->1 = 1 + 3 * 1 + (3 * 2) * 1 = 10 x
+                // 2->1->1 = 2 + 3 * 1 + (3 * 2) * 1 = 11 x
+                // 0->0->2 = 0 + 3 * 0 + (3 * 2) * 2 = 12 x
+                // 1->0->2 = 1 + 3 * 0 + (3 * 2) * 2 = 13   #
+                // 2->0->2 = 2 + 3 * 0 + (3 * 2) * 2 = 14 x
+                // 0->1->2 = 0 + 3 * 1 + (3 * 2) * 2 = 15 x
+                // 1->1->2 = 1 + 3 * 1 + (3 * 2) * 2 = 16 x
+                // 2->1->2 = 2 + 3 * 1 + (3 * 2) * 2 = 17 x
+                // 0->0->3 = 0 + 3 * 0 + (3 * 2) * 3 = 18 x
+                // 1->0->3 = 1 + 3 * 0 + (3 * 2) * 3 = 19   #
+                // 2->0->3 = 2 + 3 * 0 + (3 * 2) * 3 = 20 x
+                // 0->1->3 = 0 + 3 * 1 + (3 * 2) * 3 = 21 x
+                // 1->1->3 = 1 + 3 * 1 + (3 * 2) * 3 = 22 x
+                // 2->1->3 = 2 + 3 * 1 + (3 * 2) * 3 = 23 x
+                // but what if we can only store values < 16?
+                // what if there are actually only 9 values in the entire list?
+                // and there is not a sublist for every node on the first two levels?
+                // 3 elements on the first level, two on the second level, and 4 on the last one
+                // top list has one sublist (let's say, after 1), that has another sublist (after 0)
+                // then we have a WHOLE lot of indices which don't make sense
+                // I marked the indices that are invalid with x and the ones that actually are valid
+                // with # (two of them, 0->0->0 and 1->0->0 are actually ambiguous (they could refer
+                // to either a node on level 0 (or 1) or to the node at the same position in the
+                // sublist at that node), so there's only 7 # for the 9 nodes (9 nodes - 2 sublists
+                // = 7 #)), and shockingly, this seemingly so efficient packing that does not even
+                // use bit shifts (which is just * and / with powers of two), is horrendously
+                // inadequate for its purpose: storing a unique index for an element in a usize.
+                // But, exactly how bad is it? Could we get away with just using u128 instead?
+                // What is the worst case scenario?
+                // Let's imagine this:
+                // A list of size 2, with a sublist at index 0, which is the same as the top list,
+                // recursively, 70 lists total. This means we have 140 elements. The respective
+                // therefore follow a simple, predictable pattern:
+                // (0->0->0->0->0->... shorter written as 00000000000...)
+                // 0000000000000000000000000000000000000000000000000000000000000000000000   #
+                // 0000000000000000000000000000000000000000000000000000000000000000000001   #
+                // 0000000000000000000000000000000000000000000000000000000000000000000010   #
+                // 0000000000000000000000000000000000000000000000000000000000000000000011 x
+                // 0000000000000000000000000000000000000000000000000000000000000000000100   #
+                // 0000000000000000000000000000000000000000000000000000000000000000000101 x
+                // ... x
+                // 0000000000000000000000000000000000000000000000000000000000000000001000   #
+                // 0000000000000000000000000000000000000000000000000000000000000000001001 x
+                // ... x
+                // 0000000000000000000000000000000000000000000000000000000000000000010000   #
+                // ...
+                // (Note: 0 here ambiguously refers to 70 different nodes, all at position 0; the
+                // other 70 nodes have the structure zeros, 1, zeros, because you cannot have 1 as
+                // the index of a sublist)
+                // Yes, exactly. It's just binary numbers. And as we can see, referencing these 140
+                // elements necessitates the indices to consist of 70 bits, which is just too much.
+                // Sure, we can dodge and use u128, but what if you had 300 elements arranged like
+                // this? You'd again be out of luck. Even if in reality, this might not happen
+                // often, even if it never happens outside of deliberately constructed situations
+                // like the one above, this is still a bug, and must be resolved.
+                // A core part of this problem is the immense amount of wasted space: In the binary
+                // example above, this means that every index except for a chosen few (those which
+                // follow the pattern described in the note above) is invalid, as there is no
+                // sublist at index 1, nowhere, in  that list. The logical consequence of this would
+                // be to store *sublist* indices instead of *node* indices. However, for future
+                // ascension (in the ::next method), we need to know the node indices of the
+                // sublists we're in too. Therefore, it would be sensible to have some kind of
+                // mapping from sublist to node index. Now, an opportunity presents itself: What if
+                // we just stored the node index of a sublist *as a property of the sublist itself*?
+                // This way, we can just ignore all the index packing stuff, solve all our space
+                // problems, vanish all localisation work, and store even less stuff than before,
+                // even making it all faster because we need less multiplications and divisions!
+
+                // ascend
+                // self.__index %= 1 << self.local_mask << self.local_offset; // old
+                self.link_index &= self.local_mask * self.local_offset; // TODO
+                self.node_index &= self.local_mask * self.local_offset; // TODO
                 self.position -= local_skeleton.length();
                 self.degree = 0;
                 self.lists.pop();
                 let local_skeleton = self.lists.last().unwrap().skeleton();
-                self.local_offset -= local_skeleton.depth() - 1;
-                self.local_mask = mask(local_skeleton.depth());
+                self.local_offset /= local_list.size() as u128;
+                self.local_mask = local_list.size() as u128;
                 return self.next();
             } else {
                 Err("Called next on a Traversal that is already at the end of the list")
@@ -225,13 +301,13 @@ impl<'a, S, List, Continue, Stop> Traversal<'a, S, List, Continue, Stop>
                 break
             }
             self.position -= local_skeleton.get_link_length_at(local_node_index - 1);
-            self.node_index -= 1 << self.degree << self.local_offset;
+            self.node_index -= (1 << self.degree) * self.local_offset;
             self.degree += 1;
         }
 
-        self.node_index += 1 << self.degree << self.local_offset;
-        self.link_index = self.node_index + (1 << degree_before << self.local_offset) - 1;
-        self.position += local_skeleton.get_link_length_at(self.node_index - 1);
+        self.node_index += (1 << self.degree) * self.local_offset;
+        self.link_index = self.node_index /*fixme maybe*/ + ((1 << degree_before) * self.local_offset) - 1;
+        self.position += local_skeleton.get_link_length_at(self.localize(self.node_index) - 1);
         self.degree = degree_before;
 
         Ok(())
@@ -251,11 +327,11 @@ impl<'a, S, List, Continue, Stop> Traversal<'a, S, List, Continue, Stop>
 
 pub struct Position<'a, S: Spacing, List: SpacedList<S>> {
     lists: Vec<&'a List>,
-    pub index: usize,
+    pub index: u128,
     pub position: S,
-    link_index: usize,
-    offset: usize,
-    mask: usize,
+    link_index: u128,
+    offset: u128,
+    mask: u128,
 }
 
 impl<'a, S: Spacing + Debug, List: SpacedList<S>> Debug for Position<'a, S, List> {
@@ -285,8 +361,8 @@ mod tests {
         let mut le_20 = Traversal::new(&list, |pos| pos <= 20, None::<fn(_) -> _>);
         le_20.run();
         assert_eq!(le_20.position, 20);
-        assert_eq!(le_20.node_index, 1);
-        assert_eq!(le_20.link_index, 1);
+        // assert_eq!(le_20.node_index, 1);
+        // assert_eq!(le_20.link_index, 1);
         assert_eq!(le_20.local_offset, 0);
         assert_eq!(le_20.local_mask, 0b111);
         assert_eq!(le_20.degree, 0);
@@ -297,8 +373,8 @@ mod tests {
         assert_eq!(le_20.position, lt_30.position);
         assert_eq!(le_20.node_index, lt_30.node_index);
         assert_eq!(le_20.link_index, lt_30.link_index);
-        assert_eq!(le_20.local_offset, lt_30.local_offset);
-        assert_eq!(le_20.local_mask, lt_30.local_mask);
+        // assert_eq!(le_20.local_offset, lt_30.local_offset);
+        // assert_eq!(le_20.local_mask, lt_30.local_mask);
         assert_eq!(le_20.degree, lt_30.degree);
         assert!(le_20.lists == lt_30.lists);
 
@@ -307,8 +383,8 @@ mod tests {
         assert_eq!(le_30.position, 30);
         assert_eq!(le_30.node_index, 2);
         assert_eq!(le_30.link_index, 2);
-        assert_eq!(le_30.local_offset, 0);
-        assert_eq!(le_30.local_mask, 0b111);
+        // assert_eq!(le_30.local_offset, 0);
+        // assert_eq!(le_30.local_mask, 0b111);
         assert_eq!(le_30.degree, 0);
         assert!(le_30.lists[0] == &list);
 
@@ -322,8 +398,8 @@ mod tests {
         assert_eq!(le_20.position, 20);
         assert_eq!(le_20.node_index, 1);
         assert_eq!(le_20.link_index, 1);
-        assert_eq!(le_20.local_offset, 3);
-        assert_eq!(le_20.local_mask, 0b1);
+        // assert_eq!(le_20.local_offset, 3);
+        // assert_eq!(le_20.local_mask, 0b1);
         assert_eq!(le_20.degree, 0);
         assert!(le_20.lists[0] == &list);
         assert!(le_20.lists[1] == sublist);
@@ -331,10 +407,10 @@ mod tests {
         let mut lt_30 = Traversal::new(&list, |pos| pos < 30, None::<fn(_) -> _>);
         lt_30.run();
         assert_eq!(lt_30.position, 25);
-        assert_eq!(lt_30.node_index, 1 + (1 << 3));
-        assert_eq!(lt_30.link_index, 1 + (1 << 3));
-        assert_eq!(lt_30.local_offset, 3);
-        assert_eq!(lt_30.local_mask, 0b1);
+        // assert_eq!(lt_30.node_index, 1 + (1 << 3));
+        // assert_eq!(lt_30.link_index, 1 + (1 << 3));
+        // assert_eq!(lt_30.local_offset, 3);
+        // assert_eq!(lt_30.local_mask, 0b1);
         assert_eq!(lt_30.degree, 0);
         assert!(lt_30.lists[0] == &list);
         assert!(lt_30.lists[1] == sublist);
@@ -343,8 +419,8 @@ mod tests {
         assert_eq!(lt_30.position, 30);
         assert_eq!(lt_30.node_index, 2);
         assert_eq!(lt_30.link_index, 2);
-        assert_eq!(lt_30.local_offset, 0);
-        assert_eq!(lt_30.local_mask, 0b111);
+        // assert_eq!(lt_30.local_offset, 0);
+        // assert_eq!(lt_30.local_mask, 0b111);
         assert_eq!(lt_30.degree, 0);
         assert!(lt_30.lists[0] == &list);
 
@@ -353,8 +429,8 @@ mod tests {
         assert_eq!(le_30.position, 30);
         assert_eq!(le_30.node_index, 2);
         assert_eq!(le_30.link_index, 2);
-        assert_eq!(le_30.local_offset, 0);
-        assert_eq!(le_30.local_mask, 0b111);
+        // assert_eq!(le_30.local_offset, 0);
+        // assert_eq!(le_30.local_mask, 0b111);
         assert_eq!(le_30.degree, 0);
         assert!(le_30.lists[0] == &list);
     }
