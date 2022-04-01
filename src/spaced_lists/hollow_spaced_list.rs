@@ -1,7 +1,7 @@
 use std::default::default;
 use num_traits::zero;
 
-use crate::{SpacedList, SpacedListSkeleton, Spacing, Todo};
+use crate::{Position, SpacedList, SpacedListSkeleton, Spacing, Todo};
 
 #[derive(Clone, Eq, PartialEq)]
 pub struct HollowSpacedList<S: Spacing> {
@@ -66,7 +66,7 @@ impl<S: Spacing> HollowSpacedList<S> {
     }
 
     pub fn insert_node(&mut self, position: S) {
-        todo!()
+        <Self as SpacedList<S>>::insert_node(self, position);
     }
 
     pub fn inflate_after(&mut self, node_index: Todo, amount: S) {
@@ -85,23 +85,23 @@ impl<S: Spacing> HollowSpacedList<S> {
         todo!()
     }
 
-    pub fn node_before(&self, position: S) -> Todo {
-        todo!()
+    pub fn node_before(&self, position: S) -> Option<Position<S, Self>> {
+        <Self as SpacedList<S>>::node_before(self, position)
     }
 
-    pub fn node_at_or_before(&self, position: S) -> Todo {
-        todo!()
+    pub fn node_at_or_before(&self, position: S) -> Option<Position<S, Self>> {
+        <Self as SpacedList<S>>::node_at_or_before(self, position)
     }
 
-    pub fn node_at(&self, position: S) -> Todo {
-        todo!()
+    pub fn node_at(&self, position: S) -> Option<Position<S, Self>> {
+        <Self as SpacedList<S>>::node_at(self, position)
     }
 
-    pub fn node_at_or_after(&self, position: S) -> Todo {
-        todo!()
+    pub fn node_at_or_after(&self, position: S) -> Option<Position<S, Self>> {
+        <Self as SpacedList<S>>::node_at_or_after(self, position)
     }
 
-    pub fn node_after(&self, position: S) -> Todo {
-        todo!()
+    pub fn node_after(&self, position: S) -> Option<Position<S, Self>> {
+        <Self as SpacedList<S>>::node_after(self, position)
     }
 }
