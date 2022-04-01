@@ -1,3 +1,4 @@
+use std::fmt::{Debug};
 use std::ops::{Add, AddAssign, Sub, SubAssign};
 
 use num_traits::{Zero, zero};
@@ -10,7 +11,7 @@ pub use traversal::node::Position;
 pub(crate) use spaced_list::SpacedList;
 pub(crate) use spaced_list_skeleton::SpacedListSkeleton;
 
-pub trait Spacing = Add<Output=Self> + AddAssign + Sub<Output=Self> + SubAssign + Zero + Ord + Copy;
+pub trait Spacing = Add<Output=Self> + AddAssign + Sub<Output=Self> + SubAssign + Zero + Ord + Copy + Debug /*todo remove*/;
 
 mod spaced_list_skeleton;
 
