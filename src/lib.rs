@@ -14,6 +14,8 @@
 //!    ranges with a start and an end.
 //! 4. FilledRangeSpacedList: A filled spaced list whose nodes are semantically interpreted as
 //!    ranges with a start and an end, storing an element value for each range.
+// TODO maybe fix add-overflow errors when dealing with huge numbers (put random() as the position
+//  and iterate many times to reproduce)
 
 #![feature(trait_alias)]
 #![feature(never_type)]
