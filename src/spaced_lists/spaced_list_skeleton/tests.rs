@@ -1,5 +1,6 @@
 #![cfg(test)]
 
+use rand::{Rng, thread_rng};
 use crate::{HollowSpacedList, SpacedList, SpacedListSkeleton};
 
 #[test]
@@ -64,4 +65,39 @@ fn inflate_deflate() {
 
     skeleton.inflate_at(2, 1);
     assert_eq!(skeleton.link_lengths, vec![2, 5, 1, 6]);
+}
+
+#[test]
+fn random_insertions() {
+    let mut list: HollowSpacedList<u64> = HollowSpacedList::new();
+    let mut rng = thread_rng();
+    for _n in 0..100000 {
+        let pos = rng.gen_range(0..1000000);
+        // println!("inserting node at {}", pos);
+        // println!("{:?}", pos);
+        list.insert_node(pos);
+        // println!("{:?}", list.skeleton().format(
+        //     true,
+        //     true,
+        //     true,
+        //     4,
+        //     vec![],
+        //     vec![]
+        // ));
+        assert_eq!(list.node_before(pos + 1).unwrap().position, pos);
+        assert_eq!(list.node_at_or_before(pos).unwrap().position, pos);
+        assert_eq!(list.node_at(pos).unwrap().position, pos);
+        assert_eq!(list.node_at_or_after(pos).unwrap().position, pos);
+        // assert_eq!(list.node_after(pos - 1).unwrap().position, pos);
+    }
+
+    // let mut list: HollowSpacedList<u64> = HollowSpacedList::new();
+    // list.insert_node(1);
+    // list.insert_node(2);
+    // list.insert_node(3);
+    // list.insert_node(4);
+    // list.insert_node(6);
+    // // I expect the sublist to be inserted after position 4 = index 4, but it actually goes to index 5?
+    // list.insert_node(5);
+    // println!("{:?}", list.node_at_or_before(5));
 }
