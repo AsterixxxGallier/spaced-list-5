@@ -2,12 +2,12 @@ use num_traits::zero;
 
 use crate::{SpacedList, Spacing};
 
-pub struct ShallowTraversal<'a, S, List, Continue, Stop>
-    where S: 'a + Spacing,
+pub struct ShallowTraversal<'list, S, List, Continue, Stop>
+    where S: Spacing,
           List: SpacedList<S>,
           Continue: Fn(S) -> bool,
           Stop: Fn(S) -> bool {
-    list: &'a List,
+    list: &'list List,
     continue_condition: Continue,
     stop_condition: Option<Stop>,
     degree: usize,
@@ -16,12 +16,12 @@ pub struct ShallowTraversal<'a, S, List, Continue, Stop>
     position: S,
 }
 
-impl<'a, S, List, Continue, Stop> ShallowTraversal<'a, S, List, Continue, Stop>
+impl<'list, S, List, Continue, Stop> ShallowTraversal<'list, S, List, Continue, Stop>
     where S: Spacing,
           List: SpacedList<S>,
           Continue: Fn(S) -> bool,
           Stop: Fn(S) -> bool {
-    pub fn new(list: &'a List, continue_condition: Continue, stop_condition: Option<Stop>) -> Self {
+    pub fn new(list: &'list List, continue_condition: Continue, stop_condition: Option<Stop>) -> Self {
         Self {
             list,
             continue_condition,
@@ -67,7 +67,7 @@ impl<'a, S, List, Continue, Stop> ShallowTraversal<'a, S, List, Continue, Stop>
                 self.link_index += 1 << self.degree;
             }
             if last_iteration {
-                break
+                break;
             }
             if self.degree > 0 {
                 self.degree -= 1;
@@ -83,14 +83,14 @@ impl<'a, S, List, Continue, Stop> ShallowTraversal<'a, S, List, Continue, Stop>
             list: self.list,
             index: self.node_index,
             position: self.position,
-            link_index: self.link_index
+            link_index: self.link_index,
         }
     }
 }
 
-pub struct ShallowPosition<'a, S: Spacing, List: SpacedList<S>> {
-    list: &'a List,
+pub struct ShallowPosition<'list, S: Spacing, List: SpacedList<S>> {
+    list: &'list List,
     pub index: usize,
     pub position: S,
-    link_index: usize
+    link_index: usize,
 }

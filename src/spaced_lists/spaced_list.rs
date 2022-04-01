@@ -1,3 +1,4 @@
+use std::marker::PhantomData;
 use std::ops::Neg;
 use num_traits::zero;
 
@@ -5,7 +6,16 @@ use crate::{SpacedListSkeleton, Spacing, Todo, Position};
 use crate::spaced_lists::traversal::node::Traversal;
 use crate::spaced_lists::traversal::shallow::{ShallowPosition, ShallowTraversal};
 
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub(crate) struct SublistData<S: Spacing, List: SpacedList<S>> {
+    containing_list: PhantomData<List>,
+    node_index: usize,
+    position: S
+}
+
 pub trait SpacedList<S: Spacing>: Default {
+    fn sublist_data(&self) -> Option<&SublistData<S, Self>>;
+
     fn skeleton(&self) -> &SpacedListSkeleton<S, Self>;
 
     fn skeleton_mut(&mut self) -> &mut SpacedListSkeleton<S, Self>;
@@ -45,7 +55,7 @@ pub trait SpacedList<S: Spacing>: Default {
             self.append_node(position - self.length());
             return
         }
-        let mut traversal = ShallowTraversal::new(
+        let mut traversal = ShallowTraversal::<_, _, _, _>::new(
             self,
             |pos| pos <= position,
             Some(|pos| pos == position)
@@ -100,7 +110,7 @@ pub trait SpacedList<S: Spacing>: Default {
         Traversal::new(self, continue_condition, Some(stop_condition))
     }
 
-    fn node_before<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
+    fn node_before(&self, position: S) -> Option<Position<S, Self>> {
         if position <= zero() {
             return None
         }
@@ -109,7 +119,7 @@ pub trait SpacedList<S: Spacing>: Default {
         Some(traversal.position())
     }
 
-    fn node_at_or_before<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
+    fn node_at_or_before(&self, position: S) -> Option<Position<S, Self>> {
         if position < zero() {
             return None
         }
@@ -118,7 +128,7 @@ pub trait SpacedList<S: Spacing>: Default {
         Some(traversal.position())
     }
 
-    fn node_at<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
+    fn node_at(&self, position: S) -> Option<Position<S, Self>> {
         if position < zero() || position > self.length() {
             return None
         }
@@ -132,7 +142,7 @@ pub trait SpacedList<S: Spacing>: Default {
         }
     }
 
-    fn node_at_or_after<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
+    fn node_at_or_after(&self, position: S) -> Option<Position<S, Self>> {
         if position > self.length() {
             return None
         }
@@ -147,7 +157,7 @@ pub trait SpacedList<S: Spacing>: Default {
         }
     }
 
-    fn node_after<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
+    fn node_after(&self, position: S) -> Option<Position<S, Self>> {
         if position >= self.length() {
             return None
         }
