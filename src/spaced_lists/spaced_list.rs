@@ -54,6 +54,7 @@ pub trait SpacedList<S: Spacing>: Default {
         let ShallowPosition { index, position: node_position, .. } = traversal.position();
         let mut sublist = self.skeleton_mut().get_sublist_at_mut(index).get_or_insert_default();
         sublist.insert_node(position - node_position);
+        *self.deep_size_mut() += 1;
     }
 
     fn inflate_after(&mut self, node_index: Todo, amount: S) {
