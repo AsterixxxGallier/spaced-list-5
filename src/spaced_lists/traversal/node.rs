@@ -77,49 +77,64 @@ impl<'a, S, List, Continue, Stop> Traversal<'a, S, List, Continue, Stop>
         // │        ╰── 0111
         // │         0111
         // ╰─────────── 1000
+        let mut last_iteration = false;
         loop {
             if let Some(condition) = &self.stop_condition {
                 if condition(self.position) {
-                    while self.descend() {
-                        // TODO maybe change link index?
-                        // condition has side effects
-                    }
-                    break;
+                    todo!("descend until hitting rock bottom, then return")
                 }
             }
             let local_list = *self.lists.last().unwrap();
-            let local_link_index = self.localize(self.link_index);
             let local_skeleton = local_list.skeleton();
+            let local_link_index = self.localize(self.link_index);
+            let local_node_index = self.localize(self.node_index);
+            if local_link_index >= local_list.size() {
+                if self.descend(true) {
+                    continue;
+                } else {
+                    break;
+                }
+            }
             let next_position = self.position + local_skeleton.get_link_length_at(local_link_index);
             if (self.continue_condition)(next_position) {
                 self.position = next_position;
                 self.node_index += 1 << self.degree << self.local_offset;
                 self.link_index += 1 << self.degree << self.local_offset;
-            } else if self.degree > 0 {
-                self.link_index -= 1 << (self.degree - 1) << self.local_offset;
-            } else if self.link_index >> self.local_offset > 0 {
-                // TODO check that this branch actually makes sense
-                self.link_index -= 1 << self.local_offset;
             }
-            // TODO maybe change link index?
-            if self.descend() {
-                continue;
+            if last_iteration {
+                if self.descend(true) {
+                    last_iteration = false;
+                    continue;
+                } else {
+                    break
+                }
+            }
+            if self.degree > 0 {
+                self.descend(true);
+                continue
             } else {
-                break;
+                last_iteration = true;
             }
         }
     }
 
-    fn descend(&mut self) -> bool {
+    fn descend(&mut self, change_link_index: bool) -> bool {
         let local_skeleton = self.lists.last().unwrap().skeleton();
+        let local_node_index = self.localize(self.node_index);
         if self.degree > 0 {
             self.degree -= 1;
+            if change_link_index {
+                self.link_index -= 1 << self.degree << self.local_offset;
+            }
             true
-        } else if local_skeleton.sublist_index_is_in_bounds(self.node_index) {
-            let sublist = local_skeleton.get_sublist_at(self.node_index);
+        } else if local_skeleton.sublist_index_is_in_bounds(local_node_index) {
+            if change_link_index {
+                // self.link_index -= 1 << self.local_offset;
+            }
+            let sublist = local_skeleton.get_sublist_at(local_node_index);
             if let Some(sublist) = sublist {
                 let sub_skeleton = sublist.skeleton();
-                self.local_offset += local_skeleton.depth();
+                self.local_offset += local_skeleton.depth() - 1;
                 self.local_mask = mask(sub_skeleton.depth());
                 self.degree = sub_skeleton.depth() - 1;
                 self.link_index += (sub_skeleton.size() - 1) << self.local_offset;
@@ -144,7 +159,7 @@ impl<'a, S, List, Continue, Stop> Traversal<'a, S, List, Continue, Stop>
                 self.degree = 0;
                 self.lists.pop();
                 let local_skeleton = self.lists.last().unwrap().skeleton();
-                self.local_offset -= local_skeleton.depth();
+                self.local_offset -= local_skeleton.depth() - 1;
                 self.local_mask = mask(local_skeleton.depth());
                 return self.next();
             } else {
