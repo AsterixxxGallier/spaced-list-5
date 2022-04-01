@@ -1,3 +1,4 @@
+use std::fmt::{Debug, Formatter};
 use num_traits::zero;
 
 use crate::{SpacedList, Spacing};
@@ -190,6 +191,15 @@ pub struct Position<'a, S: Spacing, List: SpacedList<S>> {
     link_index: usize,
     offset: usize,
     mask: usize,
+}
+
+impl<'a, S: Spacing + Debug, List: SpacedList<S>> Debug for Position<'a, S, List> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Position")
+            .field("index", &self.index)
+            .field("position", &self.position)
+            .finish()
+    }
 }
 
 #[cfg(test)]
