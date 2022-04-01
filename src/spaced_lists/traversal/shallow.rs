@@ -51,6 +51,7 @@ impl<'a, S, List, Continue, Stop> ShallowTraversal<'a, S, List, Continue, Stop>
         // │        ╰── 0111
         // │         0111
         // ╰─────────── 1000
+        let mut last_iteration = false;
         loop {
             if let Some(condition) = &self.stop_condition {
                 if condition(self.position) {
@@ -64,17 +65,15 @@ impl<'a, S, List, Continue, Stop> ShallowTraversal<'a, S, List, Continue, Stop>
                 self.position = next_position;
                 self.node_index += 1 << self.degree;
                 self.link_index += 1 << self.degree;
-            } else if self.degree > 0 {
-                self.link_index -= 1 << (self.degree - 1);
-            } else if self.link_index > 0 {
-                // TODO check that this branch actually makes sense
-                self.link_index -= 1;
+            }
+            if last_iteration {
+                break
             }
             if self.degree > 0 {
-                // TODO maybe change link index?
                 self.degree -= 1;
+                self.link_index -= 1 << self.degree;
             } else {
-                break;
+                last_iteration = true;
             }
         }
     }
