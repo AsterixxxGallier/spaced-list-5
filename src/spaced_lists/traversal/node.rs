@@ -51,7 +51,7 @@ impl<'a, S, List, Continue, Stop> Traversal<'a, S, List, Continue, Stop>
     /// level 3 depth: 3 capacity: 4
     /// level 4 depth: 2 capacity: 2
     fn localize(&self, index: usize) -> usize {
-        index >> self.local_offset & self.local_mask
+        index >> self.local_offset
     }
 
     pub fn run(&mut self) {
