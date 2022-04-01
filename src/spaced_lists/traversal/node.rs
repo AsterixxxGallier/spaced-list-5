@@ -153,6 +153,56 @@ impl<'a, S, List, Continue, Stop> Traversal<'a, S, List, Continue, Stop>
         let local_skeleton = local_list.skeleton();
         if self.localize(self.node_index) == local_list.size() {
             return if self.lists.len() > 1 {
+                // 3 of 5
+                // 2 of 3
+                //
+                // 0 = 0/0
+                // 1 = 1/0
+                // 2 = 2/0
+                // 3 = 3/0
+                // 4 = 4/0
+                // 5 = 0/0
+
+
+
+                // 2/4
+                // 1/2
+                //
+                // 0-0 = 0
+                // 1-0 = 1
+                // 2-0 = 2
+                // 3-0 = 3
+                // 0-0 = 4
+                // 0-1 = 5
+
+                // 2/4
+                // 1/2
+                // 0-0 = 0
+                // 1-0 = 1
+                // 2-0 = 2
+                // 3-0 = 3
+                // 0-1 = 4
+                // 1-1 = 5
+                // 2-1 = 6
+                // 3-1 = 7
+
+                // 2/3
+                // 1/2
+                // 0-0 = 0
+                // 1-0 = 1
+                // 2-0 = 2
+                // 0-1 = 4
+                // 1-1 = 5
+                // 2-1 = 6
+
+                // 2/3
+                // 1/2
+                // 0-0 = 0
+                // 1-0 = 1
+                // 2-0 = 2
+                // 0-1 = 3
+                // 1-1 = 4
+                // 2-1 = 5
                 self.link_index &= !(self.local_mask << self.local_offset);
                 self.node_index &= !(self.local_mask << self.local_offset);
                 self.position -= local_skeleton.length();
