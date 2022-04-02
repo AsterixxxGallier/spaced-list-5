@@ -1,4 +1,5 @@
 use std::default::default;
+
 use num_traits::zero;
 
 use crate::{SpacedList, SpacedListSkeleton, Spacing, Todo};
@@ -30,6 +31,10 @@ impl<S: Spacing, T> Default for FilledRangeSpacedList<S, T> {
 impl<S: Spacing, T> SpacedList<S> for FilledRangeSpacedList<S, T> {
     fn sublist_data(&self) -> Option<&SublistData<S, Self>> {
         self.sublist_data.as_ref()
+    }
+
+    fn add_sublist_data(&mut self, data: SublistData<S, Self>) {
+        self.sublist_data = Some(data)
     }
 
     fn skeleton(&self) -> &SpacedListSkeleton<S, Self> {

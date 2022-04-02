@@ -1,4 +1,5 @@
 use std::default::default;
+
 use num_traits::zero;
 
 use crate::{Position, SpacedList, SpacedListSkeleton, Spacing, Todo};
@@ -28,6 +29,10 @@ impl<S: Spacing> Default for HollowSpacedList<S> {
 impl<S: Spacing> SpacedList<S> for HollowSpacedList<S> {
     fn sublist_data(&self) -> Option<&SublistData<S, Self>> {
         self.sublist_data.as_ref()
+    }
+
+    fn add_sublist_data(&mut self, data: SublistData<S, Self>) {
+        self.sublist_data = Some(data)
     }
 
     fn skeleton(&self) -> &SpacedListSkeleton<S, Self> {

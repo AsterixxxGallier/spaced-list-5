@@ -1,20 +1,33 @@
 use std::marker::PhantomData;
 use std::ops::Neg;
+
 use num_traits::zero;
 
-use crate::{SpacedListSkeleton, Spacing, Todo, Position};
+use crate::{Position, SpacedListSkeleton, Spacing, Todo};
 use crate::spaced_lists::traversal::node::Traversal;
 use crate::spaced_lists::traversal::shallow::{ShallowPosition, ShallowTraversal};
 
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub struct SublistData<S: Spacing, List: SpacedList<S>> {
-    containing_list: PhantomData<List>,
+    containing_list: *const List,
     node_index: usize,
-    position: S
+    position: S,
+}
+
+impl<S: Spacing, List: SpacedList<S>> SublistData<S, List> {
+    pub(crate) fn new(containing_list: &List, node_index: usize, position: S) -> Self {
+        SublistData {
+            containing_list,
+            node_index,
+            position,
+        }
+    }
 }
 
 pub trait SpacedList<S: Spacing>: Default {
     fn sublist_data(&self) -> Option<&SublistData<S, Self>>;
+
+    fn add_sublist_data(&mut self, data: SublistData<S, Self>);
 
     fn skeleton(&self) -> &SpacedListSkeleton<S, Self>;
 
@@ -62,7 +75,7 @@ pub trait SpacedList<S: Spacing>: Default {
         );
         traversal.run();
         let ShallowPosition { index, position: node_position, .. } = traversal.position();
-        let mut sublist = self.skeleton_mut().get_sublist_at_mut(index).get_or_insert_default();
+        let mut sublist = self.skeleton_mut().get_or_add_sublist_at_mut(self, index, node_position);
         sublist.insert_node(position - node_position);
         *self.deep_size_mut() += 1;
     }
