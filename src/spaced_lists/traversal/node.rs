@@ -38,10 +38,6 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
         }
     }
 
-    fn localize(&self, index: usize) -> usize {
-        index
-    }
-
     pub fn run(&mut self) {
         // ┌──┬──┬──┬── 0000
         //A│  │  │  │0000
@@ -71,18 +67,15 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
                     todo!("descend until hitting rock bottom, then return")
                 }
             }
-            let local_list = self.list;
-            let local_skeleton = local_list.skeleton();
-            let local_link_index = self.localize(self.link_index);
-            let local_node_index = self.localize(self.node_index);
-            if local_link_index >= local_list.size() {
+            let skeleton = self.list.skeleton();
+            if self.link_index >= self.list.size() {
                 if self.descend(true) {
                     continue;
                 } else {
                     break;
                 }
             }
-            let next_position = self.position + local_skeleton.get_link_length_at(local_link_index);
+            let next_position = self.position + skeleton.get_link_length_at(self.link_index);
             if (self.continue_condition)(next_position) {
                 self.position = next_position;
                 self.node_index += 1 << self.degree;
@@ -106,25 +99,21 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
     }
 
     fn descend(&mut self, change_link_index: bool) -> bool {
-        let local_list = self.list;
-        let local_skeleton = local_list.skeleton();
-        let local_node_index = self.localize(self.node_index);
+        let skeleton = self.list.skeleton();
         if self.degree > 0 {
             self.degree -= 1;
             if change_link_index {
                 self.link_index -= 1 << self.degree;
             }
             true
-        } else if local_skeleton.sublist_index_is_in_bounds(local_node_index) {
-            if change_link_index {
-                // self.link_index -= 1 * self.local_offset;
-            }
-            let sublist = local_skeleton.get_sublist_at(local_node_index);
+        } else if skeleton.sublist_index_is_in_bounds(self.node_index) {
+            let sublist = skeleton.get_sublist_at(self.node_index);
             if let Some(sublist) = sublist {
                 let sub_skeleton = sublist.skeleton();
                 self.degree = sub_skeleton.depth() - 1;
+                self.node_index = 0;
                 self.link_index = sub_skeleton.size() - 1;
-                self.list = &sublist;
+                self.list = sublist;
                 true
             } else {
                 false
@@ -135,10 +124,9 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
     }
 
     pub fn next(&mut self) -> Result<(), &str> {
-        let local_list = self.list;
-        let local_skeleton = local_list.skeleton();
-        if self.localize(self.node_index) == local_list.size() {
-            return if local_list.sublist_data().is_some() {
+        let skeleton = self.list.skeleton();
+        if self.node_index == self.list.size() {
+            return if self.list.sublist_data().is_some() {
                 // 3 of 5
                 // 2 of 3
                 //
@@ -275,7 +263,7 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
                 // self.__index %= 1 << self.local_mask << self.local_offset; // old
                 // self.link_index &= self.local_mask * self.local_offset; // TODO
                 // self.node_index &= self.local_mask * self.local_offset; // TODO
-                self.position -= local_skeleton.length();
+                self.position -= skeleton.length();
                 self.degree = 0;
                 return self.next();
             } else {
@@ -284,20 +272,19 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
         }
 
         let degree_before = self.degree;
-        let local_skeleton = self.list.skeleton();
+        let skeleton = self.list.skeleton();
         loop {
-            let local_node_index = self.localize(self.node_index);
-            if self.degree < local_node_index.trailing_zeros() as usize {
+            if self.degree < self.node_index.trailing_zeros() as usize {
                 break
             }
-            self.position -= local_skeleton.get_link_length_at(local_node_index - 1);
+            self.position -= skeleton.get_link_length_at(self.node_index - 1);
             self.node_index -= 1 << self.degree;
             self.degree += 1;
         }
 
         self.node_index += 1 << self.degree;
         self.link_index = self.node_index + (1 << degree_before) - 1;
-        self.position += local_skeleton.get_link_length_at(self.localize(self.node_index) - 1);
+        self.position += skeleton.get_link_length_at(self.node_index - 1);
         self.degree = degree_before;
 
         Ok(())
