@@ -71,10 +71,20 @@ fn inflate_deflate() {
 fn random_insertions() {
     let mut list: HollowSpacedList<u64> = HollowSpacedList::new();
     let mut rng = thread_rng();
-    for n in 0..100 {
-        let pos = rng.gen_range(0..100);
+    // performance for random:
+    // 1 << 20: 1.4 s = 1.3 µs/node
+    // 1 << 21: 3.4 s = 1.6 µs/node
+    // 1 << 22: 7.8 s = 1.9 µs/node
+    // 1 << 23:  19 s = 2.3 µs/node
+    // 1 << 24:  45 s = 2.7 µs/node
+    // 1 << 25: 125 s = 3.7 µs/node
+    // 1 << 26: doesn't stop, apparently
+    for n in 0..(1 << 26) {
+        let pos = rng.gen_range(0..100_000_000_000);
         // println!("inserting node at {}", pos);
-        // println!("{:?}", pos);
+        if n % 100000 == 0 {
+            println!("n = {}", n);
+        }
         list.insert_node(pos);
         // list.insert_node(n);
         // println!("{:?}", list.skeleton().format(
@@ -87,10 +97,11 @@ fn random_insertions() {
         // ));
         // assert_eq!(list.node_before(pos + 1).unwrap().position, pos);
         // assert_eq!(list.node_at_or_before(pos).unwrap().position, pos);
-        assert_eq!(list.node_at(pos).unwrap().position, pos);
+        // assert_eq!(list.node_at(pos).unwrap().position, pos);
         // assert_eq!(list.node_at_or_after(pos).unwrap().position, pos);
         // assert_eq!(list.node_after(pos - 1).unwrap().position, pos);
     }
+    println!("{}", list.deep_size())
 
     // let mut list: HollowSpacedList<u64> = HollowSpacedList::new();
     // list.insert_node(1);
