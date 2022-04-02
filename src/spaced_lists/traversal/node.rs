@@ -303,7 +303,7 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
         Ok(())
     }
 
-    pub fn position(&self) -> Position<S, List> {
+    pub fn position(&self) -> Position<'list, S, List> {
         Position {
             list: self.list,
             index: self.node_index,
@@ -319,6 +319,19 @@ pub struct Position<'list, S:  Spacing, List: SpacedList<S>> {
     pub position: S,
     link_index: usize,
 }
+
+impl<'list, S: Spacing, List: SpacedList<S>> Clone for Position<'list, S, List> {
+    fn clone(&self) -> Self {
+        Self {
+            list: self.list,
+            index: self.index,
+            position: self.position,
+            link_index: self.link_index
+        }
+    }
+}
+
+impl<'list, S: Spacing, List: SpacedList<S>> Copy for Position<'list, S, List> {}
 
 impl<S: Spacing + Debug, List: SpacedList<S>> Debug for Position<'_, S, List> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
