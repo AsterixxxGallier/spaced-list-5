@@ -60,7 +60,7 @@ impl<S: Spacing, Sub: SpacedList<S>> SpacedListSkeleton<S, Sub> {
     /// # Panics
     ///
     /// Panics when `index` is out of bounds.
-    pub(crate) fn get_or_add_sublist_at_mut(&mut self, list: &Sub, index: usize, position: S) -> &mut Sub {
+    pub(crate) fn get_or_add_sublist_at_mut(&mut self, list: *const Sub, index: usize, position: S) -> &mut Sub {
         self.sublists[index].get_or_insert_with(|| {
             let mut sub = Sub::default();
             sub.add_sublist_data(SublistData::new(list, index, position));
