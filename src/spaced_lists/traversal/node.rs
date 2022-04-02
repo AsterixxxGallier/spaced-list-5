@@ -1,7 +1,9 @@
 use std::fmt::{Debug, Formatter};
+
 use num_traits::zero;
 
 use crate::{SpacedList, Spacing};
+use crate::spaced_lists::spaced_list::SublistData;
 
 pub struct Traversal<'list, S, List, Continue, Stop>
     where S: 'list + Spacing,
@@ -126,9 +128,20 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
     pub fn next(&mut self) -> Result<(), &str> {
         let skeleton = self.list.skeleton();
         if self.node_index == self.list.size() {
-            return if self.list.sublist_data().is_some() {
-                self.position -= skeleton.length();
+            return if let Some(&SublistData {
+                                   containing_list,
+                                   node_index,
+                                   position
+                               }) = self.list.sublist_data() {
+                // TODO add SAFETY comment
+                self.list = unsafe { &*containing_list };
+                println!("moving up, node_index: {}", node_index);
+                assert!(self.list.skeleton().sublist_index_is_in_bounds(node_index),
+                        "{} not in bounds", node_index);
                 self.degree = 0;
+                self.node_index = node_index;
+                self.link_index = node_index;
+                self.position = position;
                 return self.next();
             } else {
                 Err("Called next on a Traversal that is already at the end of the list")
@@ -141,6 +154,7 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
             if self.degree < self.node_index.trailing_zeros() as usize {
                 break
             }
+            // FIXME an integer underflow happened here after moving up
             self.position -= skeleton.get_link_length_at(self.node_index - 1);
             self.node_index -= 1 << self.degree;
             self.degree += 1;

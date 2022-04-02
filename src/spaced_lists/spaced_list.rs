@@ -9,9 +9,9 @@ use crate::spaced_lists::traversal::shallow::{ShallowPosition, ShallowTraversal}
 
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub struct SublistData<S: Spacing, List: SpacedList<S>> {
-    containing_list: *const List,
-    node_index: usize,
-    position: S,
+    pub containing_list: *const List,
+    pub node_index: usize,
+    pub position: S,
 }
 
 impl<S: Spacing, List: SpacedList<S>> SublistData<S, List> {
@@ -39,6 +39,7 @@ pub trait SpacedList<S: Spacing>: Default {
 
     fn deep_size(&self) -> usize;
 
+    // FIXME this seems to get ridiculously large under some circumstances
     fn deep_size_mut(&mut self) -> &mut usize;
 
     fn length(&self) -> S {
@@ -75,6 +76,7 @@ pub trait SpacedList<S: Spacing>: Default {
         );
         traversal.run();
         let ShallowPosition { index, position: node_position, .. } = traversal.position();
+        assert!(self.skeleton().sublist_index_is_in_bounds(index));
         let self_pointer: *const Self = self;
         let mut sublist = self.skeleton_mut().get_or_add_sublist_at_mut(self_pointer, index, node_position);
         sublist.insert_node(position - node_position);
