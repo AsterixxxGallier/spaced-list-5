@@ -79,14 +79,15 @@ fn random_insertions() {
     // 1 << 24:  45 s = 2.7 µs/node
     // 1 << 25: 125 s = 3.7 µs/node
     // 1 << 26: doesn't stop, apparently
-    for n in 0..(1 << 26) {
-        let pos = rng.gen_range(0..100_000_000_000);
-        // println!("inserting node at {}", pos);
+    let max = 1 << 11;
+    for n in 0..max {
         if n % 100000 == 0 {
             println!("n = {}", n);
         }
+        // let pos = rng.gen_range(0..100_000_000_000);
+        let pos = max - n;
+        // println!("inserting node at {}", pos);
         list.insert_node(pos);
-        // list.insert_node(n);
         // println!("{:?}", list.skeleton().format(
         //     true,
         //     true,
@@ -95,11 +96,11 @@ fn random_insertions() {
         //     vec![],
         //     vec![]
         // ));
-        // assert_eq!(list.node_before(pos + 1).unwrap().position, pos);
-        // assert_eq!(list.node_at_or_before(pos).unwrap().position, pos);
-        // assert_eq!(list.node_at(pos).unwrap().position, pos);
-        // assert_eq!(list.node_at_or_after(pos).unwrap().position, pos);
-        // assert_eq!(list.node_after(pos - 1).unwrap().position, pos);
+        assert_eq!(list.node_before(pos + 1).unwrap().position(), pos);
+        assert_eq!(list.node_at_or_before(pos).unwrap().position(), pos);
+        assert_eq!(list.node_at(pos).unwrap().position(), pos);
+        assert_eq!(list.node_at_or_after(pos).unwrap().position(), pos);
+        assert_eq!(list.node_after(pos - 1).unwrap().position(), pos);
     }
     println!("{}", list.deep_size())
 
