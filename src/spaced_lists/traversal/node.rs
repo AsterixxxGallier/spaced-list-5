@@ -10,6 +10,7 @@ pub struct Traversal<'list, S, List, Continue, Stop>
           List: SpacedList<S>,
           Continue: Fn(S) -> bool,
           Stop: Fn(S) -> bool {
+    super_lists: Vec<&'list List>,
     list: &'list List,
     continue_condition: Continue,
     stop_condition: Option<Stop>,
@@ -30,6 +31,7 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
           Stop: Fn(S) -> bool {
     pub fn new(list: &'list List, continue_condition: Continue, stop_condition: Option<Stop>) -> Self {
         Self {
+            super_lists: vec![],
             list,
             continue_condition,
             stop_condition,
@@ -115,6 +117,7 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
                 self.degree = sub_skeleton.depth() - 1;
                 self.node_index = 0;
                 self.link_index = sub_skeleton.size() - 1;
+                self.super_lists.push(self.list);
                 self.list = sublist;
                 true
             } else {
@@ -129,19 +132,14 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
         let skeleton = self.list.skeleton();
         if self.node_index == self.list.size() {
             return if let Some(&SublistData {
-                                   containing_list,
                                    node_index,
                                    position
                                }) = self.list.sublist_data() {
-                // TODO add SAFETY comment
-                self.list = unsafe { &*containing_list };
-                println!("moving up, node_index: {}", node_index);
-                assert!(self.list.skeleton().sublist_index_is_in_bounds(node_index),
-                        "{} not in bounds", node_index);
                 self.degree = 0;
                 self.node_index = node_index;
                 self.link_index = node_index;
-                self.position = position;
+                self.position -= self.list.length();
+                self.list = self.super_lists.pop().unwrap();
                 return self.next();
             } else {
                 Err("Called next on a Traversal that is already at the end of the list")

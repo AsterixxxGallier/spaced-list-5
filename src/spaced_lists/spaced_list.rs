@@ -8,16 +8,14 @@ use crate::spaced_lists::traversal::node::Traversal;
 use crate::spaced_lists::traversal::shallow::{ShallowPosition, ShallowTraversal};
 
 #[derive(Copy, Clone, Eq, PartialEq)]
-pub struct SublistData<S: Spacing, List: SpacedList<S>> {
-    pub containing_list: *const List,
+pub struct SublistData<S: Spacing> {
     pub node_index: usize,
     pub position: S,
 }
 
-impl<S: Spacing, List: SpacedList<S>> SublistData<S, List> {
-    pub(crate) fn new(containing_list: *const List, node_index: usize, position: S) -> Self {
+impl<S: Spacing> SublistData<S> {
+    pub(crate) fn new(node_index: usize, position: S) -> Self {
         SublistData {
-            containing_list,
             node_index,
             position,
         }
@@ -25,9 +23,9 @@ impl<S: Spacing, List: SpacedList<S>> SublistData<S, List> {
 }
 
 pub trait SpacedList<S: Spacing>: Default {
-    fn sublist_data(&self) -> Option<&SublistData<S, Self>>;
+    fn sublist_data(&self) -> Option<&SublistData<S>>;
 
-    fn add_sublist_data(&mut self, data: SublistData<S, Self>);
+    fn add_sublist_data(&mut self, data: SublistData<S>);
 
     fn skeleton(&self) -> &SpacedListSkeleton<S, Self>;
 
@@ -77,8 +75,7 @@ pub trait SpacedList<S: Spacing>: Default {
         traversal.run();
         let ShallowPosition { index, position: node_position, .. } = traversal.position();
         assert!(self.skeleton().sublist_index_is_in_bounds(index));
-        let self_pointer: *const Self = self;
-        let mut sublist = self.skeleton_mut().get_or_add_sublist_at_mut(self_pointer, index, node_position);
+        let mut sublist = self.skeleton_mut().get_or_add_sublist_at_mut(index, node_position);
         sublist.insert_node(position - node_position);
         *self.deep_size_mut() += 1;
     }
@@ -168,7 +165,7 @@ pub trait SpacedList<S: Spacing>: Default {
         if result.position == position {
             Some(result)
         } else {
-            traversal.next();
+            traversal.next().unwrap();
             Some(traversal.position())
         }
     }
@@ -179,7 +176,7 @@ pub trait SpacedList<S: Spacing>: Default {
         }
         let mut traversal = self.traversal(|pos| pos <= position);
         traversal.run();
-        traversal.next();
+        traversal.next().unwrap();
         Some(traversal.position())
     }
 }

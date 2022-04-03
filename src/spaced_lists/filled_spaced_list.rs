@@ -12,7 +12,7 @@ pub struct FilledSpacedList<S: Spacing, T> {
     size: usize,
     deep_size: usize,
     deep_length: S,
-    sublist_data: Option<SublistData<S, Self>>
+    sublist_data: Option<SublistData<S>>
 }
 
 impl<S: Spacing, T> Default for FilledSpacedList<S, T> {
@@ -29,11 +29,11 @@ impl<S: Spacing, T> Default for FilledSpacedList<S, T> {
 }
 
 impl<S: Spacing, T> SpacedList<S> for FilledSpacedList<S, T> {
-    fn sublist_data(&self) -> Option<&SublistData<S, Self>> {
+    fn sublist_data(&self) -> Option<&SublistData<S>> {
         self.sublist_data.as_ref()
     }
 
-    fn add_sublist_data(&mut self, data: SublistData<S, Self>) {
+    fn add_sublist_data(&mut self, data: SublistData<S>) {
         self.sublist_data = Some(data)
     }
 
