@@ -133,7 +133,7 @@ pub trait SpacedList<S: Spacing>: Default {
         let mut traversal = self.traversal(|pos| pos <= position);
         traversal.run();
         let result = traversal.position();
-        if result.position == position {
+        if result.position() == position {
             Some(result)
         } else {
             None
@@ -147,7 +147,7 @@ pub trait SpacedList<S: Spacing>: Default {
         let mut traversal = self.traversal(|pos| pos <= position);
         traversal.run();
         let result = traversal.position();
-        if result.position == position {
+        if result.position() == position {
             Some(result)
         } else {
             traversal.next().unwrap();

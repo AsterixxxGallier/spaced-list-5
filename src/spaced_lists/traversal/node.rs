@@ -173,8 +173,23 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
 pub struct Position<'list, S: Spacing, List: SpacedList<S>> {
     list: &'list List,
     index: usize,
-    pub position: S,
+    position: S,
     link_index: usize,
+}
+
+impl<'list, S: Spacing, List: SpacedList<S>> Position<'list, S, List> {
+    pub(crate) fn new(list: &'list List, index: usize, position: S, link_index: usize) -> Self {
+        Self {
+            list,
+            index,
+            position,
+            link_index
+        }
+    }
+
+    pub fn position(&self) -> S {
+        self.position
+    }
 }
 
 impl<'list, S: Spacing, List: SpacedList<S>> Clone for Position<'list, S, List> {
