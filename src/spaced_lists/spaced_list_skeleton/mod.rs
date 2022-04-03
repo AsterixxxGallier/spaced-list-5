@@ -137,15 +137,48 @@ impl<S: Spacing, Sub: SpacedList<S>> SpacedListSkeleton<S, Sub> {
     // now, the link length at index 1 is smaller than the link length at index 0, which is against
     // the rules (link 1 *contains* link 0, meaning that the distance between node 1 and node 2 is
     // now implied negative, which is illegal)
-    pub(crate) unsafe fn deflate_at(&mut self, link_index: usize, amount: S) {
+    // ___________11___________,
+    // _____5______,
+    // __2___,     __4___,
+    // _1_,  _2_,  _3_,  _2_,
+    // |00|01|10|11|00|01|10|11|
+    pub(crate) unsafe fn deflate_at_unchecked(&mut self, link_index: usize, amount: S) {
         let mut link_index = link_index;
         for degree in 0..self.depth() {
-            if (link_index >> degree) & 1 == 0 {
+            // if (link_index >> degree) & 1 == 0 {
+            let bit = 1 << degree;
+            if link_index & bit == 0 {
                 *self.get_link_length_at_mut(link_index) -= amount;
-                link_index += 1 << degree;
+                link_index += bit;
             }
         }
         self.length -= amount;
+    }
+
+    pub(crate) fn deflate_at(&mut self, link_index: usize, amount: S) {
+        if link_index & 1 == 0 {
+            // SAFETY: If the link index ends in a zero, it's a zero-degree link, so it does not
+            // imply the link lengths of lower links, as non-zero-degree links do
+            unsafe { self.deflate_at_unchecked(link_index, amount) }
+        } else {
+            let new_total_link_length = self.get_link_length_at(link_index);
+            // TODO check that no implied link length becomes negative
+            // concrete link lengths are those for which link_index.trailing_ones() == degree
+            // implied link lengths are those which are below a concrete link
+            // therefore, we need to check that for all concrete links that we touch, the implied
+            // links below them do not become negative by this inflation.
+            // the total link length of a non-zero-degree concrete link consists of the sum of
+            // as many concrete link lengths as link_index.trailing_ones() and a single, zero-degree
+            // implied link length. making sure that that single zero-degree implied link length
+            // does not become negative is the goal.
+            // total_link_length = sum_of_concrete_link_lengths_below + implied_link_length
+            // implied_link_length = total_link_length - sum_of_concrete_link_lengths_below
+            // requirement: implied_link_length >= 0
+            // therefore, total_link_length - sum_of_concrete_link_lengths_below >= 0
+            // finally, total_link_length >= sum_of_concrete_link_lengths_below
+
+
+        }
     }
 }
 
