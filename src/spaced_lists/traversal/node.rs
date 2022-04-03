@@ -1,16 +1,19 @@
+use std::cell::{Ref, RefCell};
 use std::fmt::{Debug, Formatter};
+use std::ops::Deref;
+use std::rc::Weak;
 
 use num_traits::zero;
 
 use crate::{SpacedList, Spacing};
 use crate::spaced_lists::spaced_list::SublistData;
 
-pub struct Traversal<'list, S, List, Continue, Stop>
-    where S: 'list + Spacing,
+pub struct Traversal<S, List, Continue, Stop>
+    where S: Spacing,
           List: SpacedList<S>,
           Continue: Fn(S) -> bool,
           Stop: Fn(S) -> bool {
-    list: &'list List,
+    list: Weak<RefCell<List>>,
     continue_condition: Continue,
     stop_condition: Option<Stop>,
     degree: usize,
@@ -23,12 +26,12 @@ const fn mask(size: usize) -> usize {
     !(!0 << size)
 }
 
-impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
+impl<S, List, Continue, Stop> Traversal<S, List, Continue, Stop>
     where S: Spacing,
           List: SpacedList<S>,
           Continue: Fn(S) -> bool,
           Stop: Fn(S) -> bool {
-    pub fn new(list: &'list List, continue_condition: Continue, stop_condition: Option<Stop>) -> Self {
+    pub fn new(list: Weak<RefCell<List>>, continue_condition: Continue, stop_condition: Option<Stop>) -> Self {
         Self {
             list,
             continue_condition,
@@ -111,6 +114,7 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
         } else if skeleton.sublist_index_is_in_bounds(self.node_index) {
             let sublist = skeleton.get_sublist_at(self.node_index);
             if let Some(sublist) = sublist {
+                let sublist = sublist.borrow();
                 let sub_skeleton = sublist.skeleton();
                 self.degree = sub_skeleton.depth() - 1;
                 self.node_index = 0;
@@ -133,8 +137,7 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
                                    node_index,
                                    position
                                }) = self.list.sublist_data() {
-                // TODO add SAFETY comment
-                self.list = unsafe { &*containing_list };
+                self.list = containing_list;
                 println!("moving up, node_index: {}", node_index);
                 assert!(self.list.skeleton().sublist_index_is_in_bounds(node_index),
                         "{} not in bounds", node_index);
@@ -168,7 +171,7 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
         Ok(())
     }
 
-    pub fn position(&self) -> Position<'list, S, List> {
+    pub fn position(&self) -> Position<S, List> {
         Position {
             list: self.list,
             index: self.node_index,
@@ -178,14 +181,14 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
     }
 }
 
-pub struct Position<'list, S:  Spacing, List: SpacedList<S>> {
-    list: &'list List,
+pub struct Position<S:  Spacing, List: SpacedList<S>> {
+    list: Weak<RefCell<List>>,
     pub index: usize,
     pub position: S,
     link_index: usize,
 }
 
-impl<'list, S: Spacing, List: SpacedList<S>> Clone for Position<'list, S, List> {
+impl<S: Spacing, List: SpacedList<S>> Clone for Position<S, List> {
     fn clone(&self) -> Self {
         Self {
             list: self.list,
@@ -195,8 +198,6 @@ impl<'list, S: Spacing, List: SpacedList<S>> Clone for Position<'list, S, List> 
         }
     }
 }
-
-impl<'list, S: Spacing, List: SpacedList<S>> Copy for Position<'list, S, List> {}
 
 impl<S: Spacing + Debug, List: SpacedList<S>> Debug for Position<'_, S, List> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {

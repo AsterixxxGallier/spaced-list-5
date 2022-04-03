@@ -5,7 +5,7 @@ use num_traits::zero;
 use crate::{SpacedList, SpacedListSkeleton, Spacing, Todo};
 use crate::spaced_lists::spaced_list::SublistData;
 
-#[derive(Clone, Eq, PartialEq)]
+#[derive(Clone)]
 pub struct HollowRangeSpacedList<S: Spacing> {
     skeleton: SpacedListSkeleton<S, Self>,
     size: usize,

@@ -1,7 +1,14 @@
 #![cfg(test)]
 
-use rand::{Rng, thread_rng};
-use crate::{HollowSpacedList, SpacedList, SpacedListSkeleton};
+use std::cell::RefCell;
+use std::fs::File;
+use std::io::Write;
+use std::rc::Rc;
+
+use rand::{Rng, thread_rng, SeedableRng};
+use rand::prelude::StdRng;
+
+use crate::{HollowSpacedList, Position, SpacedList, SpacedListSkeleton};
 
 #[test]
 fn grow() {
@@ -69,8 +76,18 @@ fn inflate_deflate() {
 
 #[test]
 fn random_insertions() {
-    let mut list: HollowSpacedList<u64> = HollowSpacedList::new();
-    let mut rng = thread_rng();
+    // let mut list: HollowSpacedList<u64> = HollowSpacedList::new();
+    // list.insert_node(4);
+    // list.insert_node(5);
+    // list.insert_node(6);
+    // list.insert_node(1);
+    // list.insert_node(2);
+    // let pos = 2;
+    // println!("{:?}", list.node_after(pos));
+    // assert_eq!(list.node_after(pos).unwrap().position, 4);
+
+    let list = Rc::new(RefCell::new(HollowSpacedList::new()));
+    let mut rng = StdRng::seed_from_u64(0);
     // performance for random:
     // 1 << 20: 1.4 s = 1.3 µs/node
     // 1 << 21: 3.4 s = 1.6 µs/node
@@ -79,13 +96,14 @@ fn random_insertions() {
     // 1 << 24:  45 s = 2.7 µs/node
     // 1 << 25: 125 s = 3.7 µs/node
     // 1 << 26: doesn't stop, apparently
-    for n in 0..(1 << 26) {
+    // for n in 0..(1 << 20) {
+    for n in 0.. {
         let pos = rng.gen_range(0..100_000_000_000);
-        // println!("inserting node at {}", pos);
-        if n % 100000 == 0 {
+        if n % 100_000 == 0 {
             println!("n = {}", n);
+            println!("inserting node at {}", pos);
         }
-        list.insert_node(pos);
+        HollowSpacedList::insert_node(list, pos);
         // list.insert_node(n);
         // println!("{:?}", list.skeleton().format(
         //     true,
@@ -100,8 +118,9 @@ fn random_insertions() {
         // assert_eq!(list.node_at(pos).unwrap().position, pos);
         // assert_eq!(list.node_at_or_after(pos).unwrap().position, pos);
         // assert_eq!(list.node_after(pos - 1).unwrap().position, pos);
+        list.borrow().node_after(pos - 1);
     }
-    println!("{}", list.deep_size())
+    println!("{}", list.borrow().deep_size());
 
     // let mut list: HollowSpacedList<u64> = HollowSpacedList::new();
     // list.insert_node(1);

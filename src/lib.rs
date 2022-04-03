@@ -21,6 +21,7 @@
 #![feature(never_type)]
 #![feature(default_free_fn)]
 #![feature(option_get_or_insert_default)]
+#![feature(arbitrary_self_types)]
 #![feature(slice_ptr_get)]
 #![allow(unused)]
 

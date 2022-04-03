@@ -1,11 +1,13 @@
+use std::cell::{Ref, RefCell};
 use std::default::default;
+use std::rc::Rc;
 
 use num_traits::zero;
 
 use crate::{Position, SpacedList, SpacedListSkeleton, Spacing, Todo};
 use crate::spaced_lists::spaced_list::SublistData;
 
-#[derive(Clone, Eq, PartialEq)]
+#[derive(Clone)]
 pub struct HollowSpacedList<S: Spacing> {
     skeleton: SpacedListSkeleton<S, Self>,
     size: usize,
@@ -77,8 +79,8 @@ impl<S: Spacing> HollowSpacedList<S> {
         <Self as SpacedList<S>>::append_node(self, distance);
     }
 
-    pub fn insert_node(&mut self, position: S) {
-        <Self as SpacedList<S>>::insert_node(self, position);
+    pub fn insert_node(this: Rc<RefCell<Self>>, position: S) {
+        <Self as SpacedList<S>>::insert_node(this, position);
     }
 
     pub fn inflate_after(&mut self, node_index: Todo, amount: S) {
@@ -97,23 +99,28 @@ impl<S: Spacing> HollowSpacedList<S> {
         todo!()
     }
 
-    pub fn node_before(&self, position: S) -> Option<Position<S, Self>> {
+    #[allow(clippy::needless_lifetimes)]
+    pub fn node_before<'a>(self: Ref<'a, Self>, position: S) -> Option<Position<'a, S, Self>> {
         <Self as SpacedList<S>>::node_before(self, position)
     }
 
-    pub fn node_at_or_before(&self, position: S) -> Option<Position<S, Self>> {
+    #[allow(clippy::needless_lifetimes)]
+    pub fn node_at_or_before<'a>(self: Ref<'a, Self>, position: S) -> Option<Position<'a, S, Self>> {
         <Self as SpacedList<S>>::node_at_or_before(self, position)
     }
 
-    pub fn node_at(&self, position: S) -> Option<Position<S, Self>> {
+    #[allow(clippy::needless_lifetimes)]
+    pub fn node_at<'a>(self: Ref<'a, Self>, position: S) -> Option<Position<'a, S, Self>> {
         <Self as SpacedList<S>>::node_at(self, position)
     }
 
-    pub fn node_at_or_after(&self, position: S) -> Option<Position<S, Self>> {
+    #[allow(clippy::needless_lifetimes)]
+    pub fn node_at_or_after<'a>(self: Ref<'a, Self>, position: S) -> Option<Position<'a, S, Self>> {
         <Self as SpacedList<S>>::node_at_or_after(self, position)
     }
 
-    pub fn node_after(&self, position: S) -> Option<Position<S, Self>> {
+    #[allow(clippy::needless_lifetimes)]
+    pub fn node_after<'a>(self: Ref<'a, Self>, position: S) -> Option<Position<'a, S, Self>> {
         <Self as SpacedList<S>>::node_after(self, position)
     }
 }

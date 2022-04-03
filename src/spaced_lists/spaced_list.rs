@@ -1,21 +1,23 @@
+use std::cell::{Ref, RefCell};
 use std::marker::PhantomData;
-use std::ops::Neg;
+use std::ops::{Deref, Neg};
+use std::rc::{Rc, Weak};
 
 use num_traits::zero;
 
-use crate::{Position, SpacedListSkeleton, Spacing, Todo};
+use crate::{HollowSpacedList, Position, SpacedListSkeleton, Spacing, Todo};
 use crate::spaced_lists::traversal::node::Traversal;
 use crate::spaced_lists::traversal::shallow::{ShallowPosition, ShallowTraversal};
 
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Clone)]
 pub struct SublistData<S: Spacing, List: SpacedList<S>> {
-    pub containing_list: *const List,
+    pub containing_list: Weak<RefCell<List>>,
     pub node_index: usize,
     pub position: S,
 }
 
 impl<S: Spacing, List: SpacedList<S>> SublistData<S, List> {
-    pub(crate) fn new(containing_list: *const List, node_index: usize, position: S) -> Self {
+    pub(crate) fn new(containing_list: Weak<RefCell<List>>, node_index: usize, position: S) -> Self {
         SublistData {
             containing_list,
             node_index,
@@ -61,26 +63,27 @@ pub trait SpacedList<S: Spacing>: Default {
         *self.deep_length_mut() += distance;
     }
 
-    fn insert_node(&mut self, position: S) {
+    fn insert_node(this: Rc<RefCell<Self>>, position: S) {
         if position < zero() {
             todo!()
         }
-        if position >= self.length() {
-            self.append_node(position - self.length());
+        let length = this.borrow().length();
+        if position >= length {
+            this.borrow_mut().append_node(position - length);
             return
         }
+        let borrow = this.borrow();
         let mut traversal = ShallowTraversal::new(
-            self,
+            borrow.deref(),
             |pos| pos <= position,
             Some(|pos| pos == position)
         );
         traversal.run();
         let ShallowPosition { index, position: node_position, .. } = traversal.position();
-        assert!(self.skeleton().sublist_index_is_in_bounds(index));
-        let self_pointer: *const Self = self;
-        let mut sublist = self.skeleton_mut().get_or_add_sublist_at_mut(self_pointer, index, node_position);
-        sublist.insert_node(position - node_position);
-        *self.deep_size_mut() += 1;
+        assert!(this.borrow().skeleton().sublist_index_is_in_bounds(index));
+        let mut sublist = this.borrow_mut().skeleton_mut().get_or_add_sublist_at(Rc::downgrade(&this), index, node_position);
+        Self::insert_node(sublist.clone(), position - node_position);
+        *this.borrow_mut().deep_size_mut() += 1;
     }
 
     fn inflate_after(&mut self, node_index: Todo, amount: S) {
@@ -113,20 +116,20 @@ pub trait SpacedList<S: Spacing>: Default {
     //
     // TODO long term implement all of these
 
-    fn traversal<Continue>(&self, continue_condition: Continue)
+    fn traversal<Continue>(self: Weak<RefCell<Self>>, continue_condition: Continue)
                            -> Traversal<S, Self, Continue, fn(S) -> bool>
         where Continue: Fn(S) -> bool {
         Traversal::new(self, continue_condition, None)
     }
 
-    fn stopping_traversal<Continue, Stop>(&self, continue_condition: Continue, stop_condition: Stop)
+    fn stopping_traversal<Continue, Stop>(self: Weak<RefCell<Self>>, continue_condition: Continue, stop_condition: Stop)
                                           -> Traversal<S, Self, Continue, Stop>
         where Continue: Fn(S) -> bool,
               Stop: Fn(S) -> bool {
         Traversal::new(self, continue_condition, Some(stop_condition))
     }
 
-    fn node_before<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
+    fn node_before<'a>(self: Ref<'a, Self>, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
         if position <= zero() {
             return None
         }
@@ -135,7 +138,7 @@ pub trait SpacedList<S: Spacing>: Default {
         Some(traversal.position())
     }
 
-    fn node_at_or_before<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
+    fn node_at_or_before<'a>(self: Ref<'a, Self>, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
         if position < zero() {
             return None
         }
@@ -144,7 +147,7 @@ pub trait SpacedList<S: Spacing>: Default {
         Some(traversal.position())
     }
 
-    fn node_at<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
+    fn node_at<'a>(self: Ref<'a, Self>, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
         if position < zero() || position > self.length() {
             return None
         }
@@ -158,7 +161,7 @@ pub trait SpacedList<S: Spacing>: Default {
         }
     }
 
-    fn node_at_or_after<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
+    fn node_at_or_after<'a>(self: Ref<'a, Self>, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
         if position > self.length() {
             return None
         }
@@ -173,7 +176,7 @@ pub trait SpacedList<S: Spacing>: Default {
         }
     }
 
-    fn node_after<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
+    fn node_after<'a>(self: Ref<'a, Self>, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
         if position >= self.length() {
             return None
         }
