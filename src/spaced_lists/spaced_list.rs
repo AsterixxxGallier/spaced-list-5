@@ -144,6 +144,9 @@ pub trait SpacedList<S: Spacing>: Default {
         if position > self.length() {
             return None;
         }
+        if position <= zero() {
+            return Some(Position::new(self, 0, zero(), 0))
+        }
         let mut traversal = self.traversal(|pos| pos <= position);
         traversal.run();
         let result = traversal.position();
@@ -158,6 +161,9 @@ pub trait SpacedList<S: Spacing>: Default {
     fn node_after<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
         if position >= self.length() {
             return None;
+        }
+        if position < zero() {
+            return Some(Position::new(self, 0, zero(), 0))
         }
         let mut traversal = self.traversal(|pos| pos <= position);
         traversal.run();
