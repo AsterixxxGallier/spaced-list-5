@@ -3,7 +3,6 @@ use std::default::default;
 use num_traits::zero;
 
 use crate::{SpacedList, SpacedListSkeleton, Spacing, Todo};
-use crate::spaced_lists::spaced_list::SublistData;
 
 #[derive(Clone, Eq, PartialEq)]
 pub struct HollowRangeSpacedList<S: Spacing> {
@@ -11,7 +10,7 @@ pub struct HollowRangeSpacedList<S: Spacing> {
     size: usize,
     deep_size: usize,
     deep_length: S,
-    sublist_data: Option<SublistData<S>>
+    index_in_super_list: Option<usize>,
 }
 
 impl<S: Spacing> Default for HollowRangeSpacedList<S> {
@@ -21,18 +20,18 @@ impl<S: Spacing> Default for HollowRangeSpacedList<S> {
             size: 0,
             deep_size: 0,
             deep_length: zero(),
-            sublist_data: None
+            index_in_super_list: None,
         }
     }
 }
 
 impl<S: Spacing> SpacedList<S> for HollowRangeSpacedList<S> {
-    fn sublist_data(&self) -> Option<&SublistData<S>> {
-        self.sublist_data.as_ref()
+    fn index_in_super_list(&self) -> Option<usize> {
+        self.index_in_super_list
     }
 
-    fn add_sublist_data(&mut self, data: SublistData<S>) {
-        self.sublist_data = Some(data)
+    fn set_index_in_super_list(&mut self, index: usize) {
+        self.index_in_super_list = Some(index)
     }
 
     fn skeleton(&self) -> &SpacedListSkeleton<S, Self> {

@@ -3,7 +3,6 @@ use std::fmt::{Debug, Formatter};
 use num_traits::zero;
 
 use crate::{SpacedList, Spacing};
-use crate::spaced_lists::spaced_list::SublistData;
 
 pub struct Traversal<'list, S, List, Continue, Stop>
     where S: 'list + Spacing,
@@ -90,12 +89,12 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
                     last_iteration = false;
                     continue;
                 } else {
-                    break
+                    break;
                 }
             }
             if self.degree > 0 {
                 self.descend(true);
-                continue
+                continue;
             } else {
                 last_iteration = true;
             }
@@ -131,10 +130,7 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
     pub fn next(&mut self) -> Result<(), &str> {
         let skeleton = self.list.skeleton();
         if self.node_index == self.list.size() {
-            return if let Some(&SublistData {
-                                   node_index,
-                                   position
-                               }) = self.list.sublist_data() {
+            return if let Some(node_index) = self.list.index_in_super_list() {
                 self.degree = 0;
                 self.node_index = node_index;
                 self.link_index = node_index;
@@ -143,14 +139,14 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
                 return self.next();
             } else {
                 Err("Called next on a Traversal that is already at the end of the list")
-            }
+            };
         }
 
         let degree_before = self.degree;
         let skeleton = self.list.skeleton();
         loop {
             if self.degree < self.node_index.trailing_zeros() as usize {
-                break
+                break;
             }
             // FIXME an integer underflow happened here after moving up
             self.position -= skeleton.get_link_length_at(self.node_index - 1);
@@ -176,7 +172,7 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
     }
 }
 
-pub struct Position<'list, S:  Spacing, List: SpacedList<S>> {
+pub struct Position<'list, S: Spacing, List: SpacedList<S>> {
     list: &'list List,
     pub index: usize,
     pub position: S,
@@ -189,7 +185,7 @@ impl<'list, S: Spacing, List: SpacedList<S>> Clone for Position<'list, S, List> 
             list: self.list,
             index: self.index,
             position: self.position,
-            link_index: self.link_index
+            link_index: self.link_index,
         }
     }
 }
