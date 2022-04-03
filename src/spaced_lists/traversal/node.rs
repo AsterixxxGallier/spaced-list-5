@@ -72,7 +72,7 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
             }
             let skeleton = self.list.skeleton();
             if self.link_index >= self.list.size() {
-                if self.descend(true) {
+                if self.descend() {
                     continue;
                 } else {
                     break;
@@ -85,7 +85,7 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
                 self.link_index += 1 << self.degree;
             }
             if last_iteration {
-                if self.descend(true) {
+                if self.descend() {
                     last_iteration = false;
                     continue;
                 } else {
@@ -93,7 +93,7 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
                 }
             }
             if self.degree > 0 {
-                self.descend(true);
+                self.descend();
                 continue;
             } else {
                 last_iteration = true;
@@ -101,13 +101,11 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
         }
     }
 
-    fn descend(&mut self, change_link_index: bool) -> bool {
+    fn descend(&mut self) -> bool {
         let skeleton = self.list.skeleton();
         if self.degree > 0 {
             self.degree -= 1;
-            if change_link_index {
-                self.link_index -= 1 << self.degree;
-            }
+            self.link_index -= 1 << self.degree;
             true
         } else if skeleton.sublist_index_is_in_bounds(self.node_index) {
             let sublist = skeleton.get_sublist_at(self.node_index);
