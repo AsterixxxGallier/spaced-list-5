@@ -174,7 +174,7 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
 
 pub struct Position<'list, S: Spacing, List: SpacedList<S>> {
     list: &'list List,
-    pub index: usize,
+    index: usize,
     pub position: S,
     link_index: usize,
 }
