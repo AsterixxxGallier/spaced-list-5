@@ -438,6 +438,7 @@ mod tests {
     use super::Grid;
 
     #[test]
+    #[ignore]
     fn test() {
         let mut grid = Grid::new();
         grid.connective_connector(0, 0);
