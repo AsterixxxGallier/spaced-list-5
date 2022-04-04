@@ -1,6 +1,8 @@
+use std::collections::HashMap;
 use std::default::default;
 use std::iter;
 use std::marker::PhantomData;
+use std::ops::Sub;
 
 use num_traits::zero;
 
@@ -113,11 +115,15 @@ impl<S: Spacing, Sub: SpacedList<S>> SpacedListSkeleton<S, Sub> {
 
     /// Inflates the link at the specified index.
     pub(crate) fn inflate_at(&mut self, link_index: usize, amount: S) {
+        // TODO add inflate_at_unchecked
+        assert!(self.link_index_is_in_bounds(link_index), "Link index not in bounds");
+        assert!(amount >= zero(), "Cannot inflate by negative amount, explicitly deflate for that");
         let mut link_index = link_index;
         for degree in 0..self.depth() {
-            if (link_index >> degree) & 1 == 0 {
+            let bit = 1 << degree;
+            if link_index & bit == 0 {
                 *self.get_link_length_at_mut(link_index) += amount;
-                link_index += 1 << degree;
+                link_index += bit;
             }
         }
         self.length += amount;
@@ -137,15 +143,9 @@ impl<S: Spacing, Sub: SpacedList<S>> SpacedListSkeleton<S, Sub> {
     // now, the link length at index 1 is smaller than the link length at index 0, which is against
     // the rules (link 1 *contains* link 0, meaning that the distance between node 1 and node 2 is
     // now implied negative, which is illegal)
-    // ___________11___________,
-    // _____5______,
-    // __2___,     __4___,
-    // _1_,  _2_,  _3_,  _2_,
-    // |00|01|10|11|00|01|10|11|
     pub(crate) unsafe fn deflate_at_unchecked(&mut self, link_index: usize, amount: S) {
         let mut link_index = link_index;
         for degree in 0..self.depth() {
-            // if (link_index >> degree) & 1 == 0 {
             let bit = 1 << degree;
             if link_index & bit == 0 {
                 *self.get_link_length_at_mut(link_index) -= amount;
@@ -156,29 +156,58 @@ impl<S: Spacing, Sub: SpacedList<S>> SpacedListSkeleton<S, Sub> {
     }
 
     pub(crate) fn deflate_at(&mut self, link_index: usize, amount: S) {
-        if link_index & 1 == 0 {
-            // SAFETY: If the link index ends in a zero, it's a zero-degree link, so it does not
-            // imply the link lengths of lower links, as non-zero-degree links do
-            unsafe { self.deflate_at_unchecked(link_index, amount) }
-        } else {
-            let new_total_link_length = self.get_link_length_at(link_index);
-            // TODO check that no implied link length becomes negative
-            // concrete link lengths are those for which link_index.trailing_ones() == degree
-            // implied link lengths are those which are below a concrete link
-            // therefore, we need to check that for all concrete links that we touch, the implied
-            // links below them do not become negative by this inflation.
-            // the total link length of a non-zero-degree concrete link consists of the sum of
-            // as many concrete link lengths as link_index.trailing_ones() and a single, zero-degree
-            // implied link length. making sure that that single zero-degree implied link length
-            // does not become negative is the goal.
-            // total_link_length = sum_of_concrete_link_lengths_below + implied_link_length
-            // implied_link_length = total_link_length - sum_of_concrete_link_lengths_below
-            // requirement: implied_link_length >= 0
-            // therefore, total_link_length - sum_of_concrete_link_lengths_below >= 0
-            // finally, total_link_length >= sum_of_concrete_link_lengths_below
-
-
+        assert!(self.link_index_is_in_bounds(link_index), "Link index not in bounds");
+        assert!(amount >= zero(), "Cannot deflate by negative amount, explicitly inflate for that");
+        // TODO check that no implied link length becomes negative
+        // concrete link lengths are those for which link_index.trailing_ones() == degree
+        // implied link lengths are those which are below a concrete link
+        // therefore, we need to check that for all concrete links that we touch, the implied
+        // links below them do not become negative by this inflation.
+        // the total link length of a non-zero-degree concrete link consists of the sum of
+        // as many concrete link lengths as link_index.trailing_ones() and a single, zero-degree
+        // implied link length. making sure that that single zero-degree implied link length
+        // does not become negative is the goal.
+        // total_link_length = sum_of_concrete_link_lengths_below + implied_link_length
+        // implied_link_length = total_link_length - sum_of_concrete_link_lengths_below
+        // requirement: implied_link_length >= 0
+        // therefore, total_link_length - sum_of_concrete_link_lengths_below >= 0
+        // finally, total_link_length >= sum_of_concrete_link_lengths_below
+        // ___________________11___________________,
+        // _________5__________,
+        // _____2____,         _____4____,
+        // __1__,    __2__,    __3__,    __2__,
+        // |0000|0001|0010|0011|0100|0101|0110|0111|
+        let mut overwritten_link_lengths = HashMap::with_capacity(self.depth);
+        let mut link_index = link_index;
+        for degree in 0..self.depth() {
+            let bit = 1 << degree;
+            if link_index & bit == 0 {
+                if link_index > 0 {
+                    let new_total_link_length = self.get_link_length_at(link_index) - amount;
+                    assert!(new_total_link_length >= zero(), "Cannot deflate a link below zero");
+                    let mut sum_of_concrete_link_lengths_below = S::zero();
+                    let mut link_index_below = link_index - 1;
+                    for degree_below in 0..degree {
+                        let link_length = overwritten_link_lengths.get(&link_index_below);
+                        let link_length = match link_length {
+                            Some(&link_length) => link_length,
+                            None => self.get_link_length_at(link_index_below)
+                        };
+                        sum_of_concrete_link_lengths_below += link_length;
+                        // link_index_below will not be used after the last iteration, meaning that we
+                        // can ignore the underflow that can only happen then
+                        link_index_below = link_index_below.wrapping_sub(1 << degree_below);
+                    }
+                    assert!(new_total_link_length >= sum_of_concrete_link_lengths_below,
+                            "Cannot deflate a link below zero");
+                }
+                let link_length = self.get_link_length_at_mut(link_index);
+                overwritten_link_lengths.insert(link_index, *link_length);
+                *link_length -= amount;
+                link_index += bit;
+            }
         }
+        self.length -= amount;
     }
 }
 
