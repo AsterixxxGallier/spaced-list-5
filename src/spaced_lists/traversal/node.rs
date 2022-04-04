@@ -183,7 +183,7 @@ impl<'list, S: Spacing, List: SpacedList<S>> Position<'list, S, List> {
             list,
             index,
             position,
-            link_index
+            link_index,
         }
     }
 

@@ -1,6 +1,7 @@
 #![cfg(test)]
 
 use rand::{Rng, thread_rng};
+
 use crate::{HollowSpacedList, SpacedList, SpacedListSkeleton};
 
 #[test]
