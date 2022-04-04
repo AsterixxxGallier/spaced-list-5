@@ -57,7 +57,7 @@ fn inflate_deflate() {
     skeleton.inflate_at(0, 3);
     assert_eq!(skeleton.link_lengths, vec![4, 4, 0, 4]);
 
-    unsafe { skeleton.deflate_at(0, 2); }
+    unsafe { skeleton.deflate_at_unchecked(0, 2); }
     assert_eq!(skeleton.link_lengths, vec![2, 2, 0, 2]);
 
     skeleton.inflate_at(1, 3);
@@ -65,6 +65,87 @@ fn inflate_deflate() {
 
     skeleton.inflate_at(2, 1);
     assert_eq!(skeleton.link_lengths, vec![2, 5, 1, 6]);
+
+    skeleton.inflate_at(0, 0);
+    skeleton.inflate_at(1, 0);
+    skeleton.inflate_at(2, 0);
+    skeleton.inflate_at(3, 0);
+    assert_eq!(skeleton.link_lengths, vec![2, 5, 1, 6]);
+
+    skeleton.deflate_at(0, 0);
+    skeleton.deflate_at(1, 0);
+    skeleton.deflate_at(2, 0);
+    skeleton.deflate_at(3, 0);
+    assert_eq!(skeleton.link_lengths, vec![2, 5, 1, 6]);
+}
+
+#[test]
+#[should_panic]
+fn bad_inflate_should_panic_0() {
+    let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
+    let mut skeleton = list.skeleton_mut();
+    skeleton.inflate_at(0, 1);
+}
+
+#[test]
+#[should_panic]
+fn bad_inflate_should_panic_1() {
+    let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
+    let mut skeleton = list.skeleton_mut();
+    skeleton.grow();
+    skeleton.inflate_at(0, -1);
+}
+
+#[test]
+#[should_panic]
+fn bad_inflate_should_panic_2() {
+    let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
+    let mut skeleton = list.skeleton_mut();
+    skeleton.grow();
+    skeleton.inflate_at(1, 0);
+}
+
+#[test]
+#[should_panic]
+fn bad_deflate_should_panic_0() {
+    let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
+    let mut skeleton = list.skeleton_mut();
+    skeleton.deflate_at(0, 0);
+}
+
+#[test]
+#[should_panic]
+fn bad_deflate_should_panic_1() {
+    let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
+    let mut skeleton = list.skeleton_mut();
+    skeleton.grow();
+    skeleton.deflate_at(0, -1);
+}
+
+#[test]
+#[should_panic]
+fn bad_deflate_should_panic_2() {
+    let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
+    let mut skeleton = list.skeleton_mut();
+    skeleton.grow();
+    skeleton.grow();
+    skeleton.inflate_at(0, 1);
+    skeleton.deflate_at(1, -1);
+}
+
+#[test]
+#[should_panic]
+fn bad_deflate_should_panic_3() {
+    let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
+    let mut skeleton = list.skeleton_mut();
+    skeleton.grow();
+    skeleton.grow();
+    skeleton.grow();
+    skeleton.inflate_at(0, 1);
+    skeleton.inflate_at(1, 2);
+    skeleton.inflate_at(2, 1);
+    skeleton.deflate_at(0, 1);
+    println!("LINK LENGTHS: {:?}", skeleton.link_lengths);
 }
 
 #[test]
@@ -79,13 +160,13 @@ fn random_insertions() {
     // 1 << 24:  45 s = 2.7 µs/node
     // 1 << 25: 125 s = 3.7 µs/node
     // 1 << 26: doesn't stop, apparently
-    let max = 1 << 11;
+    let max = 1 << 10;
     for n in 0..max {
         if n % 100000 == 0 {
             println!("n = {}", n);
         }
-        // let pos = rng.gen_range(0..100_000_000_000);
-        let pos = max - n;
+        let pos = rng.gen_range(0..100_000_000_000);
+        // let pos = max - n;
         // println!("inserting node at {}", pos);
         list.insert_node(pos);
         // println!("{:?}", list.skeleton().format(
