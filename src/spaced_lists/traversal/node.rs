@@ -19,10 +19,6 @@ pub struct Traversal<'list, S, List, Continue, Stop>
     position: S,
 }
 
-const fn mask(size: usize) -> usize {
-    !(!0 << size)
-}
-
 impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
     where S: Spacing,
           List: SpacedList<S>,
