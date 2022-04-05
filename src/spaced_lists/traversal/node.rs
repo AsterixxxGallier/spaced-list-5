@@ -105,7 +105,6 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
     }
 
     pub fn next(&mut self) -> Result<(), &str> {
-        let skeleton = self.list.skeleton();
         if self.node_index == self.list.size() {
             return if let Some(node_index) = self.list.index_in_super_list() {
                 self.degree = 0;
