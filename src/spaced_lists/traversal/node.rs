@@ -80,26 +80,27 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
     }
 
     fn descend(&mut self) -> bool {
-        let skeleton = self.list.skeleton();
         if self.degree > 0 {
             self.degree -= 1;
             self.link_index -= 1 << self.degree;
             true
-        } else if skeleton.sublist_index_is_in_bounds(self.node_index) {
-            let sublist = skeleton.get_sublist_at(self.node_index);
-            if let Some(sublist) = sublist {
-                let sub_skeleton = sublist.skeleton();
-                self.degree = sub_skeleton.depth() - 1;
-                self.node_index = 0;
-                self.link_index = sub_skeleton.size() - 1;
-                self.super_lists.push(self.list);
-                self.list = sublist;
-                true
+        } else {
+            let skeleton = self.list.skeleton();
+            if skeleton.sublist_index_is_in_bounds(self.node_index) {
+                if let Some(sublist) = skeleton.get_sublist_at(self.node_index) {
+                    let sub_skeleton = sublist.skeleton();
+                    self.degree = sub_skeleton.depth() - 1;
+                    self.node_index = 0;
+                    self.link_index = sub_skeleton.size() - 1;
+                    self.super_lists.push(self.list);
+                    self.list = sublist;
+                    true
+                } else {
+                    false
+                }
             } else {
                 false
             }
-        } else {
-            false
         }
     }
 
