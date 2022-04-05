@@ -121,7 +121,6 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
             if self.degree < self.node_index.trailing_zeros() as usize {
                 break;
             }
-            // FIXME an integer underflow happened here after moving up
             self.position -= skeleton.get_link_length_at(self.node_index - 1);
             self.node_index -= 1 << self.degree;
             self.degree += 1;
