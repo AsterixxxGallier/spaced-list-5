@@ -42,14 +42,14 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
         'outer: loop {
             if let Some(condition) = &self.stop_condition {
                 if condition(self.position) {
-                    while self.descend() {
+                    while self.descend().is_ok() {
                         continue;
                     }
                     break
                 }
             }
             while self.link_index >= self.list.size() {
-                if self.descend() {
+                if self.descend().is_ok() {
                     continue;
                 } else {
                     break 'outer;
@@ -63,7 +63,7 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
                 self.link_index += 1 << self.degree;
             }
             if last_iteration {
-                if self.descend() {
+                if self.descend().is_ok() {
                     last_iteration = false;
                     continue;
                 } else {
@@ -71,7 +71,7 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
                 }
             }
             if self.degree > 0 {
-                self.descend();
+                self.descend().unwrap();
                 continue;
             } else {
                 last_iteration = true;
@@ -79,11 +79,11 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
         }
     }
 
-    fn descend(&mut self) -> bool {
+    fn descend(&mut self) -> Result<(), ()> {
         if self.degree > 0 {
             self.degree -= 1;
             self.link_index -= 1 << self.degree;
-            true
+            Ok(())
         } else {
             let skeleton = self.list.skeleton();
             if skeleton.sublist_index_is_in_bounds(self.node_index) {
@@ -94,12 +94,12 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
                     self.link_index = sub_skeleton.size() - 1;
                     self.super_lists.push(self.list);
                     self.list = sublist;
-                    true
+                    Ok(())
                 } else {
-                    false
+                    Err(())
                 }
             } else {
-                false
+                Err(())
             }
         }
     }
