@@ -164,10 +164,6 @@ impl<'list, S: Spacing, List: SpacedList<S>> Position<'list, S, List> {
         }
     }
 
-    pub fn list(&self) -> &'list List {
-        self.list
-    }
-
     pub fn position(&self) -> S {
         self.position
     }
