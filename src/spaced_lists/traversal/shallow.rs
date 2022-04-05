@@ -43,6 +43,7 @@ impl<'list, S, List, Continue, Stop> ShallowTraversal<'list, S, List, Continue, 
                     break;
                 }
             }
+            // TODO maybe check if link index is in bounds?
             let next_position = self.position + self.list.skeleton().get_link_length_at(self.link_index);
             if (self.continue_condition)(next_position) {
                 self.position = next_position;
