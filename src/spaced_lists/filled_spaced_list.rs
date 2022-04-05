@@ -10,7 +10,6 @@ pub struct FilledSpacedList<S: Spacing, T> {
     elements: Vec<T>,
     size: usize,
     deep_size: usize,
-    deep_length: S,
     index_in_super_list: Option<usize>,
 }
 
@@ -21,7 +20,6 @@ impl<S: Spacing, T> Default for FilledSpacedList<S, T> {
             elements: vec![],
             size: 0,
             deep_size: 0,
-            deep_length: zero(),
             index_in_super_list: None,
         }
     }
@@ -58,14 +56,6 @@ impl<S: Spacing, T> SpacedList<S> for FilledSpacedList<S, T> {
 
     fn deep_size_mut(&mut self) -> &mut usize {
         &mut self.deep_size
-    }
-
-    fn deep_length(&self) -> S {
-        self.deep_length
-    }
-
-    fn deep_length_mut(&mut self) -> &mut S {
-        &mut self.deep_length
     }
 }
 
