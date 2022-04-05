@@ -65,19 +65,28 @@ pub trait SpacedList<S: Spacing>: Default {
         *self.deep_size_mut() += 1;
     }
 
-    fn inflate_after(&mut self, node_index: Todo, amount: S) {
+    fn inflate_after(&mut self, position: S, amount: S) {
+        // 0 1 3 4
+        // inflate after 2
+        // 0 1 4 5
+        // inflate after 4
+        // 0 1 4 6
+        // deflate before 4
+        // 0 1 5 7
+        // let position = self.node_at_or_before(position)
+        //     .expect("Cannot inflate before zero");
         todo!()
     }
 
-    fn inflate_before(&mut self, node_index: Todo, amount: S) {
+    fn inflate_before(&mut self, position: S, amount: S) {
         todo!()
     }
 
-    fn deflate_after(&mut self, node_index: Todo, amount: S) {
+    fn deflate_after(&mut self, position: S, amount: S) {
         todo!()
     }
 
-    fn deflate_before(&mut self, node_index: Todo, amount: S) {
+    fn deflate_before(&mut self, position: S, amount: S) {
         todo!()
     }
 
