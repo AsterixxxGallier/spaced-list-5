@@ -54,6 +54,13 @@ impl<S: Spacing, Sub: SpacedList<S>> SpacedListSkeleton<S, Sub> {
     /// # Panics
     ///
     /// Panics when `index` is out of bounds.
+    pub(crate) fn get_sublist_at_mut(&mut self, index: usize) -> &mut Option<Sub> {
+        &mut self.sublists[index]
+    }
+
+    /// # Panics
+    ///
+    /// Panics when `index` is out of bounds.
     pub(crate) fn get_or_add_sublist_at(&mut self, index: usize) -> &Sub {
         self.get_or_add_sublist_at_mut(index)
     }
