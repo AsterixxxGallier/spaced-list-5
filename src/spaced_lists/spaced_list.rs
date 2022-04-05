@@ -58,7 +58,6 @@ pub trait SpacedList<S: Spacing>: Default {
         );
         traversal.run();
         let ShallowPosition { index, position: node_position, .. } = traversal.position();
-        assert!(self.skeleton().sublist_index_is_in_bounds(index));
         let mut sublist = self.skeleton_mut().get_or_add_sublist_at_mut(index);
         sublist.insert_node(position - node_position);
         *self.deep_size_mut() += 1;
