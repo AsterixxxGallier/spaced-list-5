@@ -42,27 +42,6 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
     }
 
     pub fn run(&mut self) {
-        // ┌──┬──┬──┬── 0000
-        //A│  │  │  │0000
-        // │  │  │  ╰── 0001
-        // │  │  │   0001
-        // │  │  ╰──┬── 0010
-        // │  │     │0010
-        // │  │     ╰── 0011
-        // │  │      0011
-        // │ B╰──┬──┬── 0100
-        // │     │  │0100
-        // │     │  ╰── 0101
-        // │     │   0101
-        // │    C╰──┬──┬──┬── 0110-00
-        // │       D│ E│  │0110-00
-        // │        │  │ F╰── 0110-01
-        // │        │  │   0110-01
-        // │        │  ╰───── 0110-10
-        // │        │0110
-        // │        ╰── 0111
-        // │         0111
-        // ╰─────────── 1000
         let mut last_iteration = false;
         loop {
             if let Some(condition) = &self.stop_condition {
