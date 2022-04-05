@@ -130,7 +130,8 @@ pub trait SpacedList<S: Spacing>: Default {
         if position < zero() {
             return None;
         }
-        let mut traversal = self.traversal(|pos| pos <= position);
+        let mut traversal =
+            self.stopping_traversal(|pos| pos <= position, |pos| pos == position);
         traversal.run();
         Some(traversal.position())
     }
@@ -139,7 +140,8 @@ pub trait SpacedList<S: Spacing>: Default {
         if position < zero() || position > self.length() {
             return None;
         }
-        let mut traversal = self.traversal(|pos| pos <= position);
+        let mut traversal =
+            self.stopping_traversal(|pos| pos <= position, |pos| pos == position);
         traversal.run();
         let result = traversal.position();
         if result.position() == position {
@@ -156,7 +158,8 @@ pub trait SpacedList<S: Spacing>: Default {
         if position <= zero() {
             return Some(Position::new(self, 0, zero(), 0));
         }
-        let mut traversal = self.traversal(|pos| pos <= position);
+        let mut traversal =
+            self.stopping_traversal(|pos| pos <= position, |pos| pos == position);
         traversal.run();
         let result = traversal.position();
         if result.position() == position {
@@ -174,7 +177,8 @@ pub trait SpacedList<S: Spacing>: Default {
         if position < zero() {
             return Some(Position::new(self, 0, zero(), 0));
         }
-        let mut traversal = self.traversal(|pos| pos <= position);
+        let mut traversal =
+            self.stopping_traversal(|pos| pos <= position, |pos| pos == position);
         traversal.run();
         traversal.next().unwrap();
         Some(traversal.position())
