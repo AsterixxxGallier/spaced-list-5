@@ -37,7 +37,6 @@ pub trait SpacedList<S: Spacing>: Default {
         self.skeleton_mut().inflate_at(size, distance);
         *self.size_mut() += 1;
         *self.deep_size_mut() += 1;
-        *self.deep_length_mut() += distance;
     }
 
     fn insert_node(&mut self, position: S) {
