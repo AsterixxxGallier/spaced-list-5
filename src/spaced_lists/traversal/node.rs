@@ -42,7 +42,10 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
         loop {
             if let Some(condition) = &self.stop_condition {
                 if condition(self.position) {
-                    todo!("descend until hitting rock bottom, then return")
+                    while self.descend() {
+                        continue;
+                    }
+                    break
                 }
             }
             let skeleton = self.list.skeleton();
