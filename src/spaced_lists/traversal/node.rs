@@ -39,7 +39,7 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
 
     pub fn run(&mut self) {
         let mut last_iteration = false;
-        loop {
+        'outer: loop {
             if let Some(condition) = &self.stop_condition {
                 if condition(self.position) {
                     while self.descend() {
@@ -48,11 +48,11 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
                     break
                 }
             }
-            if self.link_index >= self.list.size() {
+            while self.link_index >= self.list.size() {
                 if self.descend() {
                     continue;
                 } else {
-                    break;
+                    break 'outer;
                 }
             }
             let skeleton = self.list.skeleton();
