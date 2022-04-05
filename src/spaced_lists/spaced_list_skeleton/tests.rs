@@ -81,7 +81,7 @@ fn inflate_deflate() {
 }
 
 #[test]
-#[should_panic]
+#[should_panic(expected = "index")]
 fn bad_inflate_should_panic_0() {
     let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
     let mut skeleton = list.skeleton_mut();
@@ -89,7 +89,7 @@ fn bad_inflate_should_panic_0() {
 }
 
 #[test]
-#[should_panic]
+#[should_panic(expected = "negative")]
 fn bad_inflate_should_panic_1() {
     let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
     let mut skeleton = list.skeleton_mut();
@@ -98,7 +98,7 @@ fn bad_inflate_should_panic_1() {
 }
 
 #[test]
-#[should_panic]
+#[should_panic(expected = "index")]
 fn bad_inflate_should_panic_2() {
     let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
     let mut skeleton = list.skeleton_mut();
@@ -107,7 +107,7 @@ fn bad_inflate_should_panic_2() {
 }
 
 #[test]
-#[should_panic]
+#[should_panic(expected = "index")]
 fn bad_deflate_should_panic_0() {
     let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
     let mut skeleton = list.skeleton_mut();
@@ -115,7 +115,7 @@ fn bad_deflate_should_panic_0() {
 }
 
 #[test]
-#[should_panic]
+#[should_panic(expected = "negative")]
 fn bad_deflate_should_panic_1() {
     let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
     let mut skeleton = list.skeleton_mut();
@@ -124,7 +124,7 @@ fn bad_deflate_should_panic_1() {
 }
 
 #[test]
-#[should_panic]
+#[should_panic(expected = "negative")]
 fn bad_deflate_should_panic_2() {
     let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
     let mut skeleton = list.skeleton_mut();
@@ -135,7 +135,7 @@ fn bad_deflate_should_panic_2() {
 }
 
 #[test]
-#[should_panic]
+#[should_panic(expected = "below zero")]
 fn bad_deflate_should_panic_3() {
     let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
     let mut skeleton = list.skeleton_mut();
@@ -146,7 +146,6 @@ fn bad_deflate_should_panic_3() {
     skeleton.inflate_at(1, 2);
     skeleton.inflate_at(2, 1);
     skeleton.deflate_at(0, 1);
-    println!("LINK LENGTHS: {:?}", skeleton.link_lengths);
 }
 
 #[test]
