@@ -191,6 +191,6 @@ impl<S: Spacing + Debug, List: SpacedList<S>> Debug for Position<'_, S, List> {
         f.debug_struct("Position")
             .field("index", &self.index)
             .field("position", &self.position)
-            .finish()
+            .finish_non_exhaustive()
     }
 }
