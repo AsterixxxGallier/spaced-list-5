@@ -48,7 +48,6 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
                     break
                 }
             }
-            let skeleton = self.list.skeleton();
             if self.link_index >= self.list.size() {
                 if self.descend() {
                     continue;
@@ -56,6 +55,7 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
                     break;
                 }
             }
+            let skeleton = self.list.skeleton();
             let next_position = self.position + skeleton.get_link_length_at(self.link_index);
             if (self.continue_condition)(next_position) {
                 self.position = next_position;
