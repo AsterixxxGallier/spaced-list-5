@@ -57,52 +57,35 @@ impl<S: Spacing> SpacedList<S> for HollowSpacedList<S> {
     }
 }
 
+macro_rules! delegate {
+    ($fn:ident ($($param:ident : $param_type:ty),*)) => {
+        pub fn $fn($($param: $param_type),*) {
+            <Self as SpacedList<S>>::$fn($($param),*);
+        }
+    };
+    ($fn:ident ($($param:ident : $param_type:ty),*) -> $return:ty) => {
+        pub fn $fn($($param: $param_type),*) -> $return {
+            <Self as SpacedList<S>>::$fn($($param),*)
+        }
+    };
+}
+
 impl<S: Spacing> HollowSpacedList<S> {
     pub fn new() -> Self {
         default()
     }
 
-    pub fn append_node(&mut self, distance: S) {
-        <Self as SpacedList<S>>::append_node(self, distance);
-    }
+    delegate!(append_node (self: &mut Self, distance: S));
+    delegate!(insert_node (self: &mut Self, position: S));
 
-    pub fn insert_node(&mut self, position: S) {
-        <Self as SpacedList<S>>::insert_node(self, position);
-    }
+    delegate!(inflate_after (self: &mut Self, position: S, amount: S));
+    delegate!(inflate_before (self: &mut Self, position: S, amount: S));
+    delegate!(deflate_after (self: &mut Self, position: S, amount: S));
+    delegate!(deflate_before (self: &mut Self, position: S, amount: S));
 
-    pub fn inflate_after(&mut self, position: S, amount: S) {
-        <Self as SpacedList<S>>::inflate_after(self, position, amount)
-    }
-
-    pub fn inflate_before(&mut self, position: S, amount: S) {
-        <Self as SpacedList<S>>::inflate_before(self, position, amount)
-    }
-
-    pub fn deflate_after(&mut self, position: S, amount: S) {
-        <Self as SpacedList<S>>::deflate_after(self, position, amount)
-    }
-
-    pub fn deflate_before(&mut self, position: S, amount: S) {
-        <Self as SpacedList<S>>::deflate_before(self, position, amount)
-    }
-
-    pub fn node_before(&self, position: S) -> Option<Position<S, Self>> {
-        <Self as SpacedList<S>>::node_before(self, position)
-    }
-
-    pub fn node_at_or_before(&self, position: S) -> Option<Position<S, Self>> {
-        <Self as SpacedList<S>>::node_at_or_before(self, position)
-    }
-
-    pub fn node_at(&self, position: S) -> Option<Position<S, Self>> {
-        <Self as SpacedList<S>>::node_at(self, position)
-    }
-
-    pub fn node_at_or_after(&self, position: S) -> Option<Position<S, Self>> {
-        <Self as SpacedList<S>>::node_at_or_after(self, position)
-    }
-
-    pub fn node_after(&self, position: S) -> Option<Position<S, Self>> {
-        <Self as SpacedList<S>>::node_after(self, position)
-    }
+    delegate!(node_before(self: &Self, position: S) -> Option<Position<S, Self>>);
+    delegate!(node_at_or_before(self: &Self, position: S) -> Option<Position<S, Self>>);
+    delegate!(node_at(self: &Self, position: S) -> Option<Position<S, Self>>);
+    delegate!(node_at_or_after(self: &Self, position: S) -> Option<Position<S, Self>>);
+    delegate!(node_after(self: &Self, position: S) -> Option<Position<S, Self>>);
 }
