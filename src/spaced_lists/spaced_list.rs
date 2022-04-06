@@ -71,7 +71,7 @@ pub trait SpacedList<S: Spacing>: Default {
         // 0 1 4 6
         // deflate before 4
         // 0 1 5 7
-        if position <= zero() || position >= self.length() {
+        if position < zero() || position >= self.length() {
             todo!()
         }
         let mut traversal = ShallowTraversal::new(
@@ -83,7 +83,10 @@ pub trait SpacedList<S: Spacing>: Default {
         let ShallowPosition { index, position: node_position, .. } = traversal.position();
         self.skeleton_mut().inflate_at(index, amount);
         if let Some(sublist) = self.skeleton_mut().get_sublist_at_mut(index) {
-            sublist.inflate_after(position - node_position, amount);
+            let position_in_sublist = position - node_position;
+            if position_in_sublist < sublist.length() {
+                sublist.inflate_after(position_in_sublist, amount);
+            }
         }
     }
 
