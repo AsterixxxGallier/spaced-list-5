@@ -71,7 +71,7 @@ pub trait SpacedList<S: Spacing>: Default {
         //  sublist is positioned before, but this should never happen because sublists are only
         //  accessible from within this crate
         let size = self.size();
-        if size == self.skeleton().size() {
+        if size == self.skeleton().capacity() {
             self.skeleton_mut().grow();
         }
         self.skeleton_mut().inflate_at(size, distance);

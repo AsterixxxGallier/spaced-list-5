@@ -32,7 +32,7 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
             stop_condition,
             degree: list.skeleton().depth() - 1,
             node_index: 0,
-            link_index: list.skeleton().size() - 1,
+            link_index: list.skeleton().capacity() - 1,
             position: zero(),
         }
     }
@@ -92,7 +92,7 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
                     let sub_skeleton = sublist.skeleton();
                     self.degree = sub_skeleton.depth() - 1;
                     self.node_index = 0;
-                    self.link_index = sub_skeleton.size() - 1;
+                    self.link_index = sub_skeleton.capacity() - 1;
                     self.super_lists.push(self.list);
                     self.list = sublist;
                     Ok(())

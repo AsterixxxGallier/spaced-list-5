@@ -12,7 +12,7 @@ use crate::{SpacedList, Spacing};
 pub struct SpacedListSkeleton<S: Spacing, Sub: SpacedList<S>> {
     pub(crate) link_lengths: Vec<S>,
     pub(crate) sublists: Vec<Option<Sub>>,
-    size: usize,
+    capacity: usize,
     depth: usize,
     length: S,
 }
@@ -22,7 +22,7 @@ impl<S: Spacing, Sub: SpacedList<S>> Default for SpacedListSkeleton<S, Sub> {
         Self {
             link_lengths: vec![],
             sublists: vec![],
-            size: 0,
+            capacity: 0,
             depth: 0,
             length: zero(),
         }
@@ -81,23 +81,23 @@ impl<S: Spacing, Sub: SpacedList<S>> SpacedListSkeleton<S, Sub> {
     }
 
     pub(crate) fn link_index_is_in_bounds(&self, index: usize) -> bool {
-        index < self.size()
+        index < self.capacity()
     }
 
     pub(crate) fn sublist_index_is_in_bounds(&self, index: usize) -> bool {
-        index < self.size()
+        index < self.capacity()
     }
 
     pub(crate) fn node_index_is_in_bounds(&self, index: usize) -> bool {
-        index <= self.size()
+        index <= self.capacity()
     }
 
     pub(crate) fn degree_is_in_bounds(&self, index: usize) -> bool {
         index < self.depth()
     }
 
-    pub(crate) fn size(&self) -> usize {
-        self.size
+    pub(crate) fn capacity(&self) -> usize {
+        self.capacity
     }
 
     pub(crate) fn length(&self) -> S {
@@ -109,13 +109,13 @@ impl<S: Spacing, Sub: SpacedList<S>> SpacedListSkeleton<S, Sub> {
         if self.link_lengths.is_empty() {
             self.link_lengths.push(zero());
             self.sublists.push(None);
-            self.size += 1;
+            self.capacity += 1;
         } else {
             let length = self.length();
-            self.sublists.extend(iter::repeat_with(|| None).take(self.size()));
-            self.link_lengths.extend(iter::repeat_with(|| S::zero()).take(self.size() - 1));
+            self.sublists.extend(iter::repeat_with(|| None).take(self.capacity()));
+            self.link_lengths.extend(iter::repeat_with(|| S::zero()).take(self.capacity() - 1));
             self.link_lengths.push(length);
-            self.size *= 2;
+            self.capacity *= 2;
         }
         self.depth += 1;
     }

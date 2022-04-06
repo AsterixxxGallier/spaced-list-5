@@ -28,7 +28,7 @@ impl<'list, S, List, Continue, Stop> ShallowTraversal<'list, S, List, Continue, 
             stop_condition,
             degree: list.skeleton().depth() - 1,
             node_index: 0,
-            link_index: list.skeleton().size() - 1,
+            link_index: list.skeleton().capacity() - 1,
             position: zero(),
         }
     }
