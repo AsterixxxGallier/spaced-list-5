@@ -62,7 +62,16 @@ impl<'list, S, List, Continue, Stop> ShallowTraversal<'list, S, List, Continue, 
         }
     }
 
-    pub fn position(&self) -> ShallowPosition<S, List> {
+    pub fn position(&self) -> ShallowPosition<'list, S, List> {
+        ShallowPosition {
+            list: self.list,
+            index: self.node_index,
+            position: self.position,
+            link_index: self.link_index,
+        }
+    }
+
+    pub fn into_position(self) -> ShallowPosition<'list, S, List> {
         ShallowPosition {
             list: self.list,
             index: self.node_index,

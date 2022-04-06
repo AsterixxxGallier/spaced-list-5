@@ -145,6 +145,15 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
             link_index: self.link_index,
         }
     }
+
+    pub fn into_position(self) -> Position<'list, S, List> {
+        Position {
+            list: self.list,
+            index: self.node_index,
+            position: self.position,
+            link_index: self.link_index,
+        }
+    }
 }
 
 pub struct Position<'list, S: Spacing, List: SpacedList<S>> {
