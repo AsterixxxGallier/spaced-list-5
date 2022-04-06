@@ -18,6 +18,17 @@ fn inflate_deflate() {
     list.inflate_after(0, 100);
     assert_eq!(list.node_at(0).unwrap().position(), 0);
     assert_eq!(list.node_at(105).unwrap().position(), 105);
+    assert_eq!(list.node_at(117).unwrap().position(), 117);
+    assert_eq!(list.node_at(150).unwrap().position(), 150);
+    list.deflate_after(105, 10);
+    assert_eq!(list.node_at(105).unwrap().position(), 105);
+    assert_eq!(list.node_at(107).unwrap().position(), 107);
+    assert_eq!(list.node_at(140).unwrap().position(), 140);
+    list.inflate_before(105, 20);
+    assert_eq!(list.node_at(125).unwrap().position(), 125);
+    assert_eq!(list.node_at(160).unwrap().position(), 160);
+    list.deflate_before(130, 10);
+    assert_eq!(list.node_at(125).unwrap().position(), 125);
     assert_eq!(list.node_at(150).unwrap().position(), 150);
 }
 
