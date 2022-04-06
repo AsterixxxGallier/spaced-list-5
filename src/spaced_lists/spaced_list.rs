@@ -103,6 +103,8 @@ pub trait SpacedList<S: Spacing>: Default {
         self.skeleton().length()
     }
 
+    // TODO add try_ versions of the methods below
+
     fn append_node(&mut self, distance: S) {
         // TODO possibly, there might be future problems when increasing the length of a sublist
         //  beyond the link length from the node the sublist is positioned after to the node the
