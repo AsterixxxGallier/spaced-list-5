@@ -57,6 +57,7 @@ impl<'list, S, List, Continue, Stop> ShallowTraversal<'list, S, List, Continue, 
                 self.degree -= 1;
                 self.link_index -= 1 << self.degree;
             } else {
+                // TODO it might not always make sense to have this extra iteration
                 last_iteration = true;
             }
         }

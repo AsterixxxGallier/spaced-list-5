@@ -74,6 +74,7 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
                 self.descend().unwrap();
                 continue;
             } else {
+                // TODO it might not always make sense to have this extra iteration
                 last_iteration = true;
             }
         }
