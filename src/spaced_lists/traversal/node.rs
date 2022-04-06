@@ -48,7 +48,7 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
                     break
                 }
             }
-            while self.link_index >= self.list.size() {
+            while self.link_index >= self.list.skeleton().size() {
                 if self.descend().is_ok() {
                     continue;
                 } else {
@@ -106,12 +106,12 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
     }
 
     pub fn next(&mut self) -> Result<(), &str> {
-        if self.node_index == self.list.size() {
-            return if let Some(node_index) = self.list.index_in_super_list() {
+        if self.node_index == self.list.skeleton().size() {
+            return if let Some(node_index) = self.list.skeleton().index_in_super_list() {
                 self.degree = 0;
                 self.node_index = node_index;
                 self.link_index = node_index;
-                self.position -= self.list.length();
+                self.position -= self.list.skeleton().length();
                 self.list = self.super_lists.pop().unwrap();
                 return self.next();
             } else {

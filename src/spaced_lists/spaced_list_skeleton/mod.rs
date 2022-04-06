@@ -15,6 +15,9 @@ pub struct SpacedListSkeleton<S: Spacing, Sub: SpacedList<S>> {
     capacity: usize,
     depth: usize,
     length: S,
+    size: usize,
+    deep_size: usize,
+    index_in_super_list: Option<usize>,
 }
 
 impl<S: Spacing, Sub: SpacedList<S>> Default for SpacedListSkeleton<S, Sub> {
@@ -25,15 +28,43 @@ impl<S: Spacing, Sub: SpacedList<S>> Default for SpacedListSkeleton<S, Sub> {
             capacity: 0,
             depth: 0,
             length: zero(),
+            size: 0,
+            deep_size: 0,
+            index_in_super_list: None,
         }
     }
 }
 
 impl<S: Spacing, Sub: SpacedList<S>> SpacedListSkeleton<S, Sub> {
+    pub fn index_in_super_list(&self) -> Option<usize> {
+        self.index_in_super_list
+    }
+
+    pub fn set_index_in_super_list(&mut self, index: usize) {
+        self.index_in_super_list = Some(index)
+    }
+
+    pub fn size(&self) -> usize {
+        self.size
+    }
+
+    pub fn size_mut(&mut self) -> &mut usize {
+        &mut self.size
+    }
+
+    pub fn deep_size(&self) -> usize {
+        self.deep_size
+    }
+
+    // FIXME this seems to get ridiculously large under some circumstances (dunno if still happening)
+    pub fn deep_size_mut(&mut self) -> &mut usize {
+        &mut self.deep_size
+    }
+
     /// # Panics
     ///
     /// Panics when `index` is out of bounds.
-    pub(crate) fn get_link_length_at(&self, index: usize) -> S {
+    pub fn get_link_length_at(&self, index: usize) -> S {
         self.link_lengths[index]
     }
 
@@ -47,65 +78,65 @@ impl<S: Spacing, Sub: SpacedList<S>> SpacedListSkeleton<S, Sub> {
     /// # Panics
     ///
     /// Panics when `index` is out of bounds.
-    pub(crate) fn get_sublist_at(&self, index: usize) -> &Option<Sub> {
+    pub fn get_sublist_at(&self, index: usize) -> &Option<Sub> {
         &self.sublists[index]
     }
 
     /// # Panics
     ///
     /// Panics when `index` is out of bounds.
-    pub(crate) fn get_sublist_at_mut(&mut self, index: usize) -> &mut Option<Sub> {
+    pub fn get_sublist_at_mut(&mut self, index: usize) -> &mut Option<Sub> {
         &mut self.sublists[index]
     }
 
     /// # Panics
     ///
     /// Panics when `index` is out of bounds.
-    pub(crate) fn get_or_add_sublist_at(&mut self, index: usize) -> &Sub {
+    pub fn get_or_add_sublist_at(&mut self, index: usize) -> &Sub {
         self.get_or_add_sublist_at_mut(index)
     }
 
     /// # Panics
     ///
     /// Panics when `index` is out of bounds.
-    pub(crate) fn get_or_add_sublist_at_mut(&mut self, index: usize) -> &mut Sub {
+    pub fn get_or_add_sublist_at_mut(&mut self, index: usize) -> &mut Sub {
         self.sublists[index].get_or_insert_with(|| {
             let mut sub = Sub::default();
-            sub.set_index_in_super_list(index);
+            sub.skeleton_mut().set_index_in_super_list(index);
             sub
         })
     }
 
-    pub(crate) fn depth(&self) -> usize {
+    pub fn depth(&self) -> usize {
         self.depth
     }
 
-    pub(crate) fn link_index_is_in_bounds(&self, index: usize) -> bool {
+    pub fn link_index_is_in_bounds(&self, index: usize) -> bool {
         index < self.capacity()
     }
 
-    pub(crate) fn sublist_index_is_in_bounds(&self, index: usize) -> bool {
+    pub fn sublist_index_is_in_bounds(&self, index: usize) -> bool {
         index < self.capacity()
     }
 
-    pub(crate) fn node_index_is_in_bounds(&self, index: usize) -> bool {
+    pub fn node_index_is_in_bounds(&self, index: usize) -> bool {
         index <= self.capacity()
     }
 
-    pub(crate) fn degree_is_in_bounds(&self, index: usize) -> bool {
+    pub fn degree_is_in_bounds(&self, index: usize) -> bool {
         index < self.depth()
     }
 
-    pub(crate) fn capacity(&self) -> usize {
+    pub fn capacity(&self) -> usize {
         self.capacity
     }
 
-    pub(crate) fn length(&self) -> S {
+    pub fn length(&self) -> S {
         self.length
     }
 
     /// Doubles this skeletons size, or increase it to one if it is zero.
-    pub(crate) fn grow(&mut self) {
+    pub fn grow(&mut self) {
         if self.link_lengths.is_empty() {
             self.link_lengths.push(zero());
             self.sublists.push(None);
@@ -121,7 +152,7 @@ impl<S: Spacing, Sub: SpacedList<S>> SpacedListSkeleton<S, Sub> {
     }
 
     /// Inflates the link at the specified index.
-    pub(crate) fn inflate_at(&mut self, link_index: usize, amount: S) {
+    pub fn inflate_at(&mut self, link_index: usize, amount: S) {
         // TODO add inflate_at_unchecked
         assert!(self.link_index_is_in_bounds(link_index), "Link index not in bounds");
         assert!(amount >= zero(), "Cannot inflate by negative amount, explicitly deflate for that");
@@ -150,7 +181,7 @@ impl<S: Spacing, Sub: SpacedList<S>> SpacedListSkeleton<S, Sub> {
     // now, the link length at index 1 is smaller than the link length at index 0, which is against
     // the rules (link 1 *contains* link 0, meaning that the distance between node 1 and node 2 is
     // now implied negative, which is illegal)
-    pub(crate) unsafe fn deflate_at_unchecked(&mut self, link_index: usize, amount: S) {
+    pub unsafe fn deflate_at_unchecked(&mut self, link_index: usize, amount: S) {
         let mut link_index = link_index;
         for degree in 0..self.depth() {
             let bit = 1 << degree;
@@ -162,7 +193,7 @@ impl<S: Spacing, Sub: SpacedList<S>> SpacedListSkeleton<S, Sub> {
         self.length -= amount;
     }
 
-    pub(crate) fn deflate_at(&mut self, link_index: usize, amount: S) {
+    pub fn deflate_at(&mut self, link_index: usize, amount: S) {
         assert!(self.link_index_is_in_bounds(link_index), "Link index not in bounds");
         assert!(amount >= zero(), "Cannot deflate by negative amount, explicitly inflate for that");
         // TODO check that no implied link length becomes negative

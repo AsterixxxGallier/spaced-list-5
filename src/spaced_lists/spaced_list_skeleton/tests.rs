@@ -183,7 +183,7 @@ fn random_insertions() {
         assert_eq!(list.node_at_or_after(pos).unwrap().position(), pos);
         assert_eq!(list.node_after(pos - 1).unwrap().position(), pos);
     }
-    println!("{}", list.deep_size())
+    println!("{}", list.skeleton().deep_size())
 
     // let mut list: HollowSpacedList<u64> = HollowSpacedList::new();
     // list.insert_node(1);

@@ -42,26 +42,9 @@ macro_rules! shallow_traversal_position {
 }
 
 pub trait SpacedList<S: Spacing>: Default {
-    fn index_in_super_list(&self) -> Option<usize>;
-
-    fn set_index_in_super_list(&mut self, index: usize);
-
     fn skeleton(&self) -> &SpacedListSkeleton<S, Self>;
 
     fn skeleton_mut(&mut self) -> &mut SpacedListSkeleton<S, Self>;
-
-    fn size(&self) -> usize;
-
-    fn size_mut(&mut self) -> &mut usize;
-
-    fn deep_size(&self) -> usize;
-
-    // FIXME this seems to get ridiculously large under some circumstances
-    fn deep_size_mut(&mut self) -> &mut usize;
-
-    fn length(&self) -> S {
-        self.skeleton().length()
-    }
 
     // TODO add try_ versions of the methods below
 
@@ -70,32 +53,32 @@ pub trait SpacedList<S: Spacing>: Default {
         //  beyond the link length from the node the sublist is positioned after to the node the
         //  sublist is positioned before, but this should never happen because sublists are only
         //  accessible from within this crate
-        let size = self.size();
+        let size = self.skeleton().size();
         if size == self.skeleton().capacity() {
             self.skeleton_mut().grow();
         }
         self.skeleton_mut().inflate_at(size, distance);
-        *self.size_mut() += 1;
-        *self.deep_size_mut() += 1;
+        *self.skeleton_mut().size_mut() += 1;
+        *self.skeleton_mut().deep_size_mut() += 1;
     }
 
     fn insert_node(&mut self, position: S) {
         if position < zero() {
             todo!()
         }
-        if position >= self.length() {
-            self.append_node(position - self.length());
+        if position >= self.skeleton().length() {
+            self.append_node(position - self.skeleton().length());
             return;
         }
         let ShallowPosition { index, position: node_position, .. } =
             shallow_traversal_position!(<=, self, position);
         let mut sublist = self.skeleton_mut().get_or_add_sublist_at_mut(index);
         sublist.insert_node(position - node_position);
-        *self.deep_size_mut() += 1;
+        *self.skeleton_mut().deep_size_mut() += 1;
     }
 
     fn inflate_after(&mut self, position: S, amount: S) {
-        if position < zero() || position >= self.length() {
+        if position < zero() || position >= self.skeleton().length() {
             todo!()
         }
         let ShallowPosition { index, position: node_position, .. } =
@@ -103,14 +86,14 @@ pub trait SpacedList<S: Spacing>: Default {
         self.skeleton_mut().inflate_at(index, amount);
         if let Some(sublist) = self.skeleton_mut().get_sublist_at_mut(index) {
             let position_in_sublist = position - node_position;
-            if position_in_sublist < sublist.length() {
+            if position_in_sublist < sublist.skeleton().length() {
                 sublist.inflate_after(position_in_sublist, amount);
             }
         }
     }
 
     fn inflate_before(&mut self, position: S, amount: S) {
-        if position <= zero() || position > self.length() {
+        if position <= zero() || position > self.skeleton().length() {
             todo!()
         }
         let ShallowPosition { index, position: node_position, .. } =
@@ -118,14 +101,14 @@ pub trait SpacedList<S: Spacing>: Default {
         self.skeleton_mut().inflate_at(index, amount);
         if let Some(sublist) = self.skeleton_mut().get_sublist_at_mut(index) {
             let position_in_sublist = position - node_position;
-            if position_in_sublist < sublist.length() {
+            if position_in_sublist < sublist.skeleton().length() {
                 sublist.inflate_before(position_in_sublist, amount);
             }
         }
     }
 
     fn deflate_after(&mut self, position: S, amount: S) {
-        if position < zero() || position >= self.length() {
+        if position < zero() || position >= self.skeleton().length() {
             todo!()
         }
         let ShallowPosition { index, position: node_position, .. } =
@@ -133,14 +116,14 @@ pub trait SpacedList<S: Spacing>: Default {
         self.skeleton_mut().deflate_at(index, amount);
         if let Some(sublist) = self.skeleton_mut().get_sublist_at_mut(index) {
             let position_in_sublist = position - node_position;
-            if position_in_sublist < sublist.length() {
+            if position_in_sublist < sublist.skeleton().length() {
                 sublist.deflate_after(position_in_sublist, amount);
             }
         }
     }
 
     fn deflate_before(&mut self, position: S, amount: S) {
-        if position <= zero() || position > self.length() {
+        if position <= zero() || position > self.skeleton().length() {
             todo!()
         }
         let ShallowPosition { index, position: node_position, .. } =
@@ -148,7 +131,7 @@ pub trait SpacedList<S: Spacing>: Default {
         self.skeleton_mut().deflate_at(index, amount);
         if let Some(sublist) = self.skeleton_mut().get_sublist_at_mut(index) {
             let position_in_sublist = position - node_position;
-            if position_in_sublist < sublist.length() {
+            if position_in_sublist < sublist.skeleton().length() {
                 sublist.deflate_before(position_in_sublist, amount);
             }
         }
@@ -201,7 +184,7 @@ pub trait SpacedList<S: Spacing>: Default {
     }
 
     fn node_at<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
-        if position < zero() || position > self.length() {
+        if position < zero() || position > self.skeleton().length() {
             return None;
         }
         let mut traversal =
@@ -216,7 +199,7 @@ pub trait SpacedList<S: Spacing>: Default {
     }
 
     fn node_at_or_after<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
-        if position > self.length() {
+        if position > self.skeleton().length() {
             return None;
         }
         if position <= zero() {
@@ -235,7 +218,7 @@ pub trait SpacedList<S: Spacing>: Default {
     }
 
     fn node_after<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
-        if position >= self.length() {
+        if position >= self.skeleton().length() {
             return None;
         }
         if position < zero() {
