@@ -70,20 +70,20 @@ impl<S: Spacing> HollowSpacedList<S> {
         <Self as SpacedList<S>>::insert_node(self, position);
     }
 
-    pub fn inflate_after(&mut self, node_index: Todo, amount: S) {
-        todo!()
+    pub fn inflate_after(&mut self, position: S, amount: S) {
+        <Self as SpacedList<S>>::inflate_after(self, position, amount)
     }
 
-    pub fn inflate_before(&mut self, node_index: Todo, amount: S) {
-        todo!()
+    pub fn inflate_before(&mut self, position: S, amount: S) {
+        <Self as SpacedList<S>>::inflate_before(self, position, amount)
     }
 
-    pub fn deflate_after(&mut self, node_index: Todo, amount: S) {
-        todo!()
+    pub fn deflate_after(&mut self, position: S, amount: S) {
+        <Self as SpacedList<S>>::deflate_after(self, position, amount)
     }
 
-    pub fn deflate_before(&mut self, node_index: Todo, amount: S) {
-        todo!()
+    pub fn deflate_before(&mut self, position: S, amount: S) {
+        <Self as SpacedList<S>>::deflate_before(self, position, amount)
     }
 
     pub fn node_before(&self, position: S) -> Option<Position<S, Self>> {
