@@ -22,16 +22,9 @@ macro_rules! shallow_traversal {
 }
 
 macro_rules! shallow_traversal_position {
-    (<=, $list:expr, $position:expr) => {
+    ($cmp:tt, $list:expr, $position:expr) => {
         {
-            let mut traversal = shallow_traversal!(<=, $list, $position);
-            traversal.run();
-            traversal.position()
-        }
-    };
-    (<, $list:expr, $position:expr) => {
-        {
-            let mut traversal = shallow_traversal!(<, $list, $position);
+            let mut traversal = shallow_traversal!($cmp, $list, $position);
             traversal.run();
             traversal.position()
         }
