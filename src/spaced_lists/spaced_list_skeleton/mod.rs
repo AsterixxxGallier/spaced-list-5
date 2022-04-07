@@ -7,8 +7,8 @@ use crate::{SpacedList, Spacing};
 
 #[derive(Clone, Eq, PartialEq)]
 pub struct SpacedListSkeleton<S: Spacing, Sub: SpacedList<S>> {
-    pub(crate) link_lengths: Vec<S>,
-    pub(crate) sublists: Vec<Option<Sub>>,
+    link_lengths: Vec<S>,
+    sublists: Vec<Option<Sub>>,
     capacity: usize,
     depth: usize,
     length: S,
@@ -58,44 +58,26 @@ impl<S: Spacing, Sub: SpacedList<S>> SpacedListSkeleton<S, Sub> {
         &mut self.deep_size
     }
 
-    /// # Panics
-    ///
-    /// Panics when `index` is out of bounds.
     pub fn get_link_length_at(&self, index: usize) -> S {
         self.link_lengths[index]
     }
 
-    /// # Panics
-    ///
-    /// Panics when `index` is out of bounds.
     fn get_link_length_at_mut(&mut self, index: usize) -> &mut S {
         &mut self.link_lengths[index]
     }
 
-    /// # Panics
-    ///
-    /// Panics when `index` is out of bounds.
     pub fn get_sublist_at(&self, index: usize) -> &Option<Sub> {
         &self.sublists[index]
     }
 
-    /// # Panics
-    ///
-    /// Panics when `index` is out of bounds.
     pub fn get_sublist_at_mut(&mut self, index: usize) -> &mut Option<Sub> {
         &mut self.sublists[index]
     }
 
-    /// # Panics
-    ///
-    /// Panics when `index` is out of bounds.
     pub fn get_or_add_sublist_at(&mut self, index: usize) -> &Sub {
         self.get_or_add_sublist_at_mut(index)
     }
 
-    /// # Panics
-    ///
-    /// Panics when `index` is out of bounds.
     pub fn get_or_add_sublist_at_mut(&mut self, index: usize) -> &mut Sub {
         self.sublists[index].get_or_insert_with(|| {
             let mut sub = Sub::default();
@@ -150,7 +132,7 @@ impl<S: Spacing, Sub: SpacedList<S>> SpacedListSkeleton<S, Sub> {
 
     /// Inflates the link at the specified index.
     pub fn inflate_at(&mut self, link_index: usize, amount: S) {
-        // TODO add inflate_at_unchecked
+        // TODO add inflate_at_unchecked maybe
         assert!(self.link_index_is_in_bounds(link_index), "Link index not in bounds");
         assert!(amount >= zero(), "Cannot inflate by negative amount, explicitly deflate for that");
         let mut link_index = link_index;
@@ -168,7 +150,6 @@ impl<S: Spacing, Sub: SpacedList<S>> SpacedListSkeleton<S, Sub> {
     ///
     /// When deflating link lengths below zero, this causes this skeleton to assume an invalid
     /// state, which will lead to other methods behaving in undefined ways.
-    // TODO add a safe wrapper / make this safe
     // example:
     //
     // assert_eq!(skeleton.link_lengths, vec![2, 2, 0, 2]);
@@ -193,7 +174,6 @@ impl<S: Spacing, Sub: SpacedList<S>> SpacedListSkeleton<S, Sub> {
     pub fn deflate_at(&mut self, link_index: usize, amount: S) {
         assert!(self.link_index_is_in_bounds(link_index), "Link index not in bounds");
         assert!(amount >= zero(), "Cannot deflate by negative amount, explicitly inflate for that");
-        // TODO check that no implied link length becomes negative
         // concrete link lengths are those for which link_index.trailing_ones() == degree
         // implied link lengths are those which are below a concrete link
         // therefore, we need to check that for all concrete links that we touch, the implied

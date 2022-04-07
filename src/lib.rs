@@ -23,12 +23,19 @@
 #![feature(option_get_or_insert_default)]
 #![feature(slice_ptr_get)]
 
+#[doc(inline)]
 pub use spaced_lists::FilledRangeSpacedList;
+#[doc(inline)]
 pub use spaced_lists::FilledSpacedList;
+#[doc(inline)]
 pub use spaced_lists::HollowRangeSpacedList;
+#[doc(inline)]
 pub use spaced_lists::HollowSpacedList;
+#[doc(inline)]
 pub use spaced_lists::Position;
+#[doc(inline)]
 pub use spaced_lists::Iter;
+#[doc(inline)]
 pub use spaced_lists::Spacing;
 pub(crate) use spaced_lists::SpacedList;
 pub(crate) use spaced_lists::SpacedListSkeleton;
@@ -36,5 +43,5 @@ pub(crate) use spaced_lists::SpacedListSkeleton;
 /// Todo type, replace every occurrence of this type with a proper type
 type Todo = !;
 
-pub mod spaced_lists;
+mod spaced_lists;
 
