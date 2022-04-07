@@ -26,16 +26,11 @@ impl<S: Spacing> SpacedList<S> for HollowSpacedList<S> {
 }
 
 macro_rules! delegate {
-    ($fn:ident ($($param:ident : $param_type:ty),*)) => {
-        pub fn $fn($($param: $param_type),*) {
-            <Self as SpacedList<S>>::$fn($($param),*);
-        }
-    };
-    ($fn:ident ($($param:ident : $param_type:ty),*) -> $return:ty) => {
-        pub fn $fn($($param: $param_type),*) -> $return {
+    ($fn:ident ($($param:ident : $param_type:ty),*)$( -> $return:ty)?) => {
+        pub fn $fn($($param: $param_type),*)$( -> $return)? {
             <Self as SpacedList<S>>::$fn($($param),*)
         }
-    };
+    }
 }
 
 impl<S: Spacing> HollowSpacedList<S> {
