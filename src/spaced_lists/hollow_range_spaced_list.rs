@@ -5,18 +5,12 @@ use crate::{SpacedList, SpacedListSkeleton, Spacing, Todo};
 #[derive(Clone, Eq, PartialEq)]
 pub struct HollowRangeSpacedList<S: Spacing> {
     skeleton: SpacedListSkeleton<S, Self>,
-    size: usize,
-    deep_size: usize,
-    index_in_super_list: Option<usize>,
 }
 
 impl<S: Spacing> Default for HollowRangeSpacedList<S> {
     fn default() -> Self {
         Self {
             skeleton: default(),
-            size: 0,
-            deep_size: 0,
-            index_in_super_list: None,
         }
     }
 }

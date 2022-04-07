@@ -6,9 +6,6 @@ use crate::{SpacedList, SpacedListSkeleton, Spacing, Todo};
 pub struct FilledSpacedList<S: Spacing, T> {
     skeleton: SpacedListSkeleton<S, Self>,
     elements: Vec<T>,
-    size: usize,
-    deep_size: usize,
-    index_in_super_list: Option<usize>,
 }
 
 impl<S: Spacing, T> Default for FilledSpacedList<S, T> {
@@ -16,9 +13,6 @@ impl<S: Spacing, T> Default for FilledSpacedList<S, T> {
         Self {
             skeleton: default(),
             elements: vec![],
-            size: 0,
-            deep_size: 0,
-            index_in_super_list: None,
         }
     }
 }

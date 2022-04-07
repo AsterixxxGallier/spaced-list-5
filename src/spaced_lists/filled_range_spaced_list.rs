@@ -2,14 +2,10 @@ use std::default::default;
 
 use crate::{SpacedList, SpacedListSkeleton, Spacing, Todo};
 
-/// TODO how is this not migrated already what
 #[derive(Clone, Eq, PartialEq)]
 pub struct FilledRangeSpacedList<S: Spacing, T> {
     skeleton: SpacedListSkeleton<S, Self>,
     elements: Vec<T>,
-    size: usize,
-    deep_size: usize,
-    index_in_super_list: Option<usize>,
 }
 
 impl<S: Spacing, T> Default for FilledRangeSpacedList<S, T> {
@@ -17,9 +13,6 @@ impl<S: Spacing, T> Default for FilledRangeSpacedList<S, T> {
         Self {
             skeleton: default(),
             elements: vec![],
-            size: 0,
-            deep_size: 0,
-            index_in_super_list: None,
         }
     }
 }
