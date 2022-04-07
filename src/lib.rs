@@ -31,6 +31,7 @@ pub use spaced_lists::HollowSpacedList;
 pub use spaced_lists::Position;
 pub(crate) use spaced_lists::SpacedList;
 pub(crate) use spaced_lists::SpacedListSkeleton;
+pub use spaced_lists::Iter;
 pub use spaced_lists::Spacing;
 
 /// Todo type, replace every occurrence of this type with a proper type

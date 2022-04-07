@@ -3,7 +3,7 @@ use std::ops::Neg;
 
 use num_traits::zero;
 
-use crate::{Position, SpacedListSkeleton, Spacing, Todo};
+use crate::{Iter, Position, SpacedListSkeleton, Spacing, Todo};
 use crate::spaced_lists::traversal::node::Traversal;
 use crate::spaced_lists::traversal::shallow::{ShallowPosition, ShallowTraversal};
 
@@ -45,6 +45,10 @@ pub trait SpacedList<S: Spacing>: Default {
     fn skeleton(&self) -> &SpacedListSkeleton<S, Self>;
 
     fn skeleton_mut(&mut self) -> &mut SpacedListSkeleton<S, Self>;
+
+    fn iter(&self) -> Iter<S, Self> {
+        Iter::new(self)
+    }
 
     // TODO add try_ versions of the methods below
 

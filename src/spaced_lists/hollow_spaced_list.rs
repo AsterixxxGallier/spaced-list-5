@@ -2,7 +2,7 @@ use std::default::default;
 
 use num_traits::zero;
 
-use crate::{Position, SpacedList, SpacedListSkeleton, Spacing, Todo};
+use crate::{Iter, Position, SpacedList, SpacedListSkeleton, Spacing, Todo};
 
 #[derive(Clone, Eq, PartialEq)]
 pub struct HollowSpacedList<S: Spacing> {
@@ -44,6 +44,8 @@ impl<S: Spacing> HollowSpacedList<S> {
     pub fn new() -> Self {
         default()
     }
+
+    delegate!(iter (self: &mut Self) -> Iter<S, Self>);
 
     delegate!(append_node (self: &mut Self, distance: S));
     delegate!(insert_node (self: &mut Self, position: S));

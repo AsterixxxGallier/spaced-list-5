@@ -3,6 +3,25 @@
 use spaced_list_5::HollowSpacedList;
 
 #[test]
+fn iterate() {
+    let mut list: HollowSpacedList<u64> = HollowSpacedList::new();
+    list.insert_node(13);
+    list.insert_node(7);
+    list.insert_node(8);
+    list.insert_node(15);
+    list.insert_node(20);
+    list.insert_node(16);
+    let mut iter = list.iter();
+    assert_eq!(iter.next().unwrap().position(), 0);
+    assert_eq!(iter.next().unwrap().position(), 7);
+    assert_eq!(iter.next().unwrap().position(), 8);
+    assert_eq!(iter.next().unwrap().position(), 13);
+    assert_eq!(iter.next().unwrap().position(), 15);
+    assert_eq!(iter.next().unwrap().position(), 16);
+    assert_eq!(iter.next().unwrap().position(), 20);
+}
+
+#[test]
 fn inflate_deflate() {
     let mut list: HollowSpacedList<u64> = HollowSpacedList::new();
     list.insert_node(47);
