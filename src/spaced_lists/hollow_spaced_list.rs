@@ -1,8 +1,6 @@
 use std::default::default;
 
-use num_traits::zero;
-
-use crate::{Iter, Position, SpacedList, SpacedListSkeleton, Spacing, Todo};
+use crate::{Iter, Position, SpacedList, SpacedListSkeleton, Spacing};
 
 #[derive(Clone, Eq, PartialEq)]
 pub struct HollowSpacedList<S: Spacing> {

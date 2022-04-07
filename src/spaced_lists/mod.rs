@@ -1,7 +1,7 @@
 use std::fmt::Debug;
 use std::ops::{Add, AddAssign, Sub, SubAssign};
 
-use num_traits::{Zero, zero};
+use num_traits::{Zero};
 
 pub use filled_range_spaced_list::FilledRangeSpacedList;
 pub use filled_spaced_list::FilledSpacedList;

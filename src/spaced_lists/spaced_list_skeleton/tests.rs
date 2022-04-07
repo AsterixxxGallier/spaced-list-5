@@ -2,12 +2,12 @@
 
 use rand::{Rng, thread_rng};
 
-use crate::{HollowSpacedList, SpacedList, SpacedListSkeleton};
+use crate::{HollowSpacedList, SpacedList};
 
 #[test]
 fn grow() {
     let mut list: HollowSpacedList<u32> = HollowSpacedList::new();
-    let mut skeleton = list.skeleton_mut();
+    let skeleton = list.skeleton_mut();
 
     assert_eq!(skeleton.sublists.len(), 0);
     assert_eq!(skeleton.capacity(), 0);
@@ -41,7 +41,7 @@ fn grow() {
 #[test]
 fn inflate_deflate() {
     let mut list: HollowSpacedList<u32> = HollowSpacedList::new();
-    let mut skeleton = list.skeleton_mut();
+    let skeleton = list.skeleton_mut();
 
     skeleton.grow();
     skeleton.grow();
@@ -84,7 +84,7 @@ fn inflate_deflate() {
 #[should_panic(expected = "index")]
 fn bad_inflate_should_panic_0() {
     let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
-    let mut skeleton = list.skeleton_mut();
+    let skeleton = list.skeleton_mut();
     skeleton.inflate_at(0, 1);
 }
 
@@ -92,7 +92,7 @@ fn bad_inflate_should_panic_0() {
 #[should_panic(expected = "negative")]
 fn bad_inflate_should_panic_1() {
     let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
-    let mut skeleton = list.skeleton_mut();
+    let skeleton = list.skeleton_mut();
     skeleton.grow();
     skeleton.inflate_at(0, -1);
 }
@@ -101,7 +101,7 @@ fn bad_inflate_should_panic_1() {
 #[should_panic(expected = "index")]
 fn bad_inflate_should_panic_2() {
     let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
-    let mut skeleton = list.skeleton_mut();
+    let skeleton = list.skeleton_mut();
     skeleton.grow();
     skeleton.inflate_at(1, 0);
 }
@@ -110,7 +110,7 @@ fn bad_inflate_should_panic_2() {
 #[should_panic(expected = "index")]
 fn bad_deflate_should_panic_0() {
     let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
-    let mut skeleton = list.skeleton_mut();
+    let skeleton = list.skeleton_mut();
     skeleton.deflate_at(0, 0);
 }
 
@@ -118,7 +118,7 @@ fn bad_deflate_should_panic_0() {
 #[should_panic(expected = "negative")]
 fn bad_deflate_should_panic_1() {
     let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
-    let mut skeleton = list.skeleton_mut();
+    let skeleton = list.skeleton_mut();
     skeleton.grow();
     skeleton.deflate_at(0, -1);
 }
@@ -127,7 +127,7 @@ fn bad_deflate_should_panic_1() {
 #[should_panic(expected = "negative")]
 fn bad_deflate_should_panic_2() {
     let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
-    let mut skeleton = list.skeleton_mut();
+    let skeleton = list.skeleton_mut();
     skeleton.grow();
     skeleton.grow();
     skeleton.inflate_at(0, 1);
@@ -138,7 +138,7 @@ fn bad_deflate_should_panic_2() {
 #[should_panic(expected = "below zero")]
 fn bad_deflate_should_panic_3() {
     let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
-    let mut skeleton = list.skeleton_mut();
+    let skeleton = list.skeleton_mut();
     skeleton.grow();
     skeleton.grow();
     skeleton.grow();

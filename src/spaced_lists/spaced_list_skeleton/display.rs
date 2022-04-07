@@ -1,8 +1,8 @@
+#![allow(unused)]
+
 use std::fmt::{Display, Formatter, Write};
-use std::hint::unreachable_unchecked;
-use std::iter::{empty, repeat};
-use std::ops::{Bound, Deref, DerefMut, Index, RangeBounds};
-use std::slice::SliceIndex;
+use std::iter::{repeat};
+use std::ops::{Bound, RangeBounds};
 
 use crate::spaced_lists::spaced_list_skeleton::display::Cell::*;
 
@@ -105,8 +105,6 @@ impl Grid {
     fn horizontal_line(&mut self, row: usize, range: impl RangeBounds<usize>, highlighted: bool) {
         let start_bound = range.start_bound();
         let end_bound = range.end_bound();
-        /// inclusive
-        // let required_max_column = Self::required_max(start_bound, end_bound);
         self.expand_to_fit(row, 0);
         let row_cells = self.row(row).unwrap();
         let start = match start_bound {
@@ -114,7 +112,7 @@ impl Grid {
             Bound::Excluded(x) => x + 1,
             Bound::Unbounded => 0
         };
-        /// inclusive
+        // inclusive
         let end = match end_bound {
             Bound::Included(x) => *x,
             Bound::Excluded(x) => x - 1,
@@ -135,7 +133,7 @@ impl Grid {
             Bound::Excluded(x) => x + 1,
             Bound::Unbounded => 0
         };
-        /// inclusive
+        // inclusive
         let end = match end_bound {
             Bound::Included(x) => *x,
             Bound::Excluded(x) => x - 1,

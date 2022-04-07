@@ -1,7 +1,5 @@
 use std::default::default;
 
-use num_traits::zero;
-
 use crate::{SpacedList, SpacedListSkeleton, Spacing, Todo};
 
 #[derive(Clone, Eq, PartialEq)]
@@ -33,6 +31,7 @@ impl<S: Spacing> SpacedList<S> for HollowRangeSpacedList<S> {
     }
 }
 
+#[allow(unused)]
 impl<S: Spacing> HollowRangeSpacedList<S> {
     pub fn new() -> Self {
         default()

@@ -1,5 +1,3 @@
-use std::ops::{Deref, DerefMut};
-
 use num_traits::zero;
 
 use crate::{Position, SpacedList, Spacing};
@@ -30,7 +28,7 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
             degree: list.skeleton().depth() - 1,
         });
 
-        this.descend_all_the_way_down();
+        this.descend();
 
         this
     }
@@ -56,7 +54,7 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
 
             self.next_unchecked();
 
-            self.descend_all_the_way_down();
+            self.descend();
 
             Ok(())
         }
@@ -69,7 +67,8 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
         last.link_index += 1 << last.degree;
     }
 
-    fn descend_all_the_way_down(&mut self) {
+    /// Descends as far down as possible
+    fn descend(&mut self) {
         loop {
             let IterPos {
                 list,
@@ -108,46 +107,6 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
             }
         }
     }
-
-    // TODO remove if actually not needed for real
-    fn descend(&mut self) -> Result<(), ()> {
-        let IterPos {
-            list,
-            position,
-            node_index,
-            link_index,
-            degree,
-        } = *self.positions.last().unwrap();
-        if degree > 0 {
-            self.positions.push(IterPos {
-                list,
-                position,
-                node_index,
-                link_index: link_index - (1 << (degree - 1)),
-                degree: degree - 1,
-            });
-            Ok(())
-        } else {
-            let skeleton = list.skeleton();
-            if skeleton.sublist_index_is_in_bounds(node_index) {
-                if let Some(sublist) = skeleton.get_sublist_at(node_index) {
-                    let sub_skeleton = sublist.skeleton();
-                    self.positions.push(IterPos {
-                        list: sublist,
-                        position,
-                        node_index: 0,
-                        link_index: sub_skeleton.capacity() - 1,
-                        degree: sub_skeleton.depth() - 1,
-                    });
-                    Ok(())
-                } else {
-                    Err(())
-                }
-            } else {
-                Err(())
-            }
-        }
-    }
 }
 
 impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iterator for Iter<'list, S, List> {
@@ -155,7 +114,8 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iterator for Iter<'list, S,
 
     fn next<'a>(&'a mut self) -> Option<Position<'list, S, List>> {
         let position = Iter::<'_, _, _>::position(self)?;
-        self.next();
+        // if we're at the end of the list, the line above will return None in the next iteration
+        let _err_if_at_end = self.next();
         Some(position)
     }
 }

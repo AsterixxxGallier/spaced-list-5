@@ -1,9 +1,6 @@
-use std::marker::PhantomData;
-use std::ops::Neg;
-
 use num_traits::zero;
 
-use crate::{Iter, Position, SpacedListSkeleton, Spacing, Todo};
+use crate::{Iter, Position, SpacedListSkeleton, Spacing};
 use crate::spaced_lists::traversal::node::Traversal;
 use crate::spaced_lists::traversal::shallow::{ShallowPosition, ShallowTraversal};
 
@@ -29,14 +26,14 @@ macro_rules! shallow_traversal_position {
         {
             let mut traversal = shallow_traversal!(<=, $list, $position);
             traversal.run();
-            traversal.into_position()
+            traversal.position()
         }
     };
     (<, $list:expr, $position:expr) => {
         {
             let mut traversal = shallow_traversal!(<, $list, $position);
             traversal.run();
-            traversal.into_position()
+            traversal.position()
         }
     }
 }
@@ -76,7 +73,7 @@ pub trait SpacedList<S: Spacing>: Default {
         }
         let ShallowPosition { index, position: node_position, .. } =
             shallow_traversal_position!(<=, self, position);
-        let mut sublist = self.skeleton_mut().get_or_add_sublist_at_mut(index);
+        let sublist = self.skeleton_mut().get_or_add_sublist_at_mut(index);
         sublist.insert_node(position - node_position);
         *self.skeleton_mut().deep_size_mut() += 1;
     }

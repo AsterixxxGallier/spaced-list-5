@@ -1,7 +1,5 @@
 use std::default::default;
 
-use num_traits::zero;
-
 use crate::{SpacedList, SpacedListSkeleton, Spacing, Todo};
 
 #[derive(Clone, Eq, PartialEq)]
@@ -35,6 +33,7 @@ impl<S: Spacing, T> SpacedList<S> for FilledSpacedList<S, T> {
     }
 }
 
+#[allow(unused)]
 impl<S: Spacing, T> FilledSpacedList<S, T> {
     pub fn new() -> Self {
         default()

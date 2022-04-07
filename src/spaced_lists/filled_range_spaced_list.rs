@@ -1,9 +1,8 @@
 use std::default::default;
 
-use num_traits::zero;
-
 use crate::{SpacedList, SpacedListSkeleton, Spacing, Todo};
 
+/// TODO how is this not migrated already what
 #[derive(Clone, Eq, PartialEq)]
 pub struct FilledRangeSpacedList<S: Spacing, T> {
     skeleton: SpacedListSkeleton<S, Self>,
@@ -35,6 +34,7 @@ impl<S: Spacing, T> SpacedList<S> for FilledRangeSpacedList<S, T> {
     }
 }
 
+#[allow(unused)]
 impl<S: Spacing, T> FilledRangeSpacedList<S, T> {
     pub fn new() -> Self {
         default()
