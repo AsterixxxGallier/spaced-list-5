@@ -49,7 +49,7 @@ pub trait SpacedList<S: Spacing>: Default {
 
     // TODO add try_ versions of the methods below
 
-    fn append_node(&mut self, distance: S) {
+    fn append_node(&mut self, distance: S) -> Position<S, Self> {
         // TODO possibly, there might be future problems when increasing the length of a sublist
         //  beyond the link length from the node the sublist is positioned after to the node the
         //  sublist is positioned before, but this should never happen because sublists are only
@@ -59,23 +59,25 @@ pub trait SpacedList<S: Spacing>: Default {
             self.skeleton_mut().grow();
         }
         self.skeleton_mut().inflate_at(size, distance);
+        let index = self.skeleton().size();
+        let position = self.skeleton().length();
         *self.skeleton_mut().size_mut() += 1;
         *self.skeleton_mut().deep_size_mut() += 1;
+        Position::new(self, index, position)
     }
 
-    fn insert_node(&mut self, position: S) {
+    fn insert_node<'a>(&'a mut self, position: S) -> Position<'a, S, Self> where S: 'a {
         if position < zero() {
             todo!()
         }
         if position >= self.skeleton().length() {
-            self.append_node(position - self.skeleton().length());
-            return;
+            return self.append_node(position - self.skeleton().length());
         }
         let ShallowPosition { index, position: node_position, .. } =
             shallow_traversal_position!(<=, self, position);
-        let sublist = self.skeleton_mut().get_or_add_sublist_at_mut(index);
-        sublist.insert_node(position - node_position);
         *self.skeleton_mut().deep_size_mut() += 1;
+        let sublist = self.skeleton_mut().get_or_add_sublist_at_mut(index);
+        sublist.insert_node(position - node_position)
     }
 
     fn inflate_after(&mut self, position: S, amount: S) {

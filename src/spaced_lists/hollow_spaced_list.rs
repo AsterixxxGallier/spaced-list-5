@@ -45,8 +45,8 @@ impl<S: Spacing> HollowSpacedList<S> {
 
     delegate!(iter (self: &mut Self) -> Iter<S, Self>);
 
-    delegate!(append_node (self: &mut Self, distance: S));
-    delegate!(insert_node (self: &mut Self, position: S));
+    delegate!(append_node (self: &mut Self, distance: S) -> Position<S, Self>);
+    delegate!(insert_node (self: &mut Self, position: S) -> Position<S, Self>);
 
     delegate!(inflate_after (self: &mut Self, position: S, amount: S));
     delegate!(inflate_before (self: &mut Self, position: S, amount: S));
