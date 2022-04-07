@@ -45,7 +45,7 @@ impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
                     while self.descend().is_ok() {
                         continue;
                     }
-                    break
+                    break;
                 }
             }
             while self.link_index >= self.list.skeleton().size() {

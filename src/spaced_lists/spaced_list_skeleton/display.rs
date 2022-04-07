@@ -1,7 +1,7 @@
 #![allow(unused)]
 
 use std::fmt::{Display, Formatter, Write};
-use std::iter::{repeat};
+use std::iter::repeat;
 use std::ops::{Bound, RangeBounds};
 
 use crate::spaced_lists::spaced_list_skeleton::display::Cell::*;
