@@ -35,7 +35,7 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
 
     fn position(&self) -> Option<Position<'list, S, List>> {
         let last = self.positions.last()?;
-        Some(Position::new(last.list, last.node_index, last.position, last.link_index))
+        Some(Position::new(last.list, last.node_index, last.position))
     }
 
     fn next(&mut self) -> Result<(), ()> {
