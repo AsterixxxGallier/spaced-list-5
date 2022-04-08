@@ -8,6 +8,7 @@ pub use hollow_range_spaced_list::HollowRangeSpacedList;
 pub use hollow_spaced_list::HollowSpacedList;
 pub use traversal::iteration::node::Iter;
 pub use traversal::node::Position;
+pub use spaced_list::Pos;
 pub(crate) use spaced_list::SpacedList;
 pub(crate) use spaced_list_skeleton::SpacedListSkeleton;
 

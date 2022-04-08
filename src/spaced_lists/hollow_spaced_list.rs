@@ -1,6 +1,6 @@
 use std::default::default;
 
-use crate::{Iter, Position, SpacedList, SpacedListSkeleton, Spacing};
+use crate::{Iter, Position, Pos, SpacedList, SpacedListSkeleton, Spacing};
 
 #[derive(Clone, Eq, PartialEq)]
 pub struct HollowSpacedList<S: Spacing> {
@@ -48,9 +48,9 @@ impl<S: Spacing> HollowSpacedList<S> {
     delegate!(deflate_after (self: &mut Self, position: S, amount: S));
     delegate!(deflate_before (self: &mut Self, position: S, amount: S));
 
-    delegate!(node_before(self: &Self, position: S) -> Option<Position<S, Self>>);
-    delegate!(node_at_or_before(self: &Self, position: S) -> Option<Position<S, Self>>);
-    delegate!(node_at(self: &Self, position: S) -> Option<Position<S, Self>>);
-    delegate!(node_at_or_after(self: &Self, position: S) -> Option<Position<S, Self>>);
-    delegate!(node_after(self: &Self, position: S) -> Option<Position<S, Self>>);
+    delegate!(node_before(self: &Self, position: S) -> Option<Pos<S, Self>>);
+    delegate!(node_at_or_before(self: &Self, position: S) -> Option<Pos<S, Self>>);
+    delegate!(node_at(self: &Self, position: S) -> Option<Pos<S, Self>>);
+    delegate!(node_at_or_after(self: &Self, position: S) -> Option<Pos<S, Self>>);
+    delegate!(node_after(self: &Self, position: S) -> Option<Pos<S, Self>>);
 }

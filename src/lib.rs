@@ -34,6 +34,8 @@ pub use spaced_lists::HollowSpacedList;
 #[doc(inline)]
 pub use spaced_lists::Position;
 #[doc(inline)]
+pub use spaced_lists::Pos;
+#[doc(inline)]
 pub use spaced_lists::Iter;
 #[doc(inline)]
 pub use spaced_lists::Spacing;

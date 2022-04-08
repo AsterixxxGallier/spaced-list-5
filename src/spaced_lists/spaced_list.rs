@@ -31,6 +31,239 @@ macro_rules! shallow_traversal_position {
     }
 }
 
+// ╭───────────────────────────────────────────────────────────────╮
+// ├───────────────────────────────╮                               │
+// ├───────────────╮               ├───────────────╮               │
+// ├───────╮       ├───────╮       ├───────╮       ├───────╮       │
+// ├───╮   ├───╮   ├───╮   ├───╮   ├───╮   ├───╮   ├───╮   ├───╮   │
+// ╵ 0 ╵ 1 ╵ 0 ╵ 2 ╵ 0 ╵ 1 ╵ 0 ╵ 3 ╵ 0 ╵ 1 ╵ 0 ╵ 2 ╵ 0 ╵ 1 ╵ 0 ╵ 4 ╵
+// 00000   00010   00100   00110   01000   01010   01100   01110   10000
+//     00001   00011   00101   00111   01001   01011   01101   01111
+//
+// backwards structure, does not make a lot of sense unfortunately:
+// ╭───────────────────────────────────────────────────────────────╮
+// │                               ╭───────────────────────────────┤
+// │               ╭───────────────┤               ╭───────────────┤
+// │       ╭───────┤       ╭───────┤       ╭───────┤       ╭───────┤
+// │   ╭───┤   ╭───┤   ╭───┤   ╭───┤   ╭───┤   ╭───┤   ╭───┤   ╭───┤
+// ╵ 0 ╵ 1 ╵ 0 ╵ 2 ╵ 0 ╵ 1 ╵ 0 ╵ 3 ╵ 0 ╵ 1 ╵ 0 ╵ 2 ╵ 0 ╵ 1 ╵ 0 ╵ 4 ╵
+// 00000   00010   00100   00110   01000   01010   01100   01110   10000
+//     00001   00011   00101   00111   01001   01011   01101   01111
+
+const fn link_index(node_index: usize, degree: usize) -> usize {
+    node_index + (1 << degree) - 1
+}
+
+pub struct Pos<'list, S: Spacing, List: SpacedList<S>> {
+    super_lists: Vec<&'list List>,
+    list: &'list List,
+    index: usize,
+    position: S
+}
+
+impl<'list, S: Spacing, List: SpacedList<S>> Pos<'list, S, List> {
+    fn new(
+        super_lists: Vec<&'list List>,
+        list: &'list List,
+        index: usize,
+        position: S
+    ) -> Self {
+        Pos {
+            super_lists,
+            list,
+            index,
+            position
+        }
+    }
+
+    fn next(&mut self) -> Result<(), &'static str> {
+        if self.index == self.list.skeleton().size() {
+            return if let Some(index) = self.list.skeleton().index_in_super_list() {
+                self.index = index;
+                self.position -= self.list.skeleton().length();
+                self.list = self.super_lists.pop().unwrap();
+                return self.next();
+            } else {
+                Err("Called next on a Position that is already at the end of the list")
+            };
+        }
+
+        let skeleton = self.list.skeleton();
+        let mut degree = 0;
+        loop {
+            if degree < self.index.trailing_zeros() as usize {
+                break;
+            }
+            self.position -= skeleton.get_link_length_at(self.index - 1);
+            self.index -= 1 << degree;
+            degree += 1;
+        }
+
+        self.index += 1 << degree;
+        self.position += skeleton.get_link_length_at(self.index - 1);
+
+        Ok(())
+    }
+
+    pub fn position(&self) -> S {
+        self.position
+    }
+}
+
+fn traverse_until_exclusive<'a, S: 'a + Spacing, List: SpacedList<S>>(list: &'a List, target: S)
+                                                                      -> Pos<'a, S, List> {
+    let mut super_lists = vec![];
+    let mut list = list;
+    let mut skeleton = list.skeleton();
+    let mut degree = skeleton.depth() - 1;
+    let mut node_index = 0;
+    // TODO start at offset
+    let mut position = zero();
+    loop {
+        let link_index = link_index(node_index, degree);
+        if !skeleton.link_index_is_in_bounds(link_index) {
+            if degree == 0 {
+                break;
+            }
+            degree -= 1;
+            continue;
+        }
+        let next_position = position + skeleton.get_link_length_at(link_index);
+        if next_position < target {
+            position = next_position;
+            node_index += 1 << degree;
+        }
+        if degree == 0 {
+            if let Some(sublist) = skeleton.get_sublist_at(node_index) {
+                let sub_skeleton = sublist.skeleton();
+                degree = sub_skeleton.depth() - 1;
+                node_index = 0;
+                super_lists.push(list);
+                list = sublist;
+                skeleton = sub_skeleton;
+            } else {
+                break;
+            }
+        }
+        degree -= 1;
+    }
+    Pos::new(super_lists, list, node_index, position)
+}
+
+fn traverse_until_inclusive<'a, S: 'a + Spacing, List: SpacedList<S>>(list: &'a List, target: S)
+                                                                      -> Pos<'a, S, List> {
+    let mut super_lists = vec![];
+    let mut list = list;
+    let skeleton = list.skeleton();
+    let mut degree = skeleton.depth() - 1;
+    let mut node_index = 0;
+    // TODO start at offset
+    let mut position = zero();
+    loop {
+        let link_index = link_index(node_index, degree);
+        if !skeleton.link_index_is_in_bounds(link_index) {
+            if degree == 0 {
+                break;
+            }
+            degree -= 1;
+            continue;
+        }
+        let next_position = position + skeleton.get_link_length_at(link_index);
+        if next_position <= target {
+            position = next_position;
+            node_index += 1 << degree;
+            if position == target {
+                break;
+            }
+        }
+        if degree == 0 {
+            if let Some(sublist) = skeleton.get_sublist_at(node_index) {
+                let sub_skeleton = sublist.skeleton();
+                degree = sub_skeleton.depth() - 1;
+                node_index = 0;
+                super_lists.push(list);
+                list = sublist;
+            } else {
+                break;
+            }
+        }
+        degree -= 1;
+    }
+    Pos::new(super_lists, list, node_index, position)
+}
+
+macro_rules! traverse {
+    ($list:expr; < $target:expr) => {
+        {
+            // TODO check if it's smaller than or equal to offset instead
+            if $target <= zero() {
+                None
+            } else {
+                Some(traverse_until_exclusive($list, $target))
+            }
+        }
+    };
+    ($list:expr; <= $target:expr) => {
+        {
+            // TODO check if it's smaller than offset instead
+            if $target < zero() {
+                None
+            } else {
+                Some(traverse_until_inclusive($list, $target))
+            }
+        }
+    };
+    ($list:expr; == $target:expr) => {
+        {
+            // TODO check if it's smaller than offset instead
+            if $target < zero() {
+                None
+            } else {
+                let pos = traverse_until_inclusive($list, $target);
+                if pos.position == $target {
+                    Some(pos)
+                } else {
+                    None
+                }
+            }
+        }
+    };
+    ($list:expr; >= $target:expr) => {
+        {
+            // TODO check if it's larger than offset + length instead
+            if $target > $list.skeleton().length() {
+                None
+                // TODO replace zero() with offset
+            } else if $target <= zero() {
+                Some(Pos::new(vec![], $list, 0, zero()))
+            } else {
+                let mut pos = traverse_until_inclusive($list, $target);
+                if pos.position == $target {
+                    Some(pos)
+                } else {
+                    pos.next().unwrap();
+                    Some(pos)
+                }
+            }
+        }
+    };
+    ($list:expr; > $target:expr) => {
+        {
+            // TODO check if it's larger than or equal to offset + length instead
+            if $target >= $list.skeleton().length() {
+                None
+                // TODO replace zero() with offset
+            } else if $target < zero() {
+                Some(Pos::new(vec![], $list, 0, zero()))
+            } else {
+                let mut pos = traverse_until_inclusive($list, $target);
+                pos.next().unwrap();
+                Some(pos)
+            }
+        }
+    }
+}
+
 pub trait SpacedList<S: Spacing>: Default {
     fn skeleton(&self) -> &SpacedListSkeleton<S, Self>;
 
@@ -133,19 +366,19 @@ pub trait SpacedList<S: Spacing>: Default {
         }
     }
 
-    // All possible queries:
-    // - first
-    // - last before
-    // - first at or last before
-    // - last at or last before
-    // - first at
-    // - last at
-    // - first at or first after
-    // - last at or first after
-    // - first after
-    // - last
-    //
-    // TODO long term implement all of these
+    /*All possible queries:
+    - first
+    - last before
+    - first at or last before
+    - last at or last before
+    - first at
+    - last at
+    - first at or first after
+    - last at or first after
+    - first after
+    - last
+
+    TODO long term implement all of these*/
 
     fn traversal<Continue>(&self, continue_condition: Continue)
                            -> Traversal<S, Self, Continue, fn(S) -> bool>
@@ -160,70 +393,23 @@ pub trait SpacedList<S: Spacing>: Default {
         Traversal::new(self, continue_condition, Some(stop_condition))
     }
 
-    fn node_before<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
-        if position <= zero() {
-            return None;
-        }
-        let mut traversal = self.traversal(|pos| pos < position);
-        traversal.run();
-        Some(traversal.position())
+    fn node_before<'a>(&'a self, position: S) -> Option<Pos<'a, S, Self>> where S: 'a {
+        traverse!(self; < position)
     }
 
-    fn node_at_or_before<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
-        if position < zero() {
-            return None;
-        }
-        let mut traversal =
-            self.stopping_traversal(|pos| pos <= position, |pos| pos == position);
-        traversal.run();
-        Some(traversal.position())
+    fn node_at_or_before<'a>(&'a self, position: S) -> Option<Pos<'a, S, Self>> where S: 'a {
+        traverse!(self; <= position)
     }
 
-    fn node_at<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
-        if position < zero() || position > self.skeleton().length() {
-            return None;
-        }
-        let mut traversal =
-            self.stopping_traversal(|pos| pos <= position, |pos| pos == position);
-        traversal.run();
-        let result = traversal.position();
-        if result.position() == position {
-            Some(result)
-        } else {
-            None
-        }
+    fn node_at<'a>(&'a self, position: S) -> Option<Pos<'a, S, Self>> where S: 'a {
+        traverse!(self; == position)
     }
 
-    fn node_at_or_after<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
-        if position > self.skeleton().length() {
-            return None;
-        }
-        if position <= zero() {
-            return Some(Position::new(self, 0, zero()));
-        }
-        let mut traversal =
-            self.stopping_traversal(|pos| pos <= position, |pos| pos == position);
-        traversal.run();
-        let result = traversal.position();
-        if result.position() == position {
-            Some(result)
-        } else {
-            traversal.next().unwrap();
-            Some(traversal.position())
-        }
+    fn node_at_or_after<'a>(&'a self, position: S) -> Option<Pos<'a, S, Self>> where S: 'a {
+        traverse!(self; >= position)
     }
 
-    fn node_after<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
-        if position >= self.skeleton().length() {
-            return None;
-        }
-        if position < zero() {
-            return Some(Position::new(self, 0, zero()));
-        }
-        let mut traversal =
-            self.stopping_traversal(|pos| pos <= position, |pos| pos == position);
-        traversal.run();
-        traversal.next().unwrap();
-        Some(traversal.position())
+    fn node_after<'a>(&'a self, position: S) -> Option<Pos<'a, S, Self>> where S: 'a {
+        traverse!(self; > position)
     }
 }
