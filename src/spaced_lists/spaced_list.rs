@@ -39,7 +39,7 @@ macro_rules! flate_methods {
                 let ShallowPosition { index, position: node_position, .. } =
                     flate_position!($pos; self, position).unwrap();
                 self.skeleton_mut().[<$action _at>](index, amount);
-                if let Some(sublist) = self.skeleton_mut().get_sublist_at_mut(index) {
+                if let Some(sublist) = self.skeleton_mut().sublist_at_mut(index) {
                     let position_in_sublist = position - node_position;
                     if position_in_sublist < sublist.skeleton().length() {
                         sublist.[<$action _ $pos>](position_in_sublist, amount);

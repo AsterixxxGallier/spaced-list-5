@@ -24,14 +24,14 @@ pub(crate) const fn link_index(node_index: usize, degree: usize) -> usize {
 macro_rules! maybe_move_forwards {
     (deep; <= $target:expr; $skeleton:expr, $link_index:expr,
         $list:ident, $degree:ident, $node_index:ident, $position:ident, $super_lists:ident) => {
-        let next_position = $position + $skeleton.get_link_length_at($link_index);
+        let next_position = $position + $skeleton.link_length_at($link_index);
         if next_position <= $target {
             $position = next_position;
             $node_index += 1 << $degree;
             if $position == $target {
                 if $skeleton.sublist_index_is_in_bounds($node_index) {
                     // TODO don't just descend into sublists like that when you have offsets
-                    while let Some(sublist) = $skeleton.get_sublist_at($node_index) {
+                    while let Some(sublist) = $skeleton.sublist_at($node_index) {
                         $node_index = 0;
                         $super_lists.push($list);
                         $list = sublist;
@@ -43,7 +43,7 @@ macro_rules! maybe_move_forwards {
     };
     (shallow; <= $target:expr; $skeleton:expr, $link_index:expr,
         $list:ident, $degree:ident, $node_index:ident, $position:ident) => {
-        let next_position = $position + $skeleton.get_link_length_at($link_index);
+        let next_position = $position + $skeleton.link_length_at($link_index);
         if next_position <= $target {
             $position = next_position;
             $node_index += 1 << $degree;
@@ -54,7 +54,7 @@ macro_rules! maybe_move_forwards {
     };
     ($_depth:tt; < $target:expr; $skeleton:expr, $link_index:expr,
         $list:ident, $degree:ident, $node_index:ident, $position:ident$(, $_super_lists:ident)?) => {
-        let next_position = $position + $skeleton.get_link_length_at($link_index);
+        let next_position = $position + $skeleton.link_length_at($link_index);
         if next_position < $target {
             $position = next_position;
             $node_index += 1 << $degree;
@@ -67,7 +67,7 @@ macro_rules! descend {
         $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
         if $degree == 0 {
             if $skeleton.sublist_index_is_in_bounds($node_index) {
-                if let Some(sublist) = $skeleton.get_sublist_at($node_index) {
+                if let Some(sublist) = $skeleton.sublist_at($node_index) {
                     // TODO check too that position + sublist.offset < target
                     let sub_skeleton = sublist.skeleton();
                     $degree = sub_skeleton.depth() - 1;
@@ -131,13 +131,13 @@ macro_rules! next {
                 if degree < $node_index.trailing_zeros() as usize {
                     break;
                 }
-                $position -= skeleton.get_link_length_at($node_index - 1);
+                $position -= skeleton.link_length_at($node_index - 1);
                 $node_index -= 1 << degree;
                 degree += 1;
             }
 
             $node_index += 1 << degree;
-            $position += skeleton.get_link_length_at($node_index - 1);
+            $position += skeleton.link_length_at($node_index - 1);
         }
     };
 }
