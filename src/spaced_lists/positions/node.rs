@@ -22,7 +22,10 @@ impl<'list, S: Spacing, List: SpacedList<S>> Position<'list, S, List> {
         }
     }
 
-    pub fn position(&self) -> S {
-        self.position
+    accessors! {
+        pub(crate) ref super_lists: Vec<&'list List>;
+        pub(crate) list: &'list List;
+        pub(crate) index: usize;
+        pub position: S;
     }
 }
