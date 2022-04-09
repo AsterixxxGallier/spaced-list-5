@@ -76,6 +76,7 @@ pub trait SpacedList<S: Spacing>: Default {
         //  beyond the link length from the node the sublist is positioned after to the node the
         //  sublist is positioned before, but this should never happen because sublists are only
         //  accessible from within this crate
+        // TODO add edge case support for first addition that sets offset
         let size = self.skeleton().size();
         if size == self.skeleton().capacity() {
             self.skeleton_mut().grow();
@@ -89,9 +90,11 @@ pub trait SpacedList<S: Spacing>: Default {
     }
 
     fn insert_node<'a>(&'a mut self, position: S) -> Position<'a, S, Self> where S: 'a {
+        // TODO check if smaller than offset instead
         if position < zero() {
             todo!()
         }
+        // TODO check if larger than or equal to length + offset instead
         if position >= self.skeleton().length() {
             return self.append_node(position - self.skeleton().length());
         }
