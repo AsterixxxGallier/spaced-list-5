@@ -58,7 +58,7 @@ pub struct Pos<'list, S: Spacing, List: SpacedList<S>> {
     super_lists: Vec<&'list List>,
     list: &'list List,
     index: usize,
-    position: S
+    position: S,
 }
 
 impl<'list, S: Spacing, List: SpacedList<S>> Pos<'list, S, List> {
@@ -66,13 +66,13 @@ impl<'list, S: Spacing, List: SpacedList<S>> Pos<'list, S, List> {
         super_lists: Vec<&'list List>,
         list: &'list List,
         index: usize,
-        position: S
+        position: S,
     ) -> Self {
         Pos {
             super_lists,
             list,
             index,
-            position
+            position,
         }
     }
 
@@ -114,12 +114,12 @@ fn traverse_until_exclusive<'a, S: 'a + Spacing, List: SpacedList<S>>(list: &'a 
                                                                       -> Pos<'a, S, List> {
     let mut super_lists = vec![];
     let mut list = list;
-    let mut skeleton = list.skeleton();
-    let mut degree = skeleton.depth() - 1;
+    let mut degree = list.skeleton().depth() - 1;
     let mut node_index = 0;
     // TODO start at offset
     let mut position = zero();
     loop {
+        let skeleton = list.skeleton();
         let link_index = link_index(node_index, degree);
         if !skeleton.link_index_is_in_bounds(link_index) {
             if degree == 0 {
@@ -134,18 +134,23 @@ fn traverse_until_exclusive<'a, S: 'a + Spacing, List: SpacedList<S>>(list: &'a 
             node_index += 1 << degree;
         }
         if degree == 0 {
-            if let Some(sublist) = skeleton.get_sublist_at(node_index) {
-                let sub_skeleton = sublist.skeleton();
-                degree = sub_skeleton.depth() - 1;
-                node_index = 0;
-                super_lists.push(list);
-                list = sublist;
-                skeleton = sub_skeleton;
+            if skeleton.sublist_index_is_in_bounds(node_index) {
+                if let Some(sublist) = skeleton.get_sublist_at(node_index) {
+                    // TODO check too that position + sublist.offset < target
+                    let sub_skeleton = sublist.skeleton();
+                    degree = sub_skeleton.depth() - 1;
+                    node_index = 0;
+                    super_lists.push(list);
+                    list = sublist;
+                } else {
+                    break
+                }
             } else {
                 break;
             }
+        } else {
+            degree -= 1;
         }
-        degree -= 1;
     }
     Pos::new(super_lists, list, node_index, position)
 }
@@ -154,12 +159,12 @@ fn traverse_until_inclusive<'a, S: 'a + Spacing, List: SpacedList<S>>(list: &'a 
                                                                       -> Pos<'a, S, List> {
     let mut super_lists = vec![];
     let mut list = list;
-    let skeleton = list.skeleton();
-    let mut degree = skeleton.depth() - 1;
+    let mut degree = list.skeleton().depth() - 1;
     let mut node_index = 0;
     // TODO start at offset
     let mut position = zero();
     loop {
+        let skeleton = list.skeleton();
         let link_index = link_index(node_index, degree);
         if !skeleton.link_index_is_in_bounds(link_index) {
             if degree == 0 {
@@ -173,21 +178,35 @@ fn traverse_until_inclusive<'a, S: 'a + Spacing, List: SpacedList<S>>(list: &'a 
             position = next_position;
             node_index += 1 << degree;
             if position == target {
+                if skeleton.sublist_index_is_in_bounds(node_index) {
+                    // TODO don't just descend into sublists like that when you have offsets
+                    while let Some(sublist) = skeleton.get_sublist_at(node_index) {
+                        node_index = 0;
+                        super_lists.push(list);
+                        list = sublist;
+                    }
+                }
                 break;
             }
         }
         if degree == 0 {
-            if let Some(sublist) = skeleton.get_sublist_at(node_index) {
-                let sub_skeleton = sublist.skeleton();
-                degree = sub_skeleton.depth() - 1;
-                node_index = 0;
-                super_lists.push(list);
-                list = sublist;
+            if skeleton.sublist_index_is_in_bounds(node_index) {
+                if let Some(sublist) = skeleton.get_sublist_at(node_index) {
+                    // TODO check too that position + sublist.offset <= target
+                    let sub_skeleton = sublist.skeleton();
+                    degree = sub_skeleton.depth() - 1;
+                    node_index = 0;
+                    super_lists.push(list);
+                    list = sublist;
+                } else {
+                    break
+                }
             } else {
                 break;
             }
+        } else {
+            degree -= 1;
         }
-        degree -= 1;
     }
     Pos::new(super_lists, list, node_index, position)
 }
@@ -398,7 +417,14 @@ pub trait SpacedList<S: Spacing>: Default {
     }
 
     fn node_at_or_before<'a>(&'a self, position: S) -> Option<Pos<'a, S, Self>> where S: 'a {
-        traverse!(self; <= position)
+        // traverse!(self; <= position)
+        {
+            if position < zero() {
+                None
+            } else {
+                Some(traverse_until_inclusive(self, position))
+            }
+        }
     }
 
     fn node_at<'a>(&'a self, position: S) -> Option<Pos<'a, S, Self>> where S: 'a {
@@ -410,6 +436,17 @@ pub trait SpacedList<S: Spacing>: Default {
     }
 
     fn node_after<'a>(&'a self, position: S) -> Option<Pos<'a, S, Self>> where S: 'a {
-        traverse!(self; > position)
+        // traverse!(self; > position)
+        {
+            if position >= self.skeleton().length() {
+                None
+            } else if position < zero() {
+                Some(Pos::new(vec![], self, 0, zero()))
+            } else {
+                let mut pos = traverse_until_inclusive(self, position);
+                pos.next().unwrap();
+                Some(pos)
+            }
+        }
     }
 }
