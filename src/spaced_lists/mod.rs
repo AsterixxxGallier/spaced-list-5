@@ -9,11 +9,11 @@ pub use hollow_spaced_list::HollowSpacedList;
 pub use iteration::node::Iter;
 pub use positions::node::Position;
 pub(crate) use spaced_list::SpacedList;
-pub(crate) use spaced_list_skeleton::SpacedListSkeleton;
+pub(crate) use skeleton::SpacedListSkeleton;
 
 pub trait Spacing = Add<Output=Self> + AddAssign + Sub<Output=Self> + SubAssign + Zero + Ord + Copy;
 
-mod spaced_list_skeleton;
+mod skeleton;
 
 mod spaced_list;
 
