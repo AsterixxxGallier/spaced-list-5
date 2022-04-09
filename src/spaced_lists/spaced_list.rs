@@ -426,14 +426,7 @@ pub trait SpacedList<S: Spacing>: Default {
     }
 
     fn node_at_or_before<'a>(&'a self, position: S) -> Option<Pos<'a, S, Self>> where S: 'a {
-        // traverse!(self; <= position)
-        {
-            if position < zero() {
-                None
-            } else {
-                Some(traverse_until_inclusive(self, position))
-            }
-        }
+        traverse!(self; <= position)
     }
 
     fn node_at<'a>(&'a self, position: S) -> Option<Pos<'a, S, Self>> where S: 'a {
@@ -445,17 +438,6 @@ pub trait SpacedList<S: Spacing>: Default {
     }
 
     fn node_after<'a>(&'a self, position: S) -> Option<Pos<'a, S, Self>> where S: 'a {
-        // traverse!(self; > position)
-        {
-            if position >= self.skeleton().length() {
-                None
-            } else if position < zero() {
-                Some(Pos::new(vec![], self, 0, zero()))
-            } else {
-                let mut pos = traverse_until_inclusive(self, position);
-                pos.next().unwrap();
-                Some(pos)
-            }
-        }
+        traverse!(self; > position)
     }
 }
