@@ -110,51 +110,6 @@ impl<'list, S: Spacing, List: SpacedList<S>> Pos<'list, S, List> {
     }
 }
 
-fn traverse_until_exclusive<'a, S: 'a + Spacing, List: SpacedList<S>>(list: &'a List, target: S)
-                                                                      -> Pos<'a, S, List> {
-    let mut super_lists = vec![];
-    let mut list = list;
-    let mut degree = list.skeleton().depth() - 1;
-    let mut node_index = 0;
-    // TODO start at offset
-    let mut position = zero();
-    loop {
-        let skeleton = list.skeleton();
-        let link_index = link_index(node_index, degree);
-        if !skeleton.link_index_is_in_bounds(link_index) {
-            if degree == 0 {
-                break;
-            }
-            degree -= 1;
-            continue;
-        }
-        let next_position = position + skeleton.get_link_length_at(link_index);
-        if next_position < target {
-            position = next_position;
-            node_index += 1 << degree;
-        }
-        if degree == 0 {
-            if skeleton.sublist_index_is_in_bounds(node_index) {
-                if let Some(sublist) = skeleton.get_sublist_at(node_index) {
-                    // TODO check too that position + sublist.offset < target
-                    let sub_skeleton = sublist.skeleton();
-                    degree = sub_skeleton.depth() - 1;
-                    node_index = 0;
-                    super_lists.push(list);
-                    list = sublist;
-                } else {
-                    break;
-                }
-            } else {
-                break;
-            }
-        } else {
-            degree -= 1;
-        }
-    }
-    Pos::new(super_lists, list, node_index, position)
-}
-
 fn traverse_until_inclusive<'a, S: 'a + Spacing, List: SpacedList<S>>(list: &'a List, target: S)
                                                                       -> Pos<'a, S, List> {
     let mut super_lists = vec![];
@@ -212,8 +167,41 @@ fn traverse_until_inclusive<'a, S: 'a + Spacing, List: SpacedList<S>>(list: &'a 
 }
 
 macro_rules! traverse_while {
-    ($list:expr; < $target:expr) => {
-        traverse_until_exclusive($list, $target)
+    ($list:ident; < $target:expr; $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
+        loop {
+            let skeleton = $list.skeleton();
+            let link_index = link_index($node_index, $degree);
+            if !skeleton.link_index_is_in_bounds(link_index) {
+                if $degree == 0 {
+                    break;
+                }
+                $degree -= 1;
+                continue;
+            }
+            let next_position = $position + skeleton.get_link_length_at(link_index);
+            if next_position < $target {
+                $position = next_position;
+                $node_index += 1 << $degree;
+            }
+            if $degree == 0 {
+                if skeleton.sublist_index_is_in_bounds($node_index) {
+                    if let Some(sublist) = skeleton.get_sublist_at($node_index) {
+                        // TODO check too that position + sublist.offset < target
+                        let sub_skeleton = sublist.skeleton();
+                        $degree = sub_skeleton.depth() - 1;
+                        $node_index = 0;
+                        $super_lists.push($list);
+                        $list = sublist;
+                    } else {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            } else {
+                $degree -= 1;
+            }
+        }
     };
     ($list:expr; <= $target:expr) => {
         traverse_until_inclusive($list, $target)
@@ -226,7 +214,14 @@ macro_rules! traverse {
         if $target <= zero() {
             None
         } else {
-            Some(traverse_while!($list; < $target))
+            let mut super_lists = vec![];
+            let mut list = $list;
+            let mut degree = list.skeleton().depth() - 1;
+            let mut node_index = 0;
+            // TODO start at offset
+            let mut position = zero();
+            traverse_while!(list; < $target; super_lists, degree, node_index, position);
+            Some(Pos::new(super_lists, list, node_index, position))
         }
     };
     ($list:expr; <= $target:expr) => {
