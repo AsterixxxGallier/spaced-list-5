@@ -14,6 +14,8 @@ pub struct Skeleton<S: Spacing, Sub: SpacedList<S>> {
     link_capacity: usize,
     link_size: usize,
     link_size_deep: usize,
+    node_size: usize,
+    node_size_deep: usize,
     depth: usize,
     length: S,
 }
@@ -28,6 +30,9 @@ impl<S: Spacing, Sub: SpacedList<S>> Default for Skeleton<S, Sub> {
             length: zero(),
             link_size: 0,
             link_size_deep: 0,
+            // TODO change this when adding offset, currently this singular default node is node 0
+            node_size: 1,
+            node_size_deep: 1,
             index_in_super_list: None,
         }
     }
@@ -43,6 +48,10 @@ impl<S: Spacing, Sub: SpacedList<S>> Skeleton<S, Sub> {
         pub link_size_deep: usize;
         pub mut link_size_deep: usize;
         pub link_capacity: usize;
+        pub node_size: usize;
+        pub mut node_size: usize;
+        pub node_size_deep: usize;
+        pub mut node_size_deep: usize;
         pub depth: usize;
         pub length: S;
 
@@ -50,6 +59,10 @@ impl<S: Spacing, Sub: SpacedList<S>> Skeleton<S, Sub> {
         index mut link_length: S;
         pub index ref sublist: Option<Sub>;
         pub index mut sublist: Option<Sub>;
+    }
+
+    pub fn node_capacity(&self) -> usize {
+        self.link_capacity + 1
     }
 
     pub fn get_or_add_sublist_at(&mut self, index: usize) -> &Sub {
@@ -72,9 +85,8 @@ impl<S: Spacing, Sub: SpacedList<S>> Skeleton<S, Sub> {
         index < self.link_size()
     }
 
-    // TODO this should check if index < node_size instead
     pub fn node_index_is_in_bounds(&self, index: usize) -> bool {
-        index <= self.link_size()
+        index < self.node_size()
     }
 
     pub fn degree_is_in_bounds(&self, index: usize) -> bool {
@@ -84,7 +96,8 @@ impl<S: Spacing, Sub: SpacedList<S>> Skeleton<S, Sub> {
     /// For unit tests only.
     #[cfg(test)]
     pub(crate) fn set_size_to_capacity(&mut self) {
-        self.link_size = self.link_capacity
+        self.link_size = self.link_capacity;
+        self.node_size = self.link_capacity + 1;
     }
 
     /// Doubles this skeletons size, or increase it to one if it is zero.
