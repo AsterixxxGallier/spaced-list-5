@@ -65,7 +65,7 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
 
     fn next_unchecked(&mut self) {
         let last = self.positions.last_mut().unwrap();
-        last.position += last.list.skeleton().get_link_length_at(last.link_index);
+        last.position += last.list.skeleton().link_length_at(last.link_index);
         last.node_index += 1 << last.degree;
         last.link_index += 1 << last.degree;
     }
@@ -93,7 +93,7 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
             }
             let skeleton = list.skeleton();
             if skeleton.sublist_index_is_in_bounds(node_index) {
-                if let Some(sublist) = skeleton.get_sublist_at(node_index) {
+                if let Some(sublist) = skeleton.sublist_at(node_index) {
                     self.super_lists.push(list);
                     let sub_skeleton = sublist.skeleton();
                     self.positions.push(IterPos {

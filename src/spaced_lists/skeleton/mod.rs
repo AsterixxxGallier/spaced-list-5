@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::iter;
 
 use num_traits::zero;
+use paste::paste;
 
 use crate::{SpacedList, Spacing};
 
@@ -32,6 +33,90 @@ impl<S: Spacing, Sub: SpacedList<S>> Default for SpacedListSkeleton<S, Sub> {
     }
 }
 
+macro_rules! accessors {
+    {
+        $vis:vis $field:ident: $type:ty
+        $(;$($rest:tt)*)?
+    } => {
+        $vis fn $field(&self) -> $type {
+            self.$field
+        }
+
+        accessors! {
+            $($($rest)*)?
+        }
+    };
+    {
+        $vis:vis ref $field:ident: $type:ty
+        $(;$($rest:tt)*)?
+    } => {
+        $vis fn $field(&self) -> &$type {
+            &self.$field
+        }
+
+        accessors! {
+            $($($rest)*)?
+        }
+    };
+    {
+        $vis:vis mut $field:ident: $type:ty
+        $(;$($rest:tt)*)?
+    } => {
+        paste! {
+            $vis fn [<$field _mut>](&mut self) -> &mut $type {
+                &mut self.$field
+            }
+
+            accessors! {
+                $($($rest)*)?
+            }
+        }
+    };
+    {
+        $vis:vis index $field:ident: $type:ty
+        $(;$($rest:tt)*)?
+    } => {
+        paste! {
+            $vis fn [<$field _at>](&self, index: usize) -> $type {
+                self.[<$field s>][index]
+            }
+
+            accessors! {
+                $($($rest)*)?
+            }
+        }
+    };
+    {
+        $vis:vis index ref $field:ident: $type:ty
+        $(;$($rest:tt)*)?
+    } => {
+        paste! {
+            $vis fn [<$field _at>](&self, index: usize) -> &$type {
+                &self.[<$field s>][index]
+            }
+
+            accessors! {
+                $($($rest)*)?
+            }
+        }
+    };
+    {
+        $vis:vis index mut $field:ident: $type:ty
+        $(;$($rest:tt)*)?
+    } => {
+        paste! {
+            $vis fn [<$field _at _mut>](&mut self, index: usize) -> &mut $type {
+                &mut self.[<$field s>][index]
+            }
+
+            accessors! {
+                $($($rest)*)?
+            }
+        }
+    };
+    () => {}
+}
+
 impl<S: Spacing, Sub: SpacedList<S>> SpacedListSkeleton<S, Sub> {
     pub fn index_in_super_list(&self) -> Option<usize> {
         self.index_in_super_list
@@ -41,37 +126,19 @@ impl<S: Spacing, Sub: SpacedList<S>> SpacedListSkeleton<S, Sub> {
         self.index_in_super_list = Some(index)
     }
 
-    pub fn size(&self) -> usize {
-        self.size
-    }
+    accessors! {
+        pub size: usize;
+        pub mut size: usize;
+        pub deep_size: usize;
+        pub mut deep_size: usize;
+        pub capacity: usize;
+        pub depth: usize;
+        pub length: S;
 
-    pub fn size_mut(&mut self) -> &mut usize {
-        &mut self.size
-    }
-
-    pub fn deep_size(&self) -> usize {
-        self.deep_size
-    }
-
-    // FIXME this seems to get ridiculously large under some circumstances (dunno if still happening)
-    pub fn deep_size_mut(&mut self) -> &mut usize {
-        &mut self.deep_size
-    }
-
-    pub fn get_link_length_at(&self, index: usize) -> S {
-        self.link_lengths[index]
-    }
-
-    fn get_link_length_at_mut(&mut self, index: usize) -> &mut S {
-        &mut self.link_lengths[index]
-    }
-
-    pub fn get_sublist_at(&self, index: usize) -> &Option<Sub> {
-        &self.sublists[index]
-    }
-
-    pub fn get_sublist_at_mut(&mut self, index: usize) -> &mut Option<Sub> {
-        &mut self.sublists[index]
+        pub index link_length: S;
+        index mut link_length: S;
+        pub index ref sublist: Option<Sub>;
+        pub index mut sublist: Option<Sub>;
     }
 
     pub fn get_or_add_sublist_at(&mut self, index: usize) -> &Sub {
@@ -86,10 +153,7 @@ impl<S: Spacing, Sub: SpacedList<S>> SpacedListSkeleton<S, Sub> {
         })
     }
 
-    pub fn depth(&self) -> usize {
-        self.depth
-    }
-
+    // FIXME these bounds checks should refer to self.link_size or self.node_size
     pub fn link_index_is_in_bounds(&self, index: usize) -> bool {
         index < self.capacity()
     }
@@ -104,14 +168,6 @@ impl<S: Spacing, Sub: SpacedList<S>> SpacedListSkeleton<S, Sub> {
 
     pub fn degree_is_in_bounds(&self, index: usize) -> bool {
         index < self.depth()
-    }
-
-    pub fn capacity(&self) -> usize {
-        self.capacity
-    }
-
-    pub fn length(&self) -> S {
-        self.length
     }
 
     /// Doubles this skeletons size, or increase it to one if it is zero.
@@ -139,7 +195,7 @@ impl<S: Spacing, Sub: SpacedList<S>> SpacedListSkeleton<S, Sub> {
         for degree in 0..self.depth() {
             let bit = 1 << degree;
             if link_index & bit == 0 {
-                *self.get_link_length_at_mut(link_index) += amount;
+                *self.link_length_at_mut(link_index) += amount;
                 link_index += bit;
             }
         }
@@ -164,7 +220,7 @@ impl<S: Spacing, Sub: SpacedList<S>> SpacedListSkeleton<S, Sub> {
         for degree in 0..self.depth() {
             let bit = 1 << degree;
             if link_index & bit == 0 {
-                *self.get_link_length_at_mut(link_index) -= amount;
+                *self.link_length_at_mut(link_index) -= amount;
                 link_index += bit;
             }
         }
@@ -198,7 +254,7 @@ impl<S: Spacing, Sub: SpacedList<S>> SpacedListSkeleton<S, Sub> {
             let bit = 1 << degree;
             if link_index & bit == 0 {
                 if link_index > 0 {
-                    let new_total_link_length = self.get_link_length_at(link_index) - amount;
+                    let new_total_link_length = self.link_length_at(link_index) - amount;
                     assert!(new_total_link_length >= zero(), "Cannot deflate a link below zero");
                     let mut sum_of_concrete_link_lengths_below = S::zero();
                     let mut link_index_below = link_index - 1;
@@ -206,7 +262,7 @@ impl<S: Spacing, Sub: SpacedList<S>> SpacedListSkeleton<S, Sub> {
                         let link_length = overwritten_link_lengths.get(&link_index_below);
                         let link_length = match link_length {
                             Some(&link_length) => link_length,
-                            None => self.get_link_length_at(link_index_below)
+                            None => self.link_length_at(link_index_below)
                         };
                         sum_of_concrete_link_lengths_below += link_length;
                         // link_index_below will not be used after the last iteration, meaning that we
@@ -216,7 +272,7 @@ impl<S: Spacing, Sub: SpacedList<S>> SpacedListSkeleton<S, Sub> {
                     assert!(new_total_link_length >= sum_of_concrete_link_lengths_below,
                             "Cannot deflate a link below zero");
                 }
-                let link_length = self.get_link_length_at_mut(link_index);
+                let link_length = self.link_length_at_mut(link_index);
                 overwritten_link_lengths.insert(link_index, *link_length);
                 *link_length -= amount;
                 link_index += bit;
