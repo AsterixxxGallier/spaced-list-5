@@ -110,6 +110,34 @@ impl<'list, S: Spacing, List: SpacedList<S>> Pos<'list, S, List> {
     }
 }
 
+macro_rules! maybe_move_forwards {
+    (<= $target:expr; $skeleton:expr, $link_index:expr, $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
+        let next_position = $position + $skeleton.get_link_length_at($link_index);
+        if next_position <= $target {
+            $position = next_position;
+            $node_index += 1 << $degree;
+            if $position == $target {
+                if $skeleton.sublist_index_is_in_bounds($node_index) {
+                    // TODO don't just descend into sublists like that when you have offsets
+                    while let Some(sublist) = $skeleton.get_sublist_at($node_index) {
+                        $node_index = 0;
+                        $super_lists.push($list);
+                        $list = sublist;
+                    }
+                }
+                break;
+            }
+        }
+    };
+    (< $target:expr; $skeleton:expr, $link_index:expr, $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
+        let next_position = $position + $skeleton.get_link_length_at($link_index);
+        if next_position < $target {
+            $position = next_position;
+            $node_index += 1 << $degree;
+        }
+    }
+}
+
 macro_rules! descend {
     ($skeleton:expr, $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
         if $degree == 0 {
@@ -134,7 +162,8 @@ macro_rules! descend {
 }
 
 macro_rules! loop_while {
-    (< $target:expr; $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
+    ($cmp:tt $target:expr;
+        $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
         loop {
             let skeleton = $list.skeleton();
             let link_index = link_index($node_index, $degree);
@@ -145,41 +174,8 @@ macro_rules! loop_while {
                 $degree -= 1;
                 continue;
             }
-            let next_position = $position + skeleton.get_link_length_at(link_index);
-            if next_position < $target {
-                $position = next_position;
-                $node_index += 1 << $degree;
-            }
-            descend!(skeleton, $list, $super_lists, $degree, $node_index, $position);
-        }
-    };
-    (<= $target:expr; $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
-        loop {
-            let skeleton = $list.skeleton();
-            let link_index = link_index($node_index, $degree);
-            if !skeleton.link_index_is_in_bounds(link_index) {
-                if $degree == 0 {
-                    break;
-                }
-                $degree -= 1;
-                continue;
-            }
-            let next_position = $position + skeleton.get_link_length_at(link_index);
-            if next_position <= $target {
-                $position = next_position;
-                $node_index += 1 << $degree;
-                if $position == $target {
-                    if skeleton.sublist_index_is_in_bounds($node_index) {
-                        // TODO don't just descend into sublists like that when you have offsets
-                        while let Some(sublist) = skeleton.get_sublist_at($node_index) {
-                            $node_index = 0;
-                            $super_lists.push($list);
-                            $list = sublist;
-                        }
-                    }
-                    break;
-                }
-            }
+            maybe_move_forwards!($cmp $target; skeleton, link_index, $list, $super_lists, $degree,
+                $node_index, $position);
             descend!(skeleton, $list, $super_lists, $degree, $node_index, $position);
         }
     }
