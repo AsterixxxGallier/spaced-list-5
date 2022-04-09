@@ -1,6 +1,6 @@
 use std::default::default;
 
-use crate::{Iter, Pos, SpacedList, SpacedListSkeleton, Spacing};
+use crate::{Iter, Position, SpacedList, SpacedListSkeleton, Spacing};
 
 #[derive(Clone, Eq, PartialEq)]
 pub struct HollowSpacedList<S: Spacing> {
@@ -40,17 +40,17 @@ impl<S: Spacing> HollowSpacedList<S> {
 
     delegate!(iter (self: &mut Self) -> Iter<S, Self>);
 
-    delegate!(append_node (self: &mut Self, distance: S) -> Pos<S, Self>);
-    delegate!(insert_node (self: &mut Self, position: S) -> Pos<S, Self>);
+    delegate!(append_node (self: &mut Self, distance: S) -> Position<S, Self>);
+    delegate!(insert_node (self: &mut Self, position: S) -> Position<S, Self>);
 
     delegate!(inflate_after (self: &mut Self, position: S, amount: S));
     delegate!(inflate_before (self: &mut Self, position: S, amount: S));
     delegate!(deflate_after (self: &mut Self, position: S, amount: S));
     delegate!(deflate_before (self: &mut Self, position: S, amount: S));
 
-    delegate!(node_before(self: &Self, position: S) -> Option<Pos<S, Self>>);
-    delegate!(node_at_or_before(self: &Self, position: S) -> Option<Pos<S, Self>>);
-    delegate!(node_at(self: &Self, position: S) -> Option<Pos<S, Self>>);
-    delegate!(node_at_or_after(self: &Self, position: S) -> Option<Pos<S, Self>>);
-    delegate!(node_after(self: &Self, position: S) -> Option<Pos<S, Self>>);
+    delegate!(node_before(self: &Self, position: S) -> Option<Position<S, Self>>);
+    delegate!(node_at_or_before(self: &Self, position: S) -> Option<Position<S, Self>>);
+    delegate!(node_at(self: &Self, position: S) -> Option<Position<S, Self>>);
+    delegate!(node_at_or_after(self: &Self, position: S) -> Option<Position<S, Self>>);
+    delegate!(node_after(self: &Self, position: S) -> Option<Position<S, Self>>);
 }

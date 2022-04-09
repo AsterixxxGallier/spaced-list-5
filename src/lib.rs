@@ -32,7 +32,7 @@ pub use spaced_lists::HollowRangeSpacedList;
 #[doc(inline)]
 pub use spaced_lists::HollowSpacedList;
 #[doc(inline)]
-pub use spaced_lists::Pos;
+pub use spaced_lists::Position;
 #[doc(inline)]
 pub use spaced_lists::Iter;
 #[doc(inline)]

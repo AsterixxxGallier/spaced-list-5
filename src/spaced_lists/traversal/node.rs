@@ -100,14 +100,14 @@ macro_rules! traverse_unchecked_with_variables {
         $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
         {
             loop_while!(< $target; $list, $super_lists, $degree, $node_index, $position);
-            Some(Pos::new($super_lists, $list, $node_index, $position))
+            Some(Position::new($super_lists, $list, $node_index, $position))
         }
     };
     (<= $target:expr;
         $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
         {
             loop_while!(<= $target; $list, $super_lists, $degree, $node_index, $position);
-            Some(Pos::new($super_lists, $list, $node_index, $position))
+            Some(Position::new($super_lists, $list, $node_index, $position))
         }
     };
     (== $target:expr;
@@ -115,7 +115,7 @@ macro_rules! traverse_unchecked_with_variables {
         {
             loop_while!(<= $target; $list, $super_lists, $degree, $node_index, $position);
             if $position == $target {
-                Some(Pos::new($super_lists, $list, $node_index, $position))
+                Some(Position::new($super_lists, $list, $node_index, $position))
             } else {
                 None
             }
@@ -126,10 +126,10 @@ macro_rules! traverse_unchecked_with_variables {
         {
             loop_while!(<= $target; $list, $super_lists, $degree, $node_index, $position);
             if $position == $target {
-                Some(Pos::new($super_lists, $list, $node_index, $position))
+                Some(Position::new($super_lists, $list, $node_index, $position))
             } else {
                 next!($list.skeleton(), $list, $super_lists, $node_index, $position);
-                Some(Pos::new($super_lists, $list, $node_index, $position))
+                Some(Position::new($super_lists, $list, $node_index, $position))
             }
         }
     };
@@ -138,7 +138,7 @@ macro_rules! traverse_unchecked_with_variables {
         {
             loop_while!(<= $target; $list, $super_lists, $degree, $node_index, $position);
             next!($list.skeleton(), $list, $super_lists, $node_index, $position);
-            Some(Pos::new($super_lists, $list, $node_index, $position))
+            Some(Position::new($super_lists, $list, $node_index, $position))
         }
     }
 }
@@ -189,7 +189,7 @@ macro_rules! traverse {
             None
             // TODO replace zero() with offset
         } else if $target <= zero() {
-            Some(Pos::new(vec![], $list, 0, zero()))
+            Some(Position::new(vec![], $list, 0, zero()))
         } else {
             traverse_unchecked!($list; >= $target)
         }
@@ -200,7 +200,7 @@ macro_rules! traverse {
             None
             // TODO replace zero() with offset
         } else if $target < zero() {
-            Some(Pos::new(vec![], $list, 0, zero()))
+            Some(Position::new(vec![], $list, 0, zero()))
         } else {
             traverse_unchecked!($list; > $target)
         }

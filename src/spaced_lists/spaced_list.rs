@@ -1,6 +1,6 @@
 use num_traits::zero;
 
-use crate::{Pos, Iter, SpacedListSkeleton, Spacing};
+use crate::{Position, Iter, SpacedListSkeleton, Spacing};
 use crate::spaced_lists::traversal::node::*;
 use crate::spaced_lists::traversal::link_index;
 use crate::spaced_lists::traversal::shallow::{ShallowPosition, ShallowTraversal};
@@ -43,7 +43,7 @@ pub trait SpacedList<S: Spacing>: Default {
 
     // TODO add try_ versions of the methods below
 
-    fn append_node(&mut self, distance: S) -> Pos<S, Self> {
+    fn append_node(&mut self, distance: S) -> Position<S, Self> {
         // TODO possibly, there might be future problems when increasing the length of a sublist
         //  beyond the link length from the node the sublist is positioned after to the node the
         //  sublist is positioned before, but this should never happen because sublists are only
@@ -57,10 +57,10 @@ pub trait SpacedList<S: Spacing>: Default {
         let position = self.skeleton().length();
         *self.skeleton_mut().size_mut() += 1;
         *self.skeleton_mut().deep_size_mut() += 1;
-        Pos::new(vec![], self, index, position)
+        Position::new(vec![], self, index, position)
     }
 
-    fn insert_node<'a>(&'a mut self, position: S) -> Pos<'a, S, Self> where S: 'a {
+    fn insert_node<'a>(&'a mut self, position: S) -> Position<'a, S, Self> where S: 'a {
         if position < zero() {
             todo!()
         }
@@ -148,23 +148,23 @@ pub trait SpacedList<S: Spacing>: Default {
 
     TODO long term implement all of these*/
 
-    fn node_before<'a>(&'a self, position: S) -> Option<Pos<'a, S, Self>> where S: 'a {
+    fn node_before<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
         traverse!(self; < position)
     }
 
-    fn node_at_or_before<'a>(&'a self, position: S) -> Option<Pos<'a, S, Self>> where S: 'a {
+    fn node_at_or_before<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
         traverse!(self; <= position)
     }
 
-    fn node_at<'a>(&'a self, position: S) -> Option<Pos<'a, S, Self>> where S: 'a {
+    fn node_at<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
         traverse!(self; == position)
     }
 
-    fn node_at_or_after<'a>(&'a self, position: S) -> Option<Pos<'a, S, Self>> where S: 'a {
+    fn node_at_or_after<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
         traverse!(self; >= position)
     }
 
-    fn node_after<'a>(&'a self, position: S) -> Option<Pos<'a, S, Self>> where S: 'a {
+    fn node_after<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
         traverse!(self; > position)
     }
 }

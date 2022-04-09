@@ -1,6 +1,6 @@
 use num_traits::zero;
 
-use crate::{Pos, SpacedList, Spacing};
+use crate::{Position, SpacedList, Spacing};
 
 struct IterPos<'list, S: 'list + Spacing, List: SpacedList<S>> {
     list: &'list List,
@@ -35,9 +35,9 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
         this
     }
 
-    fn position(&self) -> Option<Pos<'list, S, List>> {
+    fn position(&self) -> Option<Position<'list, S, List>> {
         let last = self.positions.last()?;
-        Some(Pos::new(self.super_lists.clone(), last.list, last.node_index, last.position))
+        Some(Position::new(self.super_lists.clone(), last.list, last.node_index, last.position))
     }
 
     fn next(&mut self) -> Result<(), ()> {
@@ -114,9 +114,9 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
 }
 
 impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iterator for Iter<'list, S, List> {
-    type Item = Pos<'list, S, List>;
+    type Item = Position<'list, S, List>;
 
-    fn next<'a>(&'a mut self) -> Option<Pos<'list, S, List>> {
+    fn next<'a>(&'a mut self) -> Option<Position<'list, S, List>> {
         let position = Iter::<'_, _, _>::position(self)?;
         // if we're at the end of the list, the line above will return None in the next iteration
         let _err_if_at_end = self.next();
