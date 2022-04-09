@@ -111,7 +111,8 @@ impl<'list, S: Spacing, List: SpacedList<S>> Pos<'list, S, List> {
 }
 
 macro_rules! maybe_move_forwards {
-    (<= $target:expr; $skeleton:expr, $link_index:expr, $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
+    (<= $target:expr; $skeleton:expr, $link_index:expr,
+        $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
         let next_position = $position + $skeleton.get_link_length_at($link_index);
         if next_position <= $target {
             $position = next_position;
@@ -129,7 +130,8 @@ macro_rules! maybe_move_forwards {
             }
         }
     };
-    (< $target:expr; $skeleton:expr, $link_index:expr, $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
+    (< $target:expr; $skeleton:expr, $link_index:expr,
+        $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
         let next_position = $position + $skeleton.get_link_length_at($link_index);
         if next_position < $target {
             $position = next_position;
