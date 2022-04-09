@@ -211,6 +211,15 @@ fn traverse_until_inclusive<'a, S: 'a + Spacing, List: SpacedList<S>>(list: &'a 
     Pos::new(super_lists, list, node_index, position)
 }
 
+macro_rules! traverse_while {
+    ($list:expr; < $target:expr) => {
+        traverse_until_exclusive($list, $target)
+    };
+    ($list:expr; <= $target:expr) => {
+        traverse_until_inclusive($list, $target)
+    }
+}
+
 macro_rules! traverse {
     ($list:expr; < $target:expr) => {
         {
@@ -218,7 +227,7 @@ macro_rules! traverse {
             if $target <= zero() {
                 None
             } else {
-                Some(traverse_until_exclusive($list, $target))
+                Some(traverse_while!($list; < $target))
             }
         }
     };
@@ -228,7 +237,7 @@ macro_rules! traverse {
             if $target < zero() {
                 None
             } else {
-                Some(traverse_until_inclusive($list, $target))
+                Some(traverse_while!($list; <= $target))
             }
         }
     };
@@ -238,7 +247,7 @@ macro_rules! traverse {
             if $target < zero() {
                 None
             } else {
-                let pos = traverse_until_inclusive($list, $target);
+                let pos = traverse_while!($list; <= $target);
                 if pos.position == $target {
                     Some(pos)
                 } else {
@@ -256,7 +265,7 @@ macro_rules! traverse {
             } else if $target <= zero() {
                 Some(Pos::new(vec![], $list, 0, zero()))
             } else {
-                let mut pos = traverse_until_inclusive($list, $target);
+                let mut pos = traverse_while!($list; <= $target);
                 if pos.position == $target {
                     Some(pos)
                 } else {
@@ -275,7 +284,7 @@ macro_rules! traverse {
             } else if $target < zero() {
                 Some(Pos::new(vec![], $list, 0, zero()))
             } else {
-                let mut pos = traverse_until_inclusive($list, $target);
+                let mut pos = traverse_while!($list; <= $target);
                 pos.next().unwrap();
                 Some(pos)
             }
