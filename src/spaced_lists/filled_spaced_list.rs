@@ -8,24 +8,7 @@ pub struct FilledSpacedList<S: Spacing, T> {
     elements: Vec<T>,
 }
 
-impl<S: Spacing, T> Default for FilledSpacedList<S, T> {
-    fn default() -> Self {
-        Self {
-            skeleton: default(),
-            elements: vec![],
-        }
-    }
-}
-
-impl<S: Spacing, T> SpacedList<S> for FilledSpacedList<S, T> {
-    fn skeleton(&self) -> &SpacedListSkeleton<S, Self> {
-        &self.skeleton
-    }
-
-    fn skeleton_mut(&mut self) -> &mut SpacedListSkeleton<S, Self> {
-        &mut self.skeleton
-    }
-}
+spaced_list_impl!(T, FilledSpacedList<S, T>);
 
 #[allow(unused)]
 impl<S: Spacing, T> FilledSpacedList<S, T> {

@@ -21,6 +21,48 @@ macro_rules! default_as_new {
     };
 }
 
+macro_rules! spaced_list_impl {
+    ($Self:ty) => {
+        impl<S: Spacing> Default for $Self {
+            fn default() -> Self {
+                Self {
+                    skeleton: default(),
+                }
+            }
+        }
+
+        impl<S: Spacing> SpacedList<S> for $Self {
+            fn skeleton(&self) -> &SpacedListSkeleton<S, Self> {
+                &self.skeleton
+            }
+
+            fn skeleton_mut(&mut self) -> &mut SpacedListSkeleton<S, Self> {
+                &mut self.skeleton
+            }
+        }
+    };
+    (T, $Self:ty) => {
+        impl<S: Spacing, T> Default for $Self {
+            fn default() -> Self {
+                Self {
+                    skeleton: default(),
+                    elements: vec![],
+                }
+            }
+        }
+
+        impl<S: Spacing, T> SpacedList<S> for $Self {
+            fn skeleton(&self) -> &SpacedListSkeleton<S, Self> {
+                &self.skeleton
+            }
+
+            fn skeleton_mut(&mut self) -> &mut SpacedListSkeleton<S, Self> {
+                &mut self.skeleton
+            }
+        }
+    };
+}
+
 mod skeleton;
 
 mod spaced_list;

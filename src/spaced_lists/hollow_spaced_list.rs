@@ -7,23 +7,7 @@ pub struct HollowSpacedList<S: Spacing> {
     skeleton: SpacedListSkeleton<S, Self>,
 }
 
-impl<S: Spacing> Default for HollowSpacedList<S> {
-    fn default() -> Self {
-        Self {
-            skeleton: default(),
-        }
-    }
-}
-
-impl<S: Spacing> SpacedList<S> for HollowSpacedList<S> {
-    fn skeleton(&self) -> &SpacedListSkeleton<S, Self> {
-        &self.skeleton
-    }
-
-    fn skeleton_mut(&mut self) -> &mut SpacedListSkeleton<S, Self> {
-        &mut self.skeleton
-    }
-}
+spaced_list_impl!(HollowSpacedList<S>);
 
 macro_rules! delegates {
     {$fn:ident(&self$(, $param:ident: $param_type:ty)*)$( -> $return:ty)? $(;$($rest:tt)*)?} => {

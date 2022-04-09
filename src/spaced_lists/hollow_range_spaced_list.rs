@@ -7,23 +7,7 @@ pub struct HollowRangeSpacedList<S: Spacing> {
     skeleton: SpacedListSkeleton<S, Self>,
 }
 
-impl<S: Spacing> Default for HollowRangeSpacedList<S> {
-    fn default() -> Self {
-        Self {
-            skeleton: default(),
-        }
-    }
-}
-
-impl<S: Spacing> SpacedList<S> for HollowRangeSpacedList<S> {
-    fn skeleton(&self) -> &SpacedListSkeleton<S, Self> {
-        &self.skeleton
-    }
-
-    fn skeleton_mut(&mut self) -> &mut SpacedListSkeleton<S, Self> {
-        &mut self.skeleton
-    }
-}
+spaced_list_impl!(HollowRangeSpacedList<S>);
 
 #[allow(unused)]
 impl<S: Spacing> HollowRangeSpacedList<S> {
