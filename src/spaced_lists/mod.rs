@@ -21,6 +21,90 @@ macro_rules! default_as_new {
     };
 }
 
+macro_rules! accessors {
+    {
+        $vis:vis $field:ident: $type:ty
+        $(;$($rest:tt)*)?
+    } => {
+        $vis fn $field(&self) -> $type {
+            self.$field
+        }
+
+        accessors! {
+            $($($rest)*)?
+        }
+    };
+    {
+        $vis:vis ref $field:ident: $type:ty
+        $(;$($rest:tt)*)?
+    } => {
+        $vis fn $field(&self) -> &$type {
+            &self.$field
+        }
+
+        accessors! {
+            $($($rest)*)?
+        }
+    };
+    {
+        $vis:vis mut $field:ident: $type:ty
+        $(;$($rest:tt)*)?
+    } => {
+        paste! {
+            $vis fn [<$field _mut>](&mut self) -> &mut $type {
+                &mut self.$field
+            }
+
+            accessors! {
+                $($($rest)*)?
+            }
+        }
+    };
+    {
+        $vis:vis index $field:ident: $type:ty
+        $(;$($rest:tt)*)?
+    } => {
+        paste! {
+            $vis fn [<$field _at>](&self, index: usize) -> $type {
+                self.[<$field s>][index]
+            }
+
+            accessors! {
+                $($($rest)*)?
+            }
+        }
+    };
+    {
+        $vis:vis index ref $field:ident: $type:ty
+        $(;$($rest:tt)*)?
+    } => {
+        paste! {
+            $vis fn [<$field _at>](&self, index: usize) -> &$type {
+                &self.[<$field s>][index]
+            }
+
+            accessors! {
+                $($($rest)*)?
+            }
+        }
+    };
+    {
+        $vis:vis index mut $field:ident: $type:ty
+        $(;$($rest:tt)*)?
+    } => {
+        paste! {
+            $vis fn [<$field _at _mut>](&mut self, index: usize) -> &mut $type {
+                &mut self.[<$field s>][index]
+            }
+
+            accessors! {
+                $($($rest)*)?
+            }
+        }
+    };
+    () => {}
+}
+
 macro_rules! spaced_list {
     (@Hollow $Name:ident $Self:ty) => {
         #[derive(Clone, Eq, PartialEq)]
@@ -37,12 +121,9 @@ macro_rules! spaced_list {
         }
 
         impl<S: Spacing> SpacedList<S> for $Self {
-            fn skeleton(&self) -> &SpacedListSkeleton<S, Self> {
-                &self.skeleton
-            }
-
-            fn skeleton_mut(&mut self) -> &mut SpacedListSkeleton<S, Self> {
-                &mut self.skeleton
+            accessors! {
+                ref skeleton: SpacedListSkeleton<S, Self>;
+                mut skeleton: SpacedListSkeleton<S, Self>;
             }
         }
     };
@@ -63,12 +144,9 @@ macro_rules! spaced_list {
         }
 
         impl<S: Spacing, T> SpacedList<S> for $Self {
-            fn skeleton(&self) -> &SpacedListSkeleton<S, Self> {
-                &self.skeleton
-            }
-
-            fn skeleton_mut(&mut self) -> &mut SpacedListSkeleton<S, Self> {
-                &mut self.skeleton
+            accessors! {
+                ref skeleton: SpacedListSkeleton<S, Self>;
+                mut skeleton: SpacedListSkeleton<S, Self>;
             }
         }
     };
