@@ -18,6 +18,7 @@ pub struct Skeleton<S: Spacing, Sub: SpacedList<S>> {
     node_size_deep: usize,
     depth: usize,
     length: S,
+    offset: S,
 }
 
 impl<S: Spacing, Sub: SpacedList<S>> Default for Skeleton<S, Sub> {
@@ -28,11 +29,11 @@ impl<S: Spacing, Sub: SpacedList<S>> Default for Skeleton<S, Sub> {
             link_capacity: 0,
             depth: 0,
             length: zero(),
+            offset: zero(),
             link_size: 0,
             link_size_deep: 0,
-            // TODO change this when adding offset, currently this singular default node is node 0
-            node_size: 1,
-            node_size_deep: 1,
+            node_size: 0,
+            node_size_deep: 0,
             index_in_super_list: None,
         }
     }
@@ -54,6 +55,8 @@ impl<S: Spacing, Sub: SpacedList<S>> Skeleton<S, Sub> {
         pub mut node_size_deep: usize;
         pub depth: usize;
         pub length: S;
+        pub offset: S;
+        pub mut offset: S;
 
         pub index link_length: S;
         index mut link_length: S;

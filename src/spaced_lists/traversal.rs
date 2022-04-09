@@ -29,14 +29,16 @@ macro_rules! maybe_move_forwards {
             $position = next_position;
             $node_index += 1 << $degree;
             if $position == $target {
-                if $skeleton.sublist_index_is_in_bounds($node_index) {
-                    // TODO don't just descend into sublists like that when you have offsets
-                    while let Some(sublist) = $skeleton.sublist_at($node_index) {
-                        $node_index = 0;
-                        $super_lists.push($list);
-                        $list = sublist;
-                    }
-                }
+                // if $skeleton.sublist_index_is_in_bounds($node_index) {
+                    // TODO don't just descend into sublists like that when you have offsets ✓
+                    // while let Some(sublist) = $skeleton.sublist_at($node_index) {
+                    //     if sublist.skeleton().offset() == zero() {
+                    //         $node_index = 0;
+                    //         $super_lists.push($list);
+                    //         $list = sublist;
+                    //     }
+                    // }
+                // }
                 break;
             }
         }
@@ -63,18 +65,28 @@ macro_rules! maybe_move_forwards {
 }
 
 macro_rules! descend {
-    (deep; $skeleton:expr,
+    (deep; $cmp:tt $target:expr, $skeleton:expr,
         $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
         if $degree == 0 {
             if $skeleton.sublist_index_is_in_bounds($node_index) {
                 if let Some(sublist) = $skeleton.sublist_at($node_index) {
-                    // TODO check too that position + sublist.offset < target
+                    // TODO check too that position + sublist.offset < target ✓
                     let sub_skeleton = sublist.skeleton();
-                    $degree = sub_skeleton.depth() - 1;
-                    $node_index = 0;
-                    $super_lists.push($list);
-                    $list = sublist;
-                    continue;
+                    if $position + sub_skeleton.offset() $cmp $target {
+                        if sub_skeleton.link_size() == 0 {
+                            $node_index = 0;
+                            $position += sub_skeleton.offset();
+                            $super_lists.push($list);
+                            $list = sublist;
+                            break;
+                        }
+                        $degree = sub_skeleton.depth() - 1;
+                        $node_index = 0;
+                        $position += sub_skeleton.offset();
+                        $super_lists.push($list);
+                        $list = sublist;
+                        continue;
+                    }
                 }
             }
             break;
@@ -82,7 +94,7 @@ macro_rules! descend {
             $degree -= 1;
         }
     };
-    (shallow; $skeleton:expr,
+    (shallow; $_cmp:tt $_target:expr, $skeleton:expr,
         $list:ident, $degree:ident, $node_index:ident, $position:ident) => {
         if $degree == 0 {
             break;
@@ -107,25 +119,39 @@ macro_rules! loop_while {
             }
             maybe_move_forwards!($depth; $cmp $target; skeleton, link_index,
                 $list, $degree, $node_index, $position$(, $super_lists)?);
-            descend!($depth; skeleton, $list, $($super_lists, )?$degree, $node_index, $position);
+            descend!($depth; $cmp $target, skeleton, $list, $($super_lists, )?$degree, $node_index, $position);
         }
     }
 }
 
 macro_rules! next {
     ($skeleton:expr, $list:ident, $node_index:ident, $position:ident$(, $super_lists:ident)?) => {
-        {
+        'next: {
+            $(
+            let skeleton = $list.skeleton();
+            if skeleton.sublist_index_is_in_bounds($node_index) {
+                if let Some(sublist) = skeleton.sublist_at($node_index) {
+                    let sub_skeleton = sublist.skeleton();
+                    $node_index = 0;
+                    $position += sub_skeleton.offset();
+                    $super_lists.push($list);
+                    $list = sublist;
+                    break 'next;
+                }
+            }
+            )?
+
             while $node_index == $list.skeleton().link_size() {
-                $(if let Some(node_index) = $skeleton.index_in_super_list() {
-                    $node_index = node_index;
-                    $position -= $skeleton.length();
+                $(if let Some(new_index) = $list.skeleton().index_in_super_list() {
+                    $node_index = new_index;
+                    $position -= $list.skeleton().length() + $list.skeleton().offset();
                     $list = $super_lists.pop().unwrap();
                     continue
                 })?
                 panic!("Tried to move to next node but it's already the end of the list")
             }
 
-            let skeleton = $skeleton;
+            let skeleton = $list.skeleton();
             let mut degree = 0;
             loop {
                 if degree < $node_index.trailing_zeros() as usize {
@@ -207,72 +233,88 @@ macro_rules! traverse_unchecked_with_variables {
 macro_rules! traverse_unchecked {
     (deep; $list:expr; $cmp:tt $target:expr) => {
         {
-            let mut list = $list;
-            let mut super_lists = vec![];
-            let mut degree = list.skeleton().depth() - 1;
-            let mut node_index = 0;
-            // TODO start at offset
-            let mut position = zero();
-            traverse_unchecked_with_variables!(deep; $cmp $target;
-                list, degree, node_index, position, super_lists)
+            if $list.skeleton().link_size() == 0 {
+                if $list.skeleton().offset() $cmp $target {
+                    Some(pos!($list, 0, $list.skeleton().offset(), vec![]))
+                } else {
+                    None
+                }
+            } else {
+                let mut list = $list;
+                let mut super_lists = vec![];
+                let mut degree = list.skeleton().depth() - 1;
+                let mut node_index = 0;
+                // TODO start at offset ✓
+                let mut position = list.skeleton().offset();
+                traverse_unchecked_with_variables!(deep; $cmp $target;
+                    list, degree, node_index, position, super_lists)
+            }
         }
     };
     (shallow; $list:expr; $cmp:tt $target:expr) => {
         {
-            let list = $list;
-            let mut degree = list.skeleton().depth() - 1;
-            let mut node_index = 0;
-            // TODO start at offset
-            let mut position = zero();
-            traverse_unchecked_with_variables!(shallow; $cmp $target;
-                list, degree, node_index, position)
+            if $list.skeleton().node_size() == 0 {
+                if $list.skeleton().offset() $cmp $target {
+                    Some(pos!($list, 0, $list.skeleton().offset()))
+                } else {
+                    None
+                }
+            } else {
+                let list = $list;
+                let mut degree = list.skeleton().depth() - 1;
+                let mut node_index = 0;
+                // TODO start at offset ✓
+                let mut position = list.skeleton().offset();
+                traverse_unchecked_with_variables!(shallow; $cmp $target;
+                    list, degree, node_index, position)
+            }
         }
     }
 }
 
 macro_rules! traverse {
     ($depth:tt; $list:expr; < $target:expr) => {
-        // TODO check if it's smaller than or equal to offset instead
-        if $target <= zero() {
+        // TODO check if it's smaller than or equal to offset instead ✓
+        if $target <= $list.skeleton().offset() {
             None
         } else {
             traverse_unchecked!($depth; $list; < $target)
         }
     };
     ($depth:tt; $list:expr; <= $target:expr) => {
-        // TODO check if it's smaller than offset instead
-        if $target < zero() {
+        // TODO check if it's smaller than offset instead ✓
+        if $target < $list.skeleton().offset() {
             None
         } else {
             traverse_unchecked!($depth; $list; <= $target)
         }
     };
     ($depth:tt; $list:expr; == $target:expr) => {
-        // TODO check if it's smaller than offset instead
-        if $target < zero() {
+        // TODO check if it's smaller than offset instead ✓
+        if $target < $list.skeleton().offset() {
             None
         } else {
             traverse_unchecked!($depth; $list; == $target)
         }
     };
     ($depth:tt; $list:expr; >= $target:expr) => {
-        // TODO check if it's larger than offset + length instead
-        if $target > $list.skeleton().length() {
+        // TODO check if it's larger than offset + length instead ✓
+        if $target > $list.skeleton().length() + $list.skeleton().offset() {
             None
-            // TODO replace zero() with offset
-        } else if $target <= zero() {
-            Some(Position::new(vec![], $list, 0, zero()))
+            // TODO replace zero() with offset ✓
+        } else if $target <= $list.skeleton().offset() {
+            Some(Position::new(vec![], $list, 0, $list.skeleton().offset()))
         } else {
             traverse_unchecked!($depth; $list; >= $target)
         }
     };
     ($depth:tt; $list:expr; > $target:expr) => {
-        // TODO check if it's larger than or equal to offset + length instead
-        if $target >= $list.skeleton().length() {
+        // TODO check if it's larger than or equal to offset + length instead ✓
+        if $target >= $list.skeleton().length() + $list.skeleton().offset() {
             None
-            // TODO replace zero() with offset
-        } else if $target < zero() {
-            Some(Position::new(vec![], $list, 0, zero()))
+            // TODO replace zero() with offset ✓
+        } else if $target < $list.skeleton().offset() {
+            Some(Position::new(vec![], $list, 0, $list.skeleton().offset()))
         } else {
             traverse_unchecked!($depth; $list; > $target)
         }

@@ -1,12 +1,12 @@
 use num_traits::zero;
 
 use crate::{Position, SpacedList, Spacing};
+use crate::spaced_lists::traversal::link_index;
 
 struct IterPos<'list, S: 'list + Spacing, List: SpacedList<S>> {
     list: &'list List,
     position: S,
     node_index: usize,
-    link_index: usize,
     degree: usize,
 }
 
@@ -26,7 +26,6 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
             list,
             position: zero(),
             node_index: 0,
-            link_index: list.skeleton().link_capacity() - 1,
             degree: list.skeleton().depth() - 1,
         });
 
@@ -65,9 +64,8 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
 
     fn next_unchecked(&mut self) {
         let last = self.positions.last_mut().unwrap();
-        last.position += last.list.skeleton().link_length_at(last.link_index);
+        last.position += last.list.skeleton().link_length_at(link_index(last.node_index, last.degree));
         last.node_index += 1 << last.degree;
-        last.link_index += 1 << last.degree;
     }
 
     /// Descends as far down as possible
@@ -77,17 +75,13 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
                 list,
                 position,
                 node_index,
-                link_index,
                 degree,
             } = *self.positions.last().unwrap();
-            let mut link_index = link_index;
             for degree in (0..degree).rev() {
-                link_index -= 1 << degree;
                 self.positions.push(IterPos {
                     list,
                     position,
                     node_index,
-                    link_index,
                     degree,
                 })
             }
@@ -100,8 +94,8 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
                         list: sublist,
                         position,
                         node_index: 0,
-                        link_index: sub_skeleton.link_capacity() - 1,
-                        degree: sub_skeleton.depth() - 1,
+                        // FIXME this might be wrong
+                        degree: sub_skeleton.depth().saturating_sub(1),
                     });
                     continue;
                 }

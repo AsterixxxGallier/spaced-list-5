@@ -175,7 +175,7 @@ fn random_insertions() {
         }
         let pos = rng.gen_range(0..100_000_000_000);
         // let pos = max - n;
-        // println!("inserting node at {}", pos);
+        // println!("inserting node at {}, iteration: {}", pos, n);
         list.insert_node(pos);
         // println!("{:?}", list.skeleton().format(
         //     true,

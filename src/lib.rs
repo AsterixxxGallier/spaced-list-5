@@ -22,6 +22,8 @@
 #![feature(default_free_fn)]
 #![feature(option_get_or_insert_default)]
 #![feature(slice_ptr_get)]
+#![feature(label_break_value)]
+#![allow(unused)]
 
 #[doc(inline)]
 pub use spaced_lists::filled_range_spaced_list::FilledRangeSpacedList;
