@@ -1,6 +1,6 @@
 use std::default::default;
 
-use crate::{Iter, Position, SpacedList, SpacedListSkeleton, Spacing};
+use crate::{Iter, Position, SpacedList, Skeleton, Spacing};
 use paste::paste;
 
 spaced_list!(Hollow);

@@ -39,7 +39,7 @@ pub use spaced_lists::positions::node::Position;
 pub use spaced_lists::Spacing;
 
 pub(crate) use spaced_lists::spaced_list::SpacedList;
-pub(crate) use spaced_lists::skeleton::SpacedListSkeleton;
+pub(crate) use spaced_lists::skeleton::Skeleton;
 
 /// Todo type, replace every occurrence of this type with a proper type
 type Todo = !;

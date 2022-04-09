@@ -1,6 +1,6 @@
 use num_traits::zero;
 
-use crate::{Iter, Position, SpacedListSkeleton, Spacing};
+use crate::{Iter, Position, Skeleton, Spacing};
 use crate::spaced_lists::positions::shallow::ShallowPosition;
 use crate::spaced_lists::traversal::*;
 use paste::paste;
@@ -61,9 +61,9 @@ macro_rules! traversal_methods {
 }
 
 pub trait SpacedList<S: Spacing>: Default {
-    fn skeleton(&self) -> &SpacedListSkeleton<S, Self>;
+    fn skeleton(&self) -> &Skeleton<S, Self>;
 
-    fn skeleton_mut(&mut self) -> &mut SpacedListSkeleton<S, Self>;
+    fn skeleton_mut(&mut self) -> &mut Skeleton<S, Self>;
 
     fn iter(&self) -> Iter<S, Self> {
         Iter::new(self)

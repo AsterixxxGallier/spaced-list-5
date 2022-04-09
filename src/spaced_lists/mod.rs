@@ -100,7 +100,7 @@ macro_rules! spaced_list {
     (@Hollow $Name:ident $Self:ty) => {
         #[derive(Clone, Eq, PartialEq)]
         pub struct $Name<S: Spacing> {
-            skeleton: SpacedListSkeleton<S, Self>,
+            skeleton: Skeleton<S, Self>,
         }
 
         impl<S: Spacing> Default for $Self {
@@ -113,15 +113,15 @@ macro_rules! spaced_list {
 
         impl<S: Spacing> SpacedList<S> for $Self {
             accessors! {
-                ref skeleton: SpacedListSkeleton<S, Self>;
-                mut skeleton: SpacedListSkeleton<S, Self>;
+                ref skeleton: Skeleton<S, Self>;
+                mut skeleton: Skeleton<S, Self>;
             }
         }
     };
     (@Filled $Name:ident $Self:ty) => {
         #[derive(Clone, Eq, PartialEq)]
         pub struct $Name<S: Spacing, T> {
-            skeleton: SpacedListSkeleton<S, Self>,
+            skeleton: Skeleton<S, Self>,
             elements: Vec<T>,
         }
 
@@ -136,8 +136,8 @@ macro_rules! spaced_list {
 
         impl<S: Spacing, T> SpacedList<S> for $Self {
             accessors! {
-                ref skeleton: SpacedListSkeleton<S, Self>;
-                mut skeleton: SpacedListSkeleton<S, Self>;
+                ref skeleton: Skeleton<S, Self>;
+                mut skeleton: Skeleton<S, Self>;
             }
         }
     };

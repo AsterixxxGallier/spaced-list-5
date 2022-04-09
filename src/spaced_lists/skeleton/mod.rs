@@ -7,7 +7,7 @@ use paste::paste;
 use crate::{SpacedList, Spacing};
 
 #[derive(Clone, Eq, PartialEq)]
-pub struct SpacedListSkeleton<S: Spacing, Sub: SpacedList<S>> {
+pub struct Skeleton<S: Spacing, Sub: SpacedList<S>> {
     link_lengths: Vec<S>,
     sublists: Vec<Option<Sub>>,
     index_in_super_list: Option<usize>,
@@ -18,7 +18,7 @@ pub struct SpacedListSkeleton<S: Spacing, Sub: SpacedList<S>> {
     length: S,
 }
 
-impl<S: Spacing, Sub: SpacedList<S>> Default for SpacedListSkeleton<S, Sub> {
+impl<S: Spacing, Sub: SpacedList<S>> Default for Skeleton<S, Sub> {
     fn default() -> Self {
         Self {
             link_lengths: vec![],
@@ -33,7 +33,7 @@ impl<S: Spacing, Sub: SpacedList<S>> Default for SpacedListSkeleton<S, Sub> {
     }
 }
 
-impl<S: Spacing, Sub: SpacedList<S>> SpacedListSkeleton<S, Sub> {
+impl<S: Spacing, Sub: SpacedList<S>> Skeleton<S, Sub> {
     accessors! {
         pub index_in_super_list: Option<usize>;
         pub mut index_in_super_list: Option<usize>;

@@ -2,7 +2,7 @@ use std::default::default;
 
 use paste::paste;
 
-use crate::{SpacedList, SpacedListSkeleton, Spacing, Todo};
+use crate::{SpacedList, Skeleton, Spacing, Todo};
 
 spaced_list!(Filled Range);
 
