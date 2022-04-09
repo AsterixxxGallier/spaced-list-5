@@ -143,7 +143,7 @@ fn traverse_until_exclusive<'a, S: 'a + Spacing, List: SpacedList<S>>(list: &'a 
                     super_lists.push(list);
                     list = sublist;
                 } else {
-                    break
+                    break;
                 }
             } else {
                 break;
@@ -199,7 +199,7 @@ fn traverse_until_inclusive<'a, S: 'a + Spacing, List: SpacedList<S>>(list: &'a 
                     super_lists.push(list);
                     list = sublist;
                 } else {
-                    break
+                    break;
                 }
             } else {
                 break;
@@ -222,72 +222,62 @@ macro_rules! traverse_while {
 
 macro_rules! traverse {
     ($list:expr; < $target:expr) => {
-        {
-            // TODO check if it's smaller than or equal to offset instead
-            if $target <= zero() {
-                None
-            } else {
-                Some(traverse_while!($list; < $target))
-            }
+        // TODO check if it's smaller than or equal to offset instead
+        if $target <= zero() {
+            None
+        } else {
+            Some(traverse_while!($list; < $target))
         }
     };
     ($list:expr; <= $target:expr) => {
-        {
-            // TODO check if it's smaller than offset instead
-            if $target < zero() {
-                None
-            } else {
-                Some(traverse_while!($list; <= $target))
-            }
+        // TODO check if it's smaller than offset instead
+        if $target < zero() {
+            None
+        } else {
+            Some(traverse_while!($list; <= $target))
         }
     };
     ($list:expr; == $target:expr) => {
-        {
-            // TODO check if it's smaller than offset instead
-            if $target < zero() {
-                None
+        // TODO check if it's smaller than offset instead
+        if $target < zero() {
+            None
+        } else {
+            let pos = traverse_while!($list; <= $target);
+            if pos.position == $target {
+                Some(pos)
             } else {
-                let pos = traverse_while!($list; <= $target);
-                if pos.position == $target {
-                    Some(pos)
-                } else {
-                    None
-                }
+                None
             }
         }
     };
     ($list:expr; >= $target:expr) => {
-        {
-            // TODO check if it's larger than offset + length instead
-            if $target > $list.skeleton().length() {
-                None
-                // TODO replace zero() with offset
-            } else if $target <= zero() {
-                Some(Pos::new(vec![], $list, 0, zero()))
+        // TODO check if it's larger than offset + length instead
+        if $target > $list.skeleton().length() {
+            None
+            // TODO replace zero() with offset
+        } else if $target <= zero() {
+            Some(Pos::new(vec![], $list, 0, zero()))
+        } else {
+            let mut pos = traverse_while!($list; <= $target);
+            if pos.position == $target {
+                Some(pos)
             } else {
-                let mut pos = traverse_while!($list; <= $target);
-                if pos.position == $target {
-                    Some(pos)
-                } else {
-                    pos.next().unwrap();
-                    Some(pos)
-                }
+                pos.next().unwrap();
+                Some(pos)
             }
         }
     };
     ($list:expr; > $target:expr) => {
-        {
-            // TODO check if it's larger than or equal to offset + length instead
-            if $target >= $list.skeleton().length() {
-                None
-                // TODO replace zero() with offset
-            } else if $target < zero() {
-                Some(Pos::new(vec![], $list, 0, zero()))
-            } else {
-                let mut pos = traverse_while!($list; <= $target);
-                pos.next().unwrap();
-                Some(pos)
-            }
+        // TODO check if it's larger than or equal to offset + length instead
+        if $target >= $list.skeleton().length() {
+            None
+            // TODO replace zero() with offset
+        } else if $target < zero() {
+            Some(Pos::new(vec![], $list, 0, zero()))
+        } else {
+            let mut pos = traverse_while!($list; <= $target);
+            pos.next().unwrap();
+            Some(pos)
         }
     }
 }
