@@ -167,7 +167,7 @@ fn traverse_until_inclusive<'a, S: 'a + Spacing, List: SpacedList<S>>(list: &'a 
 }
 
 macro_rules! traverse_while {
-    ($list:ident; < $target:expr; $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
+    (< $target:expr; $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
         loop {
             let skeleton = $list.skeleton();
             let link_index = link_index($node_index, $degree);
@@ -220,7 +220,7 @@ macro_rules! traverse {
             let mut node_index = 0;
             // TODO start at offset
             let mut position = zero();
-            traverse_while!(list; < $target; super_lists, degree, node_index, position);
+            traverse_while!(< $target; list, super_lists, degree, node_index, position);
             Some(Pos::new(super_lists, list, node_index, position))
         }
     };
