@@ -3,7 +3,7 @@ use num_traits::zero;
 use crate::{Position, Iter, SpacedListSkeleton, Spacing};
 use crate::spaced_lists::traversal::node::*;
 use crate::spaced_lists::traversal::link_index;
-use crate::spaced_lists::traversal::shallow::{ShallowPosition};
+use crate::spaced_lists::positions::shallow::{ShallowPosition};
 
 pub trait SpacedList<S: Spacing>: Default {
     fn skeleton(&self) -> &SpacedListSkeleton<S, Self>;
