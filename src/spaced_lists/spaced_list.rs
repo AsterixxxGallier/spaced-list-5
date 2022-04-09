@@ -178,75 +178,65 @@ macro_rules! next {
     };
 }
 
-macro_rules! traverse_unchecked {
-    ($list:expr; < $target:expr) => {
+macro_rules! traverse_unchecked_with_variables {
+    (< $target:expr;
+        $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
         {
-            let mut super_lists = vec![];
-            let mut list = $list;
-            let mut degree = list.skeleton().depth() - 1;
-            let mut node_index = 0;
-            // TODO start at offset
-            let mut position = zero();
-            loop_while!(< $target; list, super_lists, degree, node_index, position);
-            Some(Pos::new(super_lists, list, node_index, position))
+            loop_while!(< $target; $list, $super_lists, $degree, $node_index, $position);
+            Some(Pos::new($super_lists, $list, $node_index, $position))
         }
     };
-    ($list:expr; <= $target:expr) => {
+    (<= $target:expr;
+        $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
         {
-            let mut super_lists = vec![];
-            let mut list = $list;
-            let mut degree = list.skeleton().depth() - 1;
-            let mut node_index = 0;
-            // TODO start at offset
-            let mut position = zero();
-            loop_while!(<= $target; list, super_lists, degree, node_index, position);
-            Some(Pos::new(super_lists, list, node_index, position))
+            loop_while!(<= $target; $list, $super_lists, $degree, $node_index, $position);
+            Some(Pos::new($super_lists, $list, $node_index, $position))
         }
     };
-    ($list:expr; == $target:expr) => {
+    (== $target:expr;
+        $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
         {
-            let mut super_lists = vec![];
-            let mut list = $list;
-            let mut degree = list.skeleton().depth() - 1;
-            let mut node_index = 0;
-            // TODO start at offset
-            let mut position = zero();
-            loop_while!(<= $target; list, super_lists, degree, node_index, position);
-            if position == $target {
-                Some(Pos::new(super_lists, list, node_index, position))
+            loop_while!(<= $target; $list, $super_lists, $degree, $node_index, $position);
+            if $position == $target {
+                Some(Pos::new($super_lists, $list, $node_index, $position))
             } else {
                 None
             }
         }
     };
-    ($list:expr; >= $target:expr) => {
+    (>= $target:expr;
+        $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
         {
-            let mut super_lists = vec![];
-            let mut list = $list;
-            let mut degree = list.skeleton().depth() - 1;
-            let mut node_index = 0;
-            // TODO start at offset
-            let mut position = zero();
-            loop_while!(<= $target; list, super_lists, degree, node_index, position);
-            if position == $target {
-                Some(Pos::new(super_lists, list, node_index, position))
+            loop_while!(<= $target; $list, $super_lists, $degree, $node_index, $position);
+            if $position == $target {
+                Some(Pos::new($super_lists, $list, $node_index, $position))
             } else {
-                next!(list.skeleton(), list, super_lists, node_index, position);
-                Some(Pos::new(super_lists, list, node_index, position))
+                next!($list.skeleton(), $list, $super_lists, $node_index, $position);
+                Some(Pos::new($super_lists, $list, $node_index, $position))
             }
         }
     };
-    ($list:expr; > $target:expr) => {
+    (> $target:expr;
+        $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
         {
-            let mut super_lists = vec![];
+            loop_while!(<= $target; $list, $super_lists, $degree, $node_index, $position);
+            next!($list.skeleton(), $list, $super_lists, $node_index, $position);
+            Some(Pos::new($super_lists, $list, $node_index, $position))
+        }
+    }
+}
+
+macro_rules! traverse_unchecked {
+    ($list:expr; $cmp:tt $target:expr) => {
+        {
             let mut list = $list;
+            let mut super_lists = vec![];
             let mut degree = list.skeleton().depth() - 1;
             let mut node_index = 0;
             // TODO start at offset
             let mut position = zero();
-            loop_while!(<= $target; list, super_lists, degree, node_index, position);
-            next!(list.skeleton(), list, super_lists, node_index, position);
-            Some(Pos::new(super_lists, list, node_index, position))
+            traverse_unchecked_with_variables!($cmp $target;
+                list, super_lists, degree, node_index, position)
         }
     }
 }
