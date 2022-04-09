@@ -77,15 +77,15 @@ pub trait SpacedList<S: Spacing>: Default {
         //  sublist is positioned before, but this should never happen because sublists are only
         //  accessible from within this crate
         // TODO add edge case support for first addition that sets offset
-        let size = self.skeleton().size();
-        if size == self.skeleton().capacity() {
+        let size = self.skeleton().link_size();
+        if size == self.skeleton().link_capacity() {
             self.skeleton_mut().grow();
         }
         self.skeleton_mut().inflate_at(size, distance);
-        let index = self.skeleton().size();
+        let index = self.skeleton().link_size();
         let position = self.skeleton().length();
-        *self.skeleton_mut().size_mut() += 1;
-        *self.skeleton_mut().deep_size_mut() += 1;
+        *self.skeleton_mut().link_size_mut() += 1;
+        *self.skeleton_mut().link_size_deep_mut() += 1;
         Position::new(vec![], self, index, position)
     }
 
@@ -100,7 +100,7 @@ pub trait SpacedList<S: Spacing>: Default {
         }
         let ShallowPosition { index, position: node_position, .. } =
             traverse!(shallow; &*self; <= position).unwrap();
-        *self.skeleton_mut().deep_size_mut() += 1;
+        *self.skeleton_mut().link_size_deep_mut() += 1;
         let sublist = self.skeleton_mut().get_or_add_sublist_at_mut(index);
         sublist.insert_node(position - node_position)
     }

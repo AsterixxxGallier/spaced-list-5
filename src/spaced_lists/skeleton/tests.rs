@@ -10,31 +10,31 @@ fn grow() {
     let skeleton = list.skeleton_mut();
 
     assert_eq!(skeleton.sublists.len(), 0);
-    assert_eq!(skeleton.capacity(), 0);
+    assert_eq!(skeleton.link_capacity(), 0);
     assert_eq!(skeleton.depth(), 0);
 
     skeleton.grow();
 
     assert_eq!(skeleton.sublists.len(), 1);
-    assert_eq!(skeleton.capacity(), 1);
+    assert_eq!(skeleton.link_capacity(), 1);
     assert_eq!(skeleton.depth(), 1);
 
     skeleton.grow();
 
     assert_eq!(skeleton.sublists.len(), 2);
-    assert_eq!(skeleton.capacity(), 2);
+    assert_eq!(skeleton.link_capacity(), 2);
     assert_eq!(skeleton.depth(), 2);
 
     skeleton.grow();
 
     assert_eq!(skeleton.sublists.len(), 4);
-    assert_eq!(skeleton.capacity(), 4);
+    assert_eq!(skeleton.link_capacity(), 4);
     assert_eq!(skeleton.depth(), 3);
 
     skeleton.grow();
 
     assert_eq!(skeleton.sublists.len(), 8);
-    assert_eq!(skeleton.capacity(), 8);
+    assert_eq!(skeleton.link_capacity(), 8);
     assert_eq!(skeleton.depth(), 4);
 }
 
@@ -49,8 +49,8 @@ fn inflate_deflate() {
 
     assert_eq!(skeleton.depth, 3);
     assert_eq!(skeleton.length, 0);
-    assert_eq!(skeleton.capacity(), 4);
-    assert_eq!(skeleton.capacity, 4);
+    assert_eq!(skeleton.link_capacity(), 4);
+    assert_eq!(skeleton.link_capacity, 4);
 
     skeleton.inflate_at(0, 1);
     assert_eq!(skeleton.link_lengths, vec![1, 1, 0, 1]);
@@ -183,7 +183,7 @@ fn random_insertions() {
         assert_eq!(list.node_at_or_after(pos).unwrap().position(), pos);
         assert_eq!(list.node_after(pos - 1).unwrap().position(), pos);
     }
-    println!("{}", list.skeleton().deep_size())
+    println!("{}", list.skeleton().link_size_deep())
 
     // let mut list: HollowSpacedList<u64> = HollowSpacedList::new();
     // list.insert_node(1);

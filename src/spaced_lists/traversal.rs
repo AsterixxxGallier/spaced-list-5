@@ -115,7 +115,7 @@ macro_rules! loop_while {
 macro_rules! next {
     ($skeleton:expr, $list:ident, $node_index:ident, $position:ident$(, $super_lists:ident)?) => {
         {
-            while $node_index == $list.skeleton().size() {
+            while $node_index == $list.skeleton().link_size() {
                 $(if let Some(node_index) = $skeleton.index_in_super_list() {
                     $node_index = node_index;
                     $position -= $skeleton.length();

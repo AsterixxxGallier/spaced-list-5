@@ -10,12 +10,12 @@ use crate::{SpacedList, Spacing};
 pub struct SpacedListSkeleton<S: Spacing, Sub: SpacedList<S>> {
     link_lengths: Vec<S>,
     sublists: Vec<Option<Sub>>,
-    capacity: usize,
+    index_in_super_list: Option<usize>,
+    link_capacity: usize,
+    link_size: usize,
+    link_size_deep: usize,
     depth: usize,
     length: S,
-    size: usize,
-    deep_size: usize,
-    index_in_super_list: Option<usize>,
 }
 
 impl<S: Spacing, Sub: SpacedList<S>> Default for SpacedListSkeleton<S, Sub> {
@@ -23,11 +23,11 @@ impl<S: Spacing, Sub: SpacedList<S>> Default for SpacedListSkeleton<S, Sub> {
         Self {
             link_lengths: vec![],
             sublists: vec![],
-            capacity: 0,
+            link_capacity: 0,
             depth: 0,
             length: zero(),
-            size: 0,
-            deep_size: 0,
+            link_size: 0,
+            link_size_deep: 0,
             index_in_super_list: None,
         }
     }
@@ -38,11 +38,11 @@ impl<S: Spacing, Sub: SpacedList<S>> SpacedListSkeleton<S, Sub> {
         pub index_in_super_list: Option<usize>;
         pub mut index_in_super_list: Option<usize>;
 
-        pub size: usize;
-        pub mut size: usize;
-        pub deep_size: usize;
-        pub mut deep_size: usize;
-        pub capacity: usize;
+        pub link_size: usize;
+        pub mut link_size: usize;
+        pub link_size_deep: usize;
+        pub mut link_size_deep: usize;
+        pub link_capacity: usize;
         pub depth: usize;
         pub length: S;
 
@@ -66,15 +66,15 @@ impl<S: Spacing, Sub: SpacedList<S>> SpacedListSkeleton<S, Sub> {
 
     // FIXME these bounds checks should refer to self.link_size or self.node_size
     pub fn link_index_is_in_bounds(&self, index: usize) -> bool {
-        index < self.capacity()
+        index < self.link_capacity()
     }
 
     pub fn sublist_index_is_in_bounds(&self, index: usize) -> bool {
-        index < self.capacity()
+        index < self.link_capacity()
     }
 
     pub fn node_index_is_in_bounds(&self, index: usize) -> bool {
-        index <= self.capacity()
+        index <= self.link_capacity()
     }
 
     pub fn degree_is_in_bounds(&self, index: usize) -> bool {
@@ -86,13 +86,13 @@ impl<S: Spacing, Sub: SpacedList<S>> SpacedListSkeleton<S, Sub> {
         if self.link_lengths.is_empty() {
             self.link_lengths.push(zero());
             self.sublists.push(None);
-            self.capacity += 1;
+            self.link_capacity += 1;
         } else {
             let length = self.length();
-            self.sublists.extend(iter::repeat_with(|| None).take(self.capacity()));
-            self.link_lengths.extend(iter::repeat_with(|| S::zero()).take(self.capacity() - 1));
+            self.sublists.extend(iter::repeat_with(|| None).take(self.link_capacity()));
+            self.link_lengths.extend(iter::repeat_with(|| S::zero()).take(self.link_capacity() - 1));
             self.link_lengths.push(length);
-            self.capacity *= 2;
+            self.link_capacity *= 2;
         }
         self.depth += 1;
     }

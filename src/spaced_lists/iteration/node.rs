@@ -26,7 +26,7 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
             list,
             position: zero(),
             node_index: 0,
-            link_index: list.skeleton().capacity() - 1,
+            link_index: list.skeleton().link_capacity() - 1,
             degree: list.skeleton().depth() - 1,
         });
 
@@ -42,7 +42,7 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
 
     fn next(&mut self) -> Result<(), ()> {
         let last = self.positions.last().unwrap();
-        if last.node_index == last.list.skeleton().size() {
+        if last.node_index == last.list.skeleton().link_size() {
             let len = self.positions.len() - last.list.skeleton().depth();
             self.positions.truncate(len);
             self.super_lists.pop();
@@ -100,7 +100,7 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
                         list: sublist,
                         position,
                         node_index: 0,
-                        link_index: sub_skeleton.capacity() - 1,
+                        link_index: sub_skeleton.link_capacity() - 1,
                         degree: sub_skeleton.depth() - 1,
                     });
                     continue;
