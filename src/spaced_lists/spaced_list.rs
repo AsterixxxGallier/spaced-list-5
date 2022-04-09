@@ -3,6 +3,7 @@ use num_traits::zero;
 use crate::{Iter, Position, SpacedListSkeleton, Spacing};
 use crate::spaced_lists::positions::shallow::ShallowPosition;
 use crate::spaced_lists::traversal::*;
+use paste::paste;
 
 macro_rules! traversal_methods {
     {$($name:ident: $cmp:tt)+} => {
@@ -10,6 +11,49 @@ macro_rules! traversal_methods {
             traverse!(deep; self; $cmp position)
         })+
     };
+}
+
+macro_rules! flate_check {
+    ($action:ident after; $self:expr, $position:expr) => {
+        // TODO check if smaller than offset or larger than or equal to length + offset instead
+        if $position < zero() || $position >= $self.skeleton().length() {
+            panic!(concat!("Cannot ", stringify!($action), " out of bounds"))
+        }
+    };
+    ($action:ident before; $self:expr, $position:expr) => {
+        // TODO check if smaller than or equal to offset or larger than length + offset instead
+        if $position <= zero() || $position > $self.skeleton().length() {
+            panic!(concat!("Cannot ", stringify!($action), " out of bounds"))
+        }
+    }
+}
+
+macro_rules! flate_position {
+    (after; $self:expr, $position:expr) => {
+        traverse!(shallow; &*$self; <= $position)
+    };
+    (before; $self:expr, $position:expr) => {
+        traverse!(shallow; &*$self; < $position)
+    }
+}
+
+macro_rules! flate {
+    ($action:ident $pos:ident) => {
+        paste! {
+            fn [<$action _ $pos>](&mut self, position: S, amount: S) {
+                flate_check!($action $pos; self, position);
+                let ShallowPosition { index, position: node_position, .. } =
+                    flate_position!($pos; self, position).unwrap();
+                self.skeleton_mut().[<$action _at>](index, amount);
+                if let Some(sublist) = self.skeleton_mut().get_sublist_at_mut(index) {
+                    let position_in_sublist = position - node_position;
+                    if position_in_sublist < sublist.skeleton().length() {
+                        sublist.[<$action _ $pos>](position_in_sublist, amount);
+                    }
+                }
+            }
+        }
+    }
 }
 
 pub trait SpacedList<S: Spacing>: Default {
@@ -54,65 +98,10 @@ pub trait SpacedList<S: Spacing>: Default {
         sublist.insert_node(position - node_position)
     }
 
-    fn inflate_after(&mut self, position: S, amount: S) {
-        if position < zero() || position >= self.skeleton().length() {
-            todo!()
-        }
-        let ShallowPosition { index, position: node_position, .. } =
-            traverse!(shallow; &*self; <= position).unwrap();
-        self.skeleton_mut().inflate_at(index, amount);
-        if let Some(sublist) = self.skeleton_mut().get_sublist_at_mut(index) {
-            let position_in_sublist = position - node_position;
-            if position_in_sublist < sublist.skeleton().length() {
-                sublist.inflate_after(position_in_sublist, amount);
-            }
-        }
-    }
-
-    fn inflate_before(&mut self, position: S, amount: S) {
-        if position <= zero() || position > self.skeleton().length() {
-            todo!()
-        }
-        let ShallowPosition { index, position: node_position, .. } =
-            traverse!(shallow; &*self; < position).unwrap();
-        self.skeleton_mut().inflate_at(index, amount);
-        if let Some(sublist) = self.skeleton_mut().get_sublist_at_mut(index) {
-            let position_in_sublist = position - node_position;
-            if position_in_sublist < sublist.skeleton().length() {
-                sublist.inflate_before(position_in_sublist, amount);
-            }
-        }
-    }
-
-    fn deflate_after(&mut self, position: S, amount: S) {
-        if position < zero() || position >= self.skeleton().length() {
-            todo!()
-        }
-        let ShallowPosition { index, position: node_position, .. } =
-            traverse!(shallow; &*self; <= position).unwrap();
-        self.skeleton_mut().deflate_at(index, amount);
-        if let Some(sublist) = self.skeleton_mut().get_sublist_at_mut(index) {
-            let position_in_sublist = position - node_position;
-            if position_in_sublist < sublist.skeleton().length() {
-                sublist.deflate_after(position_in_sublist, amount);
-            }
-        }
-    }
-
-    fn deflate_before(&mut self, position: S, amount: S) {
-        if position <= zero() || position > self.skeleton().length() {
-            todo!()
-        }
-        let ShallowPosition { index, position: node_position, .. } =
-            traverse!(shallow; &*self; < position).unwrap();
-        self.skeleton_mut().deflate_at(index, amount);
-        if let Some(sublist) = self.skeleton_mut().get_sublist_at_mut(index) {
-            let position_in_sublist = position - node_position;
-            if position_in_sublist < sublist.skeleton().length() {
-                sublist.deflate_before(position_in_sublist, amount);
-            }
-        }
-    }
+    flate!(inflate after);
+    flate!(inflate before);
+    flate!(deflate after);
+    flate!(deflate before);
 
     /*All possible queries:
     - first
