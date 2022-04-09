@@ -37,10 +37,10 @@ macro_rules! flate_position {
     }
 }
 
-macro_rules! flate {
-    ($action:ident $pos:ident) => {
+macro_rules! flate_methods {
+    {$($action:ident $pos:ident)+} => {
         paste! {
-            fn [<$action _ $pos>](&mut self, position: S, amount: S) {
+            $(fn [<$action _ $pos>](&mut self, position: S, amount: S) {
                 flate_check!($action $pos; self, position);
                 let ShallowPosition { index, position: node_position, .. } =
                     flate_position!($pos; self, position).unwrap();
@@ -51,7 +51,7 @@ macro_rules! flate {
                         sublist.[<$action _ $pos>](position_in_sublist, amount);
                     }
                 }
-            }
+            })+
         }
     }
 }
@@ -98,10 +98,12 @@ pub trait SpacedList<S: Spacing>: Default {
         sublist.insert_node(position - node_position)
     }
 
-    flate!(inflate after);
-    flate!(inflate before);
-    flate!(deflate after);
-    flate!(deflate before);
+    flate_methods! {
+        inflate after
+        inflate before
+        deflate after
+        deflate before
+    }
 
     /*All possible queries:
     - first
