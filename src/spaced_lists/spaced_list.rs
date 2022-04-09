@@ -1,8 +1,16 @@
 use num_traits::zero;
 
-use crate::{Position, Iter, SpacedListSkeleton, Spacing};
+use crate::{Iter, Position, SpacedListSkeleton, Spacing};
+use crate::spaced_lists::positions::shallow::ShallowPosition;
 use crate::spaced_lists::traversal::*;
-use crate::spaced_lists::positions::shallow::{ShallowPosition};
+
+macro_rules! traversal_methods {
+    {$($name:ident: $cmp:tt)+} => {
+        $(fn $name<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
+            traverse!(deep; self; $cmp position)
+        })+
+    };
+}
 
 pub trait SpacedList<S: Spacing>: Default {
     fn skeleton(&self) -> &SpacedListSkeleton<S, Self>;
@@ -120,23 +128,11 @@ pub trait SpacedList<S: Spacing>: Default {
 
     TODO long term implement all of these*/
 
-    fn node_before<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
-        traverse!(deep; self; < position)
-    }
-
-    fn node_at_or_before<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
-        traverse!(deep; self; <= position)
-    }
-
-    fn node_at<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
-        traverse!(deep; self; == position)
-    }
-
-    fn node_at_or_after<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
-        traverse!(deep; self; >= position)
-    }
-
-    fn node_after<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
-        traverse!(deep; self; > position)
+    traversal_methods! {
+        node_before: <
+        node_at_or_before: <=
+        node_at: ==
+        node_at_or_after: >=
+        node_after: >
     }
 }

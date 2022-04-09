@@ -25,12 +25,26 @@ impl<S: Spacing> SpacedList<S> for HollowSpacedList<S> {
     }
 }
 
-macro_rules! delegate {
-    ($fn:ident ($($param:ident : $param_type:ty),*)$( -> $return:ty)?) => {
-        pub fn $fn($($param: $param_type),*)$( -> $return)? {
-            <Self as SpacedList<S>>::$fn($($param),*)
+macro_rules! delegates {
+    {$fn:ident(&self$(, $param:ident: $param_type:ty)*)$( -> $return:ty)? $(;$($rest:tt)*)?} => {
+        pub fn $fn(&self$(, $param: $param_type)*)$( -> $return)? {
+            <Self as SpacedList<S>>::$fn(self$(, $param)*)
         }
-    }
+
+        delegates! {
+            $($($rest)*)?
+        }
+    };
+    {$fn:ident(&mut self$(, $param:ident: $param_type:ty)*)$( -> $return:ty)? $(;$($rest:tt)*)?} => {
+        pub fn $fn(&mut self$(, $param: $param_type)*)$( -> $return)? {
+            <Self as SpacedList<S>>::$fn(self$(, $param)*)
+        }
+
+        delegates! {
+            $($($rest)*)?
+        }
+    };
+    {} => {}
 }
 
 impl<S: Spacing> HollowSpacedList<S> {
@@ -38,19 +52,21 @@ impl<S: Spacing> HollowSpacedList<S> {
         default()
     }
 
-    delegate!(iter (self: &mut Self) -> Iter<S, Self>);
+    delegates! {
+        iter(&mut self) -> Iter<S, Self>;
 
-    delegate!(append_node (self: &mut Self, distance: S) -> Position<S, Self>);
-    delegate!(insert_node (self: &mut Self, position: S) -> Position<S, Self>);
+        append_node(&mut self, distance: S) -> Position<S, Self>;
+        insert_node(&mut self, position: S) -> Position<S, Self>;
 
-    delegate!(inflate_after (self: &mut Self, position: S, amount: S));
-    delegate!(inflate_before (self: &mut Self, position: S, amount: S));
-    delegate!(deflate_after (self: &mut Self, position: S, amount: S));
-    delegate!(deflate_before (self: &mut Self, position: S, amount: S));
+        inflate_after(&mut self, position: S, amount: S);
+        inflate_before(&mut self, position: S, amount: S);
+        deflate_after(&mut self, position: S, amount: S);
+        deflate_before(&mut self, position: S, amount: S);
 
-    delegate!(node_before(self: &Self, position: S) -> Option<Position<S, Self>>);
-    delegate!(node_at_or_before(self: &Self, position: S) -> Option<Position<S, Self>>);
-    delegate!(node_at(self: &Self, position: S) -> Option<Position<S, Self>>);
-    delegate!(node_at_or_after(self: &Self, position: S) -> Option<Position<S, Self>>);
-    delegate!(node_after(self: &Self, position: S) -> Option<Position<S, Self>>);
+        node_before(&self, position: S) -> Option<Position<S, Self>>;
+        node_at_or_before(&self, position: S) -> Option<Position<S, Self>>;
+        node_at(&self, position: S) -> Option<Position<S, Self>>;
+        node_at_or_after(&self, position: S) -> Option<Position<S, Self>>;
+        node_after(&self, position: S) -> Option<Position<S, Self>>;
+    }
 }
