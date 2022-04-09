@@ -34,15 +34,10 @@ impl<S: Spacing, Sub: SpacedList<S>> Default for SpacedListSkeleton<S, Sub> {
 }
 
 impl<S: Spacing, Sub: SpacedList<S>> SpacedListSkeleton<S, Sub> {
-    pub fn index_in_super_list(&self) -> Option<usize> {
-        self.index_in_super_list
-    }
-
-    pub fn set_index_in_super_list(&mut self, index: usize) {
-        self.index_in_super_list = Some(index)
-    }
-
     accessors! {
+        pub index_in_super_list: Option<usize>;
+        pub mut index_in_super_list: Option<usize>;
+
         pub size: usize;
         pub mut size: usize;
         pub deep_size: usize;
@@ -64,7 +59,7 @@ impl<S: Spacing, Sub: SpacedList<S>> SpacedListSkeleton<S, Sub> {
     pub fn get_or_add_sublist_at_mut(&mut self, index: usize) -> &mut Sub {
         self.sublists[index].get_or_insert_with(|| {
             let mut sub = Sub::default();
-            sub.skeleton_mut().set_index_in_super_list(index);
+            *sub.skeleton_mut().index_in_super_list_mut() = Some(index);
             sub
         })
     }
