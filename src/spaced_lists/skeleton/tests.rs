@@ -46,6 +46,7 @@ fn inflate_deflate() {
     skeleton.grow();
     skeleton.grow();
     skeleton.grow();
+    skeleton.set_size_to_capacity();
 
     assert_eq!(skeleton.depth, 3);
     assert_eq!(skeleton.length, 0);
@@ -85,6 +86,7 @@ fn inflate_deflate() {
 fn bad_inflate_should_panic_0() {
     let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
     let skeleton = list.skeleton_mut();
+    skeleton.set_size_to_capacity();
     skeleton.inflate_at(0, 1);
 }
 
@@ -94,6 +96,7 @@ fn bad_inflate_should_panic_1() {
     let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
     let skeleton = list.skeleton_mut();
     skeleton.grow();
+    skeleton.set_size_to_capacity();
     skeleton.inflate_at(0, -1);
 }
 
@@ -103,6 +106,7 @@ fn bad_inflate_should_panic_2() {
     let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
     let skeleton = list.skeleton_mut();
     skeleton.grow();
+    skeleton.set_size_to_capacity();
     skeleton.inflate_at(1, 0);
 }
 
@@ -111,6 +115,7 @@ fn bad_inflate_should_panic_2() {
 fn bad_deflate_should_panic_0() {
     let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
     let skeleton = list.skeleton_mut();
+    skeleton.set_size_to_capacity();
     skeleton.deflate_at(0, 0);
 }
 
@@ -120,6 +125,7 @@ fn bad_deflate_should_panic_1() {
     let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
     let skeleton = list.skeleton_mut();
     skeleton.grow();
+    skeleton.set_size_to_capacity();
     skeleton.deflate_at(0, -1);
 }
 
@@ -130,6 +136,7 @@ fn bad_deflate_should_panic_2() {
     let skeleton = list.skeleton_mut();
     skeleton.grow();
     skeleton.grow();
+    skeleton.set_size_to_capacity();
     skeleton.inflate_at(0, 1);
     skeleton.deflate_at(1, -1);
 }
@@ -142,6 +149,7 @@ fn bad_deflate_should_panic_3() {
     skeleton.grow();
     skeleton.grow();
     skeleton.grow();
+    skeleton.set_size_to_capacity();
     skeleton.inflate_at(0, 1);
     skeleton.inflate_at(1, 2);
     skeleton.inflate_at(2, 1);

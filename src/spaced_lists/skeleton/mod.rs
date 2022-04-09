@@ -64,21 +64,27 @@ impl<S: Spacing, Sub: SpacedList<S>> Skeleton<S, Sub> {
         })
     }
 
-    // FIXME these bounds checks should refer to self.link_size or self.node_size
     pub fn link_index_is_in_bounds(&self, index: usize) -> bool {
-        index < self.link_capacity()
+        index < self.link_size()
     }
 
     pub fn sublist_index_is_in_bounds(&self, index: usize) -> bool {
-        index < self.link_capacity()
+        index < self.link_size()
     }
 
+    // TODO this should check if index < node_size instead
     pub fn node_index_is_in_bounds(&self, index: usize) -> bool {
-        index <= self.link_capacity()
+        index <= self.link_size()
     }
 
     pub fn degree_is_in_bounds(&self, index: usize) -> bool {
         index < self.depth()
+    }
+
+    /// For unit tests only.
+    #[cfg(test)]
+    pub(crate) fn set_size_to_capacity(&mut self) {
+        self.link_size = self.link_capacity
     }
 
     /// Doubles this skeletons size, or increase it to one if it is zero.

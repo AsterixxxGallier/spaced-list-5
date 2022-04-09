@@ -81,11 +81,11 @@ pub trait SpacedList<S: Spacing>: Default {
         if size == self.skeleton().link_capacity() {
             self.skeleton_mut().grow();
         }
-        self.skeleton_mut().inflate_at(size, distance);
-        let index = self.skeleton().link_size();
-        let position = self.skeleton().length();
         *self.skeleton_mut().link_size_mut() += 1;
         *self.skeleton_mut().link_size_deep_mut() += 1;
+        self.skeleton_mut().inflate_at(size, distance);
+        let index = self.skeleton().link_size() - 1;
+        let position = self.skeleton().length();
         Position::new(vec![], self, index, position)
     }
 
