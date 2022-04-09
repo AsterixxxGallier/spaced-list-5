@@ -123,8 +123,8 @@ macro_rules! pos {
     ($list:expr, $node_index:expr, $position:expr, $super_lists:expr) => {
         Position::new($super_lists, $list, $node_index, $position)
     };
-    ($list:expr, $node_index:expr, $position:expr, $super_lists:expr) => {
-        ShallowPosition::new($list, $node_index, $position)
+    ($_list:expr, $node_index:expr, $position:expr) => {
+        ShallowPosition::new($node_index, $position)
     }
 }
 
@@ -196,7 +196,7 @@ macro_rules! traverse_unchecked {
     };
     (shallow; $list:expr; $cmp:tt $target:expr) => {
         {
-            let mut list = $list;
+            let list = $list;
             let mut degree = list.skeleton().depth() - 1;
             let mut node_index = 0;
             // TODO start at offset

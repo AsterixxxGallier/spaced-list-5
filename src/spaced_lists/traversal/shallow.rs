@@ -72,6 +72,16 @@ impl<'list, S, List, Continue, Stop> ShallowTraversal<'list, S, List, Continue, 
 }
 
 pub struct ShallowPosition<S: Spacing> {
+    // TODO make less public
     pub index: usize,
     pub position: S,
+}
+
+impl<S: Spacing> ShallowPosition<S> {
+    pub(crate) fn new(index: usize, position: S) -> Self {
+        Self {
+            index,
+            position
+        }
+    }
 }

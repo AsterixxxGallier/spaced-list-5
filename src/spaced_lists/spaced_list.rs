@@ -3,34 +3,7 @@ use num_traits::zero;
 use crate::{Position, Iter, SpacedListSkeleton, Spacing};
 use crate::spaced_lists::traversal::node::*;
 use crate::spaced_lists::traversal::link_index;
-use crate::spaced_lists::traversal::shallow::{ShallowPosition, ShallowTraversal};
-
-macro_rules! shallow_traversal {
-    (<=, $list:expr, $position:expr) => {
-        ShallowTraversal::new(
-            $list,
-            |pos| pos <= $position,
-            Some(|pos| pos == $position)
-        )
-    };
-    (<, $list:expr, $position:expr) => {
-        ShallowTraversal::new(
-            $list,
-            |pos| pos < $position,
-            None::<fn(_) -> _>
-        )
-    }
-}
-
-macro_rules! shallow_traversal_position {
-    ($cmp:tt, $list:expr, $position:expr) => {
-        {
-            let mut traversal = shallow_traversal!($cmp, $list, $position);
-            traversal.run();
-            traversal.position()
-        }
-    }
-}
+use crate::spaced_lists::traversal::shallow::{ShallowPosition};
 
 pub trait SpacedList<S: Spacing>: Default {
     fn skeleton(&self) -> &SpacedListSkeleton<S, Self>;
@@ -68,7 +41,7 @@ pub trait SpacedList<S: Spacing>: Default {
             return self.append_node(position - self.skeleton().length());
         }
         let ShallowPosition { index, position: node_position, .. } =
-            shallow_traversal_position!(<=, self, position);
+            traverse!(shallow; &*self; <= position).unwrap();
         *self.skeleton_mut().deep_size_mut() += 1;
         let sublist = self.skeleton_mut().get_or_add_sublist_at_mut(index);
         sublist.insert_node(position - node_position)
@@ -79,7 +52,7 @@ pub trait SpacedList<S: Spacing>: Default {
             todo!()
         }
         let ShallowPosition { index, position: node_position, .. } =
-            shallow_traversal_position!(<=, self, position);
+            traverse!(shallow; &*self; <= position).unwrap();
         self.skeleton_mut().inflate_at(index, amount);
         if let Some(sublist) = self.skeleton_mut().get_sublist_at_mut(index) {
             let position_in_sublist = position - node_position;
@@ -94,7 +67,7 @@ pub trait SpacedList<S: Spacing>: Default {
             todo!()
         }
         let ShallowPosition { index, position: node_position, .. } =
-            shallow_traversal_position!(<, self, position);
+            traverse!(shallow; &*self; < position).unwrap();
         self.skeleton_mut().inflate_at(index, amount);
         if let Some(sublist) = self.skeleton_mut().get_sublist_at_mut(index) {
             let position_in_sublist = position - node_position;
@@ -109,7 +82,7 @@ pub trait SpacedList<S: Spacing>: Default {
             todo!()
         }
         let ShallowPosition { index, position: node_position, .. } =
-            shallow_traversal_position!(<=, self, position);
+            traverse!(shallow; &*self; <= position).unwrap();
         self.skeleton_mut().deflate_at(index, amount);
         if let Some(sublist) = self.skeleton_mut().get_sublist_at_mut(index) {
             let position_in_sublist = position - node_position;
@@ -124,7 +97,7 @@ pub trait SpacedList<S: Spacing>: Default {
             todo!()
         }
         let ShallowPosition { index, position: node_position, .. } =
-            shallow_traversal_position!(<, self, position);
+            traverse!(shallow; &*self; < position).unwrap();
         self.skeleton_mut().deflate_at(index, amount);
         if let Some(sublist) = self.skeleton_mut().get_sublist_at_mut(index) {
             let position_in_sublist = position - node_position;
