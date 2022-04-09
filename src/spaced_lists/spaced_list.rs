@@ -5,14 +5,6 @@ use crate::spaced_lists::positions::shallow::ShallowPosition;
 use crate::spaced_lists::traversal::*;
 use paste::paste;
 
-macro_rules! traversal_methods {
-    {$($name:ident: $cmp:tt)+} => {
-        $(fn $name<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
-            traverse!(deep; self; $cmp position)
-        })+
-    };
-}
-
 macro_rules! flate_check {
     ($action:ident after; $self:expr, $position:expr) => {
         // TODO check if smaller than offset or larger than or equal to length + offset instead
@@ -54,6 +46,14 @@ macro_rules! flate_methods {
             })+
         }
     }
+}
+
+macro_rules! traversal_methods {
+    {$($name:ident: $cmp:tt)+} => {
+        $(fn $name<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
+            traverse!(deep; self; $cmp position)
+        })+
+    };
 }
 
 pub trait SpacedList<S: Spacing>: Default {
