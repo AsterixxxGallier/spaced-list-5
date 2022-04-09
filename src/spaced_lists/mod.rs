@@ -164,6 +164,28 @@ macro_rules! spaced_list {
     }
 }
 
+macro_rules! delegates {
+    {$fn:ident(&self$(, $param:ident: $param_type:ty)*)$( -> $return:ty)? $(;$($rest:tt)*)?} => {
+        pub fn $fn(&self$(, $param: $param_type)*)$( -> $return)? {
+            <Self as SpacedList<S>>::$fn(self$(, $param)*)
+        }
+
+        delegates! {
+            $($($rest)*)?
+        }
+    };
+    {$fn:ident(&mut self$(, $param:ident: $param_type:ty)*)$( -> $return:ty)? $(;$($rest:tt)*)?} => {
+        pub fn $fn(&mut self$(, $param: $param_type)*)$( -> $return)? {
+            <Self as SpacedList<S>>::$fn(self$(, $param)*)
+        }
+
+        delegates! {
+            $($($rest)*)?
+        }
+    };
+    {} => {}
+}
+
 mod skeleton;
 
 mod spaced_list;
