@@ -28,6 +28,29 @@ macro_rules! maybe_move_forwards {
     }
 }
 
+macro_rules! descend {
+    ($skeleton:expr, $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
+        if $degree == 0 {
+            if $skeleton.sublist_index_is_in_bounds($node_index) {
+                if let Some(sublist) = $skeleton.get_sublist_at($node_index) {
+                    // TODO check too that position + sublist.offset < target
+                    let sub_skeleton = sublist.skeleton();
+                    $degree = sub_skeleton.depth() - 1;
+                    $node_index = 0;
+                    $super_lists.push($list);
+                    $list = sublist;
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+        } else {
+            $degree -= 1;
+        }
+    };
+}
+
 macro_rules! loop_while {
     ($cmp:tt $target:expr;
         $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
@@ -43,24 +66,7 @@ macro_rules! loop_while {
             }
             maybe_move_forwards!($cmp $target; skeleton, link_index, $list, $super_lists, $degree,
                 $node_index, $position);
-            if $degree == 0 {
-                if skeleton.sublist_index_is_in_bounds($node_index) {
-                    if let Some(sublist) = skeleton.get_sublist_at($node_index) {
-                        // TODO check too that position + sublist.offset < target
-                        let sub_skeleton = sublist.skeleton();
-                        $degree = sub_skeleton.depth() - 1;
-                        $node_index = 0;
-                        $super_lists.push($list);
-                        $list = sublist;
-                    } else {
-                        break;
-                    }
-                } else {
-                    break;
-                }
-            } else {
-                $degree -= 1;
-            }
+            descend!(skeleton, $list, $super_lists, $degree, $node_index, $position);
         }
     }
 }
@@ -213,3 +219,4 @@ pub(crate) use traverse_unchecked_with_variables;
 pub(crate) use loop_while;
 pub(crate) use maybe_move_forwards;
 pub(crate) use next;
+pub(crate) use descend;
