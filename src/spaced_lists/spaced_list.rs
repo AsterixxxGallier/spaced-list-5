@@ -110,6 +110,29 @@ impl<'list, S: Spacing, List: SpacedList<S>> Pos<'list, S, List> {
     }
 }
 
+macro_rules! descend {
+    ($skeleton:expr, $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
+        if $degree == 0 {
+            if $skeleton.sublist_index_is_in_bounds($node_index) {
+                if let Some(sublist) = $skeleton.get_sublist_at($node_index) {
+                    // TODO check too that position + sublist.offset < target
+                    let sub_skeleton = sublist.skeleton();
+                    $degree = sub_skeleton.depth() - 1;
+                    $node_index = 0;
+                    $super_lists.push($list);
+                    $list = sublist;
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+        } else {
+            $degree -= 1;
+        }
+    };
+}
+
 macro_rules! loop_while {
     (< $target:expr; $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
         loop {
@@ -127,24 +150,7 @@ macro_rules! loop_while {
                 $position = next_position;
                 $node_index += 1 << $degree;
             }
-            if $degree == 0 {
-                if skeleton.sublist_index_is_in_bounds($node_index) {
-                    if let Some(sublist) = skeleton.get_sublist_at($node_index) {
-                        // TODO check too that position + sublist.offset < target
-                        let sub_skeleton = sublist.skeleton();
-                        $degree = sub_skeleton.depth() - 1;
-                        $node_index = 0;
-                        $super_lists.push($list);
-                        $list = sublist;
-                    } else {
-                        break;
-                    }
-                } else {
-                    break;
-                }
-            } else {
-                $degree -= 1;
-            }
+            descend!(skeleton, $list, $super_lists, $degree, $node_index, $position);
         }
     };
     (<= $target:expr; $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
@@ -174,24 +180,7 @@ macro_rules! loop_while {
                     break;
                 }
             }
-            if $degree == 0 {
-                if skeleton.sublist_index_is_in_bounds($node_index) {
-                    if let Some(sublist) = skeleton.get_sublist_at($node_index) {
-                        // TODO check too that position + sublist.offset < target
-                        let sub_skeleton = sublist.skeleton();
-                        $degree = sub_skeleton.depth() - 1;
-                        $node_index = 0;
-                        $super_lists.push($list);
-                        $list = sublist;
-                    } else {
-                        break;
-                    }
-                } else {
-                    break;
-                }
-            } else {
-                $degree -= 1;
-            }
+            descend!(skeleton, $list, $super_lists, $degree, $node_index, $position);
         }
     }
 }
