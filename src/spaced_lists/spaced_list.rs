@@ -9,12 +9,14 @@ macro_rules! flate_check {
     ($action:ident after; $self:expr, $position:expr) => {
         // TODO check if smaller than offset or larger than or equal to length + offset instead
         if $position < zero() || $position >= $self.skeleton().length() {
+            // TODO better error message
             panic!(concat!("Cannot ", stringify!($action), " out of bounds"))
         }
     };
     ($action:ident before; $self:expr, $position:expr) => {
         // TODO check if smaller than or equal to offset or larger than length + offset instead
         if $position <= zero() || $position > $self.skeleton().length() {
+            // TODO better error message
             panic!(concat!("Cannot ", stringify!($action), " out of bounds"))
         }
     }
