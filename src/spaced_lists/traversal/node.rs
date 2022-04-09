@@ -40,12 +40,10 @@ macro_rules! descend {
                     $node_index = 0;
                     $super_lists.push($list);
                     $list = sublist;
-                } else {
-                    break;
+                    continue;
                 }
-            } else {
-                break;
             }
+            break;
         } else {
             $degree -= 1;
         }
