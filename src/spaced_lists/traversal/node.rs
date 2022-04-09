@@ -1,189 +1,215 @@
-use std::fmt::{Debug, Formatter};
-
-use num_traits::zero;
-
-use crate::{SpacedList, Spacing};
-
-pub struct Traversal<'list, S, List, Continue, Stop>
-    where S: 'list + Spacing,
-          List: SpacedList<S>,
-          Continue: Fn(S) -> bool,
-          Stop: Fn(S) -> bool {
-    super_lists: Vec<&'list List>,
-    list: &'list List,
-    continue_condition: Continue,
-    stop_condition: Option<Stop>,
-    degree: usize,
-    node_index: usize,
-    link_index: usize,
-    position: S,
-}
-
-impl<'list, S, List, Continue, Stop> Traversal<'list, S, List, Continue, Stop>
-    where S: Spacing,
-          List: SpacedList<S>,
-          Continue: Fn(S) -> bool,
-          Stop: Fn(S) -> bool {
-    pub fn new(list: &'list List, continue_condition: Continue, stop_condition: Option<Stop>) -> Self {
-        Self {
-            super_lists: vec![],
-            list,
-            continue_condition,
-            stop_condition,
-            degree: list.skeleton().depth() - 1,
-            node_index: 0,
-            link_index: list.skeleton().capacity() - 1,
-            position: zero(),
-        }
-    }
-
-    pub fn run(&mut self) {
-        let mut last_iteration = false;
-        'outer: loop {
-            if let Some(condition) = &self.stop_condition {
-                if condition(self.position) {
-                    while self.descend().is_ok() {
-                        continue;
+macro_rules! maybe_move_forwards {
+    (<= $target:expr; $skeleton:expr, $link_index:expr,
+        $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
+        let next_position = $position + $skeleton.get_link_length_at($link_index);
+        if next_position <= $target {
+            $position = next_position;
+            $node_index += 1 << $degree;
+            if $position == $target {
+                if $skeleton.sublist_index_is_in_bounds($node_index) {
+                    // TODO don't just descend into sublists like that when you have offsets
+                    while let Some(sublist) = $skeleton.get_sublist_at($node_index) {
+                        $node_index = 0;
+                        $super_lists.push($list);
+                        $list = sublist;
                     }
-                    break;
                 }
-            }
-            while self.link_index >= self.list.skeleton().size() {
-                if self.descend().is_ok() {
-                    continue;
-                } else {
-                    break 'outer;
-                }
-            }
-            let skeleton = self.list.skeleton();
-            let next_position = self.position + skeleton.get_link_length_at(self.link_index);
-            if (self.continue_condition)(next_position) {
-                self.position = next_position;
-                self.node_index += 1 << self.degree;
-                self.link_index += 1 << self.degree;
-            }
-            if last_iteration {
-                if self.descend().is_ok() {
-                    last_iteration = false;
-                    continue;
-                } else {
-                    break;
-                }
-            }
-            if self.degree > 0 {
-                self.descend().unwrap();
-                continue;
-            } else {
-                // TODO it might not always make sense to have this extra iteration
-                last_iteration = true;
-            }
-        }
-    }
-
-    fn descend(&mut self) -> Result<(), ()> {
-        if self.degree > 0 {
-            self.degree -= 1;
-            self.link_index -= 1 << self.degree;
-            Ok(())
-        } else {
-            let skeleton = self.list.skeleton();
-            if skeleton.sublist_index_is_in_bounds(self.node_index) {
-                if let Some(sublist) = skeleton.get_sublist_at(self.node_index) {
-                    let sub_skeleton = sublist.skeleton();
-                    self.degree = sub_skeleton.depth() - 1;
-                    self.node_index = 0;
-                    self.link_index = sub_skeleton.capacity() - 1;
-                    self.super_lists.push(self.list);
-                    self.list = sublist;
-                    Ok(())
-                } else {
-                    Err(())
-                }
-            } else {
-                Err(())
-            }
-        }
-    }
-
-    pub fn next(&mut self) -> Result<(), &str> {
-        if self.node_index == self.list.skeleton().size() {
-            return if let Some(node_index) = self.list.skeleton().index_in_super_list() {
-                self.degree = 0;
-                self.node_index = node_index;
-                self.link_index = node_index;
-                self.position -= self.list.skeleton().length();
-                self.list = self.super_lists.pop().unwrap();
-                return self.next();
-            } else {
-                Err("Called next on a Traversal that is already at the end of the list")
-            };
-        }
-
-        let degree_before = self.degree;
-        let skeleton = self.list.skeleton();
-        loop {
-            if self.degree < self.node_index.trailing_zeros() as usize {
                 break;
             }
-            self.position -= skeleton.get_link_length_at(self.node_index - 1);
-            self.node_index -= 1 << self.degree;
-            self.degree += 1;
         }
-
-        self.node_index += 1 << self.degree;
-        self.link_index = self.node_index + (1 << degree_before) - 1;
-        self.position += skeleton.get_link_length_at(self.node_index - 1);
-        self.degree = degree_before;
-
-        Ok(())
-    }
-
-    pub fn position(&self) -> Position<'list, S, List> {
-        Position::new(
-            self.list,
-            self.node_index,
-            self.position,
-        )
-    }
-}
-
-pub struct Position<'list, S: Spacing, List: SpacedList<S>> {
-    list: &'list List,
-    index: usize,
-    position: S,
-}
-
-impl<'list, S: Spacing, List: SpacedList<S>> Position<'list, S, List> {
-    pub(crate) fn new(list: &'list List, index: usize, position: S) -> Self {
-        Self {
-            list,
-            index,
-            position,
-        }
-    }
-
-    pub fn position(&self) -> S {
-        self.position
-    }
-}
-
-impl<'list, S: Spacing, List: SpacedList<S>> Clone for Position<'list, S, List> {
-    fn clone(&self) -> Self {
-        Self {
-            list: self.list,
-            index: self.index,
-            position: self.position,
+    };
+    (< $target:expr; $skeleton:expr, $link_index:expr,
+        $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
+        let next_position = $position + $skeleton.get_link_length_at($link_index);
+        if next_position < $target {
+            $position = next_position;
+            $node_index += 1 << $degree;
         }
     }
 }
 
-impl<'list, S: Spacing, List: SpacedList<S>> Copy for Position<'list, S, List> {}
-
-impl<S: Spacing + Debug, List: SpacedList<S>> Debug for Position<'_, S, List> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Position")
-            .field("index", &self.index)
-            .field("position", &self.position)
-            .finish_non_exhaustive()
+macro_rules! loop_while {
+    ($cmp:tt $target:expr;
+        $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
+        loop {
+            let skeleton = $list.skeleton();
+            let link_index = link_index($node_index, $degree);
+            if !skeleton.link_index_is_in_bounds(link_index) {
+                if $degree == 0 {
+                    break;
+                }
+                $degree -= 1;
+                continue;
+            }
+            maybe_move_forwards!($cmp $target; skeleton, link_index, $list, $super_lists, $degree,
+                $node_index, $position);
+            if $degree == 0 {
+                if skeleton.sublist_index_is_in_bounds($node_index) {
+                    if let Some(sublist) = skeleton.get_sublist_at($node_index) {
+                        // TODO check too that position + sublist.offset < target
+                        let sub_skeleton = sublist.skeleton();
+                        $degree = sub_skeleton.depth() - 1;
+                        $node_index = 0;
+                        $super_lists.push($list);
+                        $list = sublist;
+                    } else {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            } else {
+                $degree -= 1;
+            }
+        }
     }
 }
+
+macro_rules! next {
+    ($skeleton:expr, $list:ident, $super_lists:ident, $node_index:ident, $position:ident) => {
+        {
+            while $node_index == $list.skeleton().size() {
+                if let Some(node_index) = $skeleton.index_in_super_list() {
+                    $node_index = node_index;
+                    $position -= $skeleton.length();
+                    $list = $super_lists.pop().unwrap();
+                } else {
+                    panic!("Tried to move to next node but it's already the end of the list")
+                };
+            }
+
+            let skeleton = $skeleton;
+            let mut degree = 0;
+            loop {
+                if degree < $node_index.trailing_zeros() as usize {
+                    break;
+                }
+                $position -= skeleton.get_link_length_at($node_index - 1);
+                $node_index -= 1 << degree;
+                degree += 1;
+            }
+
+            $node_index += 1 << degree;
+            $position += skeleton.get_link_length_at($node_index - 1);
+        }
+    };
+}
+
+macro_rules! traverse_unchecked_with_variables {
+    (< $target:expr;
+        $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
+        {
+            loop_while!(< $target; $list, $super_lists, $degree, $node_index, $position);
+            Some(Pos::new($super_lists, $list, $node_index, $position))
+        }
+    };
+    (<= $target:expr;
+        $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
+        {
+            loop_while!(<= $target; $list, $super_lists, $degree, $node_index, $position);
+            Some(Pos::new($super_lists, $list, $node_index, $position))
+        }
+    };
+    (== $target:expr;
+        $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
+        {
+            loop_while!(<= $target; $list, $super_lists, $degree, $node_index, $position);
+            if $position == $target {
+                Some(Pos::new($super_lists, $list, $node_index, $position))
+            } else {
+                None
+            }
+        }
+    };
+    (>= $target:expr;
+        $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
+        {
+            loop_while!(<= $target; $list, $super_lists, $degree, $node_index, $position);
+            if $position == $target {
+                Some(Pos::new($super_lists, $list, $node_index, $position))
+            } else {
+                next!($list.skeleton(), $list, $super_lists, $node_index, $position);
+                Some(Pos::new($super_lists, $list, $node_index, $position))
+            }
+        }
+    };
+    (> $target:expr;
+        $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
+        {
+            loop_while!(<= $target; $list, $super_lists, $degree, $node_index, $position);
+            next!($list.skeleton(), $list, $super_lists, $node_index, $position);
+            Some(Pos::new($super_lists, $list, $node_index, $position))
+        }
+    }
+}
+
+macro_rules! traverse_unchecked {
+    ($list:expr; $cmp:tt $target:expr) => {
+        {
+            let mut list = $list;
+            let mut super_lists = vec![];
+            let mut degree = list.skeleton().depth() - 1;
+            let mut node_index = 0;
+            // TODO start at offset
+            let mut position = zero();
+            traverse_unchecked_with_variables!($cmp $target;
+                list, super_lists, degree, node_index, position)
+        }
+    }
+}
+
+macro_rules! traverse {
+    ($list:expr; < $target:expr) => {
+        // TODO check if it's smaller than or equal to offset instead
+        if $target <= zero() {
+            None
+        } else {
+            traverse_unchecked!($list; < $target)
+        }
+    };
+    ($list:expr; <= $target:expr) => {
+        // TODO check if it's smaller than offset instead
+        if $target < zero() {
+            None
+        } else {
+            traverse_unchecked!($list; <= $target)
+        }
+    };
+    ($list:expr; == $target:expr) => {
+        // TODO check if it's smaller than offset instead
+        if $target < zero() {
+            None
+        } else {
+            traverse_unchecked!($list; == $target)
+        }
+    };
+    ($list:expr; >= $target:expr) => {
+        // TODO check if it's larger than offset + length instead
+        if $target > $list.skeleton().length() {
+            None
+            // TODO replace zero() with offset
+        } else if $target <= zero() {
+            Some(Pos::new(vec![], $list, 0, zero()))
+        } else {
+            traverse_unchecked!($list; >= $target)
+        }
+    };
+    ($list:expr; > $target:expr) => {
+        // TODO check if it's larger than or equal to offset + length instead
+        if $target >= $list.skeleton().length() {
+            None
+            // TODO replace zero() with offset
+        } else if $target < zero() {
+            Some(Pos::new(vec![], $list, 0, zero()))
+        } else {
+            traverse_unchecked!($list; > $target)
+        }
+    }
+}
+
+pub(crate) use traverse;
+pub(crate) use traverse_unchecked;
+pub(crate) use traverse_unchecked_with_variables;
+pub(crate) use loop_while;
+pub(crate) use maybe_move_forwards;
+pub(crate) use next;

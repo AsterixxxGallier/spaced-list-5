@@ -1,6 +1,6 @@
 use num_traits::zero;
 
-use crate::{Position, SpacedList, Spacing};
+use crate::{Pos, SpacedList, Spacing};
 
 struct IterPos<'list, S: 'list + Spacing, List: SpacedList<S>> {
     list: &'list List,
@@ -12,12 +12,14 @@ struct IterPos<'list, S: 'list + Spacing, List: SpacedList<S>> {
 
 pub struct Iter<'list, S: 'list + Spacing, List: SpacedList<S>> {
     positions: Vec<IterPos<'list, S, List>>,
+    super_lists: Vec<&'list List>
 }
 
 impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
     pub fn new(list: &'list List) -> Iter<'list, S, List> {
         let mut this = Iter {
-            positions: Vec::with_capacity(list.skeleton().depth())
+            positions: Vec::with_capacity(list.skeleton().depth()),
+            super_lists: vec![]
         };
 
         this.positions.push(IterPos {
@@ -33,9 +35,9 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
         this
     }
 
-    fn position(&self) -> Option<Position<'list, S, List>> {
+    fn position(&self) -> Option<Pos<'list, S, List>> {
         let last = self.positions.last()?;
-        Some(Position::new(last.list, last.node_index, last.position))
+        Some(Pos::new(self.super_lists.clone(), last.list, last.node_index, last.position))
     }
 
     fn next(&mut self) -> Result<(), ()> {
@@ -43,6 +45,7 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
         if last.node_index == last.list.skeleton().size() {
             let len = self.positions.len() - last.list.skeleton().depth();
             self.positions.truncate(len);
+            self.super_lists.pop();
             if len == 0 {
                 Err(())
             } else {
@@ -91,6 +94,7 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
             let skeleton = list.skeleton();
             if skeleton.sublist_index_is_in_bounds(node_index) {
                 if let Some(sublist) = skeleton.get_sublist_at(node_index) {
+                    self.super_lists.push(list);
                     let sub_skeleton = sublist.skeleton();
                     self.positions.push(IterPos {
                         list: sublist,
@@ -110,9 +114,9 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
 }
 
 impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iterator for Iter<'list, S, List> {
-    type Item = Position<'list, S, List>;
+    type Item = Pos<'list, S, List>;
 
-    fn next<'a>(&'a mut self) -> Option<Position<'list, S, List>> {
+    fn next<'a>(&'a mut self) -> Option<Pos<'list, S, List>> {
         let position = Iter::<'_, _, _>::position(self)?;
         // if we're at the end of the list, the line above will return None in the next iteration
         let _err_if_at_end = self.next();
