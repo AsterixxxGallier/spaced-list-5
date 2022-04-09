@@ -76,35 +76,6 @@ impl<'list, S: Spacing, List: SpacedList<S>> Pos<'list, S, List> {
         }
     }
 
-    fn next(&mut self) -> Result<(), &'static str> {
-        if self.index == self.list.skeleton().size() {
-            return if let Some(index) = self.list.skeleton().index_in_super_list() {
-                self.index = index;
-                self.position -= self.list.skeleton().length();
-                self.list = self.super_lists.pop().unwrap();
-                return self.next();
-            } else {
-                Err("Called next on a Position that is already at the end of the list")
-            };
-        }
-
-        let skeleton = self.list.skeleton();
-        let mut degree = 0;
-        loop {
-            if degree < self.index.trailing_zeros() as usize {
-                break;
-            }
-            self.position -= skeleton.get_link_length_at(self.index - 1);
-            self.index -= 1 << degree;
-            degree += 1;
-        }
-
-        self.index += 1 << degree;
-        self.position += skeleton.get_link_length_at(self.index - 1);
-
-        Ok(())
-    }
-
     pub fn position(&self) -> S {
         self.position
     }
@@ -177,6 +148,36 @@ macro_rules! loop_while {
     }
 }
 
+macro_rules! next {
+    ($skeleton:expr, $list:ident, $super_lists:ident, $node_index:ident, $position:ident) => {
+        {
+            while $node_index == $list.skeleton().size() {
+                if let Some(node_index) = $skeleton.index_in_super_list() {
+                    $node_index = node_index;
+                    $position -= $skeleton.length();
+                    $list = $super_lists.pop().unwrap();
+                } else {
+                    panic!("Tried to move to next node but it's already the end of the list")
+                };
+            }
+
+            let skeleton = $skeleton;
+            let mut degree = 0;
+            loop {
+                if degree < $node_index.trailing_zeros() as usize {
+                    break;
+                }
+                $position -= skeleton.get_link_length_at($node_index - 1);
+                $node_index -= 1 << degree;
+                degree += 1;
+            }
+
+            $node_index += 1 << degree;
+            $position += skeleton.get_link_length_at($node_index - 1);
+        }
+    };
+}
+
 macro_rules! traverse {
     ($list:expr; < $target:expr) => {
         // TODO check if it's smaller than or equal to offset instead
@@ -242,12 +243,11 @@ macro_rules! traverse {
             // TODO start at offset
             let mut position = zero();
             loop_while!(<= $target; list, super_lists, degree, node_index, position);
-            let mut pos = Pos::new(super_lists, list, node_index, position);
-            if pos.position == $target {
-                Some(pos)
+            if position == $target {
+                Some(Pos::new(super_lists, list, node_index, position))
             } else {
-                pos.next().unwrap();
-                Some(pos)
+                next!(list.skeleton(), list, super_lists, node_index, position);
+                Some(Pos::new(super_lists, list, node_index, position))
             }
         }
     };
@@ -266,9 +266,8 @@ macro_rules! traverse {
             // TODO start at offset
             let mut position = zero();
             loop_while!(<= $target; list, super_lists, degree, node_index, position);
-            let mut pos = Pos::new(super_lists, list, node_index, position);
-            pos.next().unwrap();
-            Some(pos)
+            next!(list.skeleton(), list, super_lists, node_index, position);
+            Some(Pos::new(super_lists, list, node_index, position))
         }
     }
 }
