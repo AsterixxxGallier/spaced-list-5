@@ -29,7 +29,8 @@ macro_rules! maybe_move_forwards {
 }
 
 macro_rules! descend {
-    ($skeleton:expr, $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
+    (deep; $skeleton:expr,
+        $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
         if $degree == 0 {
             if $skeleton.sublist_index_is_in_bounds($node_index) {
                 if let Some(sublist) = $skeleton.get_sublist_at($node_index) {
@@ -45,6 +46,14 @@ macro_rules! descend {
             } else {
                 break;
             }
+        } else {
+            $degree -= 1;
+        }
+    };
+    (shallow; $skeleton:expr,
+        $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
+        if $degree == 0 {
+            break;
         } else {
             $degree -= 1;
         }
@@ -66,7 +75,7 @@ macro_rules! loop_while {
             }
             maybe_move_forwards!($cmp $target; skeleton, link_index, $list, $super_lists, $degree,
                 $node_index, $position);
-            descend!(skeleton, $list, $super_lists, $degree, $node_index, $position);
+            descend!(deep; skeleton, $list, $super_lists, $degree, $node_index, $position);
         }
     }
 }
