@@ -178,12 +178,9 @@ macro_rules! next {
     };
 }
 
-macro_rules! traverse {
+macro_rules! traverse_unchecked {
     ($list:expr; < $target:expr) => {
-        // TODO check if it's smaller than or equal to offset instead
-        if $target <= zero() {
-            None
-        } else {
+        {
             let mut super_lists = vec![];
             let mut list = $list;
             let mut degree = list.skeleton().depth() - 1;
@@ -195,10 +192,7 @@ macro_rules! traverse {
         }
     };
     ($list:expr; <= $target:expr) => {
-        // TODO check if it's smaller than offset instead
-        if $target < zero() {
-            None
-        } else {
+        {
             let mut super_lists = vec![];
             let mut list = $list;
             let mut degree = list.skeleton().depth() - 1;
@@ -210,10 +204,7 @@ macro_rules! traverse {
         }
     };
     ($list:expr; == $target:expr) => {
-        // TODO check if it's smaller than offset instead
-        if $target < zero() {
-            None
-        } else {
+        {
             let mut super_lists = vec![];
             let mut list = $list;
             let mut degree = list.skeleton().depth() - 1;
@@ -229,13 +220,7 @@ macro_rules! traverse {
         }
     };
     ($list:expr; >= $target:expr) => {
-        // TODO check if it's larger than offset + length instead
-        if $target > $list.skeleton().length() {
-            None
-            // TODO replace zero() with offset
-        } else if $target <= zero() {
-            Some(Pos::new(vec![], $list, 0, zero()))
-        } else {
+        {
             let mut super_lists = vec![];
             let mut list = $list;
             let mut degree = list.skeleton().depth() - 1;
@@ -252,13 +237,7 @@ macro_rules! traverse {
         }
     };
     ($list:expr; > $target:expr) => {
-        // TODO check if it's larger than or equal to offset + length instead
-        if $target >= $list.skeleton().length() {
-            None
-            // TODO replace zero() with offset
-        } else if $target < zero() {
-            Some(Pos::new(vec![], $list, 0, zero()))
-        } else {
+        {
             let mut super_lists = vec![];
             let mut list = $list;
             let mut degree = list.skeleton().depth() - 1;
@@ -268,6 +247,55 @@ macro_rules! traverse {
             loop_while!(<= $target; list, super_lists, degree, node_index, position);
             next!(list.skeleton(), list, super_lists, node_index, position);
             Some(Pos::new(super_lists, list, node_index, position))
+        }
+    }
+}
+
+macro_rules! traverse {
+    ($list:expr; < $target:expr) => {
+        // TODO check if it's smaller than or equal to offset instead
+        if $target <= zero() {
+            None
+        } else {
+            traverse_unchecked!($list; < $target)
+        }
+    };
+    ($list:expr; <= $target:expr) => {
+        // TODO check if it's smaller than offset instead
+        if $target < zero() {
+            None
+        } else {
+            traverse_unchecked!($list; <= $target)
+        }
+    };
+    ($list:expr; == $target:expr) => {
+        // TODO check if it's smaller than offset instead
+        if $target < zero() {
+            None
+        } else {
+            traverse_unchecked!($list; == $target)
+        }
+    };
+    ($list:expr; >= $target:expr) => {
+        // TODO check if it's larger than offset + length instead
+        if $target > $list.skeleton().length() {
+            None
+            // TODO replace zero() with offset
+        } else if $target <= zero() {
+            Some(Pos::new(vec![], $list, 0, zero()))
+        } else {
+            traverse_unchecked!($list; >= $target)
+        }
+    };
+    ($list:expr; > $target:expr) => {
+        // TODO check if it's larger than or equal to offset + length instead
+        if $target >= $list.skeleton().length() {
+            None
+            // TODO replace zero() with offset
+        } else if $target < zero() {
+            Some(Pos::new(vec![], $list, 0, zero()))
+        } else {
+            traverse_unchecked!($list; > $target)
         }
     }
 }
