@@ -48,9 +48,7 @@ macro_rules! delegates {
 }
 
 impl<S: Spacing> HollowSpacedList<S> {
-    pub fn new() -> Self {
-        default()
-    }
+    default_as_new!();
 
     delegates! {
         iter(&mut self) -> Iter<S, Self>;

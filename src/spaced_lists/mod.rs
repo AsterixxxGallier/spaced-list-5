@@ -13,6 +13,14 @@ pub(crate) use skeleton::SpacedListSkeleton;
 
 pub trait Spacing = Add<Output=Self> + AddAssign + Sub<Output=Self> + SubAssign + Zero + Ord + Copy;
 
+macro_rules! default_as_new {
+    () => {
+        pub fn new() -> Self {
+            default()
+        }
+    };
+}
+
 mod skeleton;
 
 mod spaced_list;

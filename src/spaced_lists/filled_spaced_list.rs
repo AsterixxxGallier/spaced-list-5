@@ -29,9 +29,7 @@ impl<S: Spacing, T> SpacedList<S> for FilledSpacedList<S, T> {
 
 #[allow(unused)]
 impl<S: Spacing, T> FilledSpacedList<S, T> {
-    pub fn new() -> Self {
-        default()
-    }
+    default_as_new!();
 
     pub fn element(&self, index: Todo) -> &T {
         todo!()

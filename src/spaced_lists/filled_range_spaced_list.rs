@@ -29,9 +29,7 @@ impl<S: Spacing, T> SpacedList<S> for FilledRangeSpacedList<S, T> {
 
 #[allow(unused)]
 impl<S: Spacing, T> FilledRangeSpacedList<S, T> {
-    pub fn new() -> Self {
-        default()
-    }
+    default_as_new!();
 
     pub fn element(&self, range_index: Todo) -> &T {
         todo!()

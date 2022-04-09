@@ -27,9 +27,7 @@ impl<S: Spacing> SpacedList<S> for HollowRangeSpacedList<S> {
 
 #[allow(unused)]
 impl<S: Spacing> HollowRangeSpacedList<S> {
-    pub fn new() -> Self {
-        default()
-    }
+    default_as_new!();
 
     pub fn append_range(&mut self, distance: S, span: S) -> Todo {
         todo!()
