@@ -49,10 +49,12 @@ macro_rules! flate_methods {
 }
 
 macro_rules! traversal_methods {
-    {$($name:ident: $cmp:tt)+} => {
-        $(fn $name<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
-            traverse!(deep; self; $cmp position)
-        })+
+    {$($pos:ident: $cmp:tt)+} => {
+        paste! {
+            $(fn [<node_ $pos>]<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
+                traverse!(deep; self; $cmp position)
+            })+
+        }
     };
 }
 
@@ -120,10 +122,10 @@ pub trait SpacedList<S: Spacing>: Default {
     TODO long term implement all of these*/
 
     traversal_methods! {
-        node_before: <
-        node_at_or_before: <=
-        node_at: ==
-        node_at_or_after: >=
-        node_after: >
+        before: <
+        at_or_before: <=
+        at: ==
+        at_or_after: >=
+        after: >
     }
 }
