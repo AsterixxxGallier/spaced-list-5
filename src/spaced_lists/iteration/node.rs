@@ -102,13 +102,11 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
                         node_index: 0,
                         link_index: sub_skeleton.capacity() - 1,
                         degree: sub_skeleton.depth() - 1,
-                    })
-                } else {
-                    break;
+                    });
+                    continue;
                 }
-            } else {
-                break;
             }
+            break;
         }
     }
 }
