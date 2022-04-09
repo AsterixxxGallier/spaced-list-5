@@ -59,7 +59,7 @@ macro_rules! descend {
 }
 
 macro_rules! loop_while {
-    ($cmp:tt $target:expr;
+    ($depth:tt; $cmp:tt $target:expr;
         $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
         loop {
             let skeleton = $list.skeleton();
@@ -73,7 +73,7 @@ macro_rules! loop_while {
             }
             maybe_move_forwards!($cmp $target; skeleton, link_index, $list, $super_lists, $degree,
                 $node_index, $position);
-            descend!(deep; skeleton, $list, $super_lists, $degree, $node_index, $position);
+            descend!($depth; skeleton, $list, $super_lists, $degree, $node_index, $position);
         }
     }
 }
@@ -109,24 +109,24 @@ macro_rules! next {
 }
 
 macro_rules! traverse_unchecked_with_variables {
-    (< $target:expr;
+    ($depth:tt; < $target:expr;
         $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
         {
-            loop_while!(< $target; $list, $super_lists, $degree, $node_index, $position);
+            loop_while!($depth; < $target; $list, $super_lists, $degree, $node_index, $position);
             Some(Position::new($super_lists, $list, $node_index, $position))
         }
     };
-    (<= $target:expr;
+    ($depth:tt; <= $target:expr;
         $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
         {
-            loop_while!(<= $target; $list, $super_lists, $degree, $node_index, $position);
+            loop_while!($depth; <= $target; $list, $super_lists, $degree, $node_index, $position);
             Some(Position::new($super_lists, $list, $node_index, $position))
         }
     };
-    (== $target:expr;
+    ($depth:tt; == $target:expr;
         $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
         {
-            loop_while!(<= $target; $list, $super_lists, $degree, $node_index, $position);
+            loop_while!($depth; <= $target; $list, $super_lists, $degree, $node_index, $position);
             if $position == $target {
                 Some(Position::new($super_lists, $list, $node_index, $position))
             } else {
@@ -134,10 +134,10 @@ macro_rules! traverse_unchecked_with_variables {
             }
         }
     };
-    (>= $target:expr;
+    ($depth:tt; >= $target:expr;
         $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
         {
-            loop_while!(<= $target; $list, $super_lists, $degree, $node_index, $position);
+            loop_while!($depth; <= $target; $list, $super_lists, $degree, $node_index, $position);
             if $position == $target {
                 Some(Position::new($super_lists, $list, $node_index, $position))
             } else {
@@ -146,10 +146,10 @@ macro_rules! traverse_unchecked_with_variables {
             }
         }
     };
-    (> $target:expr;
+    ($depth:tt; > $target:expr;
         $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
         {
-            loop_while!(<= $target; $list, $super_lists, $degree, $node_index, $position);
+            loop_while!($depth; <= $target; $list, $super_lists, $degree, $node_index, $position);
             next!($list.skeleton(), $list, $super_lists, $node_index, $position);
             Some(Position::new($super_lists, $list, $node_index, $position))
         }
@@ -157,7 +157,7 @@ macro_rules! traverse_unchecked_with_variables {
 }
 
 macro_rules! traverse_unchecked {
-    ($list:expr; $cmp:tt $target:expr) => {
+    ($depth:tt; $list:expr; $cmp:tt $target:expr) => {
         {
             let mut list = $list;
             let mut super_lists = vec![];
@@ -165,38 +165,38 @@ macro_rules! traverse_unchecked {
             let mut node_index = 0;
             // TODO start at offset
             let mut position = zero();
-            traverse_unchecked_with_variables!($cmp $target;
+            traverse_unchecked_with_variables!($depth; $cmp $target;
                 list, super_lists, degree, node_index, position)
         }
     }
 }
 
 macro_rules! traverse {
-    ($list:expr; < $target:expr) => {
+    ($depth:tt; $list:expr; < $target:expr) => {
         // TODO check if it's smaller than or equal to offset instead
         if $target <= zero() {
             None
         } else {
-            traverse_unchecked!($list; < $target)
+            traverse_unchecked!($depth; $list; < $target)
         }
     };
-    ($list:expr; <= $target:expr) => {
+    ($depth:tt; $list:expr; <= $target:expr) => {
         // TODO check if it's smaller than offset instead
         if $target < zero() {
             None
         } else {
-            traverse_unchecked!($list; <= $target)
+            traverse_unchecked!($depth; $list; <= $target)
         }
     };
-    ($list:expr; == $target:expr) => {
+    ($depth:tt; $list:expr; == $target:expr) => {
         // TODO check if it's smaller than offset instead
         if $target < zero() {
             None
         } else {
-            traverse_unchecked!($list; == $target)
+            traverse_unchecked!($depth; $list; == $target)
         }
     };
-    ($list:expr; >= $target:expr) => {
+    ($depth:tt; $list:expr; >= $target:expr) => {
         // TODO check if it's larger than offset + length instead
         if $target > $list.skeleton().length() {
             None
@@ -204,10 +204,10 @@ macro_rules! traverse {
         } else if $target <= zero() {
             Some(Position::new(vec![], $list, 0, zero()))
         } else {
-            traverse_unchecked!($list; >= $target)
+            traverse_unchecked!($depth; $list; >= $target)
         }
     };
-    ($list:expr; > $target:expr) => {
+    ($depth:tt; $list:expr; > $target:expr) => {
         // TODO check if it's larger than or equal to offset + length instead
         if $target >= $list.skeleton().length() {
             None
@@ -215,7 +215,7 @@ macro_rules! traverse {
         } else if $target < zero() {
             Some(Position::new(vec![], $list, 0, zero()))
         } else {
-            traverse_unchecked!($list; > $target)
+            traverse_unchecked!($depth; $list; > $target)
         }
     }
 }

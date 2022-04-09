@@ -149,22 +149,22 @@ pub trait SpacedList<S: Spacing>: Default {
     TODO long term implement all of these*/
 
     fn node_before<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
-        traverse!(self; < position)
+        traverse!(deep; self; < position)
     }
 
     fn node_at_or_before<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
-        traverse!(self; <= position)
+        traverse!(deep; self; <= position)
     }
 
     fn node_at<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
-        traverse!(self; == position)
+        traverse!(deep; self; == position)
     }
 
     fn node_at_or_after<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
-        traverse!(self; >= position)
+        traverse!(deep; self; >= position)
     }
 
     fn node_after<'a>(&'a self, position: S) -> Option<Position<'a, S, Self>> where S: 'a {
-        traverse!(self; > position)
+        traverse!(deep; self; > position)
     }
 }
