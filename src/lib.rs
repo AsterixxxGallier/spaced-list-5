@@ -24,21 +24,22 @@
 #![feature(slice_ptr_get)]
 
 #[doc(inline)]
-pub use spaced_lists::FilledRangeSpacedList;
+pub use spaced_lists::filled_range_spaced_list::FilledRangeSpacedList;
 #[doc(inline)]
-pub use spaced_lists::FilledSpacedList;
+pub use spaced_lists::filled_spaced_list::FilledSpacedList;
 #[doc(inline)]
-pub use spaced_lists::HollowRangeSpacedList;
+pub use spaced_lists::hollow_range_spaced_list::HollowRangeSpacedList;
 #[doc(inline)]
-pub use spaced_lists::HollowSpacedList;
+pub use spaced_lists::hollow_spaced_list::HollowSpacedList;
 #[doc(inline)]
-pub use spaced_lists::Position;
+pub use spaced_lists::iteration::node::Iter;
 #[doc(inline)]
-pub use spaced_lists::Iter;
+pub use spaced_lists::positions::node::Position;
 #[doc(inline)]
 pub use spaced_lists::Spacing;
-pub(crate) use spaced_lists::SpacedList;
-pub(crate) use spaced_lists::SpacedListSkeleton;
+
+pub(crate) use spaced_lists::spaced_list::SpacedList;
+pub(crate) use spaced_lists::skeleton::SpacedListSkeleton;
 
 /// Todo type, replace every occurrence of this type with a proper type
 type Todo = !;
