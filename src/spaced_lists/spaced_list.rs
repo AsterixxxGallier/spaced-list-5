@@ -166,7 +166,7 @@ fn traverse_until_inclusive<'a, S: 'a + Spacing, List: SpacedList<S>>(list: &'a 
     Pos::new(super_lists, list, node_index, position)
 }
 
-macro_rules! traverse_while {
+macro_rules! loop_while {
     (< $target:expr; $list:ident, $super_lists:ident, $degree:ident, $node_index:ident, $position:ident) => {
         loop {
             let skeleton = $list.skeleton();
@@ -220,7 +220,7 @@ macro_rules! traverse {
             let mut node_index = 0;
             // TODO start at offset
             let mut position = zero();
-            traverse_while!(< $target; list, super_lists, degree, node_index, position);
+            loop_while!(< $target; list, super_lists, degree, node_index, position);
             Some(Pos::new(super_lists, list, node_index, position))
         }
     };
@@ -229,7 +229,7 @@ macro_rules! traverse {
         if $target < zero() {
             None
         } else {
-            Some(traverse_while!($list; <= $target))
+            Some(loop_while!($list; <= $target))
         }
     };
     ($list:expr; == $target:expr) => {
@@ -237,7 +237,7 @@ macro_rules! traverse {
         if $target < zero() {
             None
         } else {
-            let pos = traverse_while!($list; <= $target);
+            let pos = loop_while!($list; <= $target);
             if pos.position == $target {
                 Some(pos)
             } else {
@@ -253,7 +253,7 @@ macro_rules! traverse {
         } else if $target <= zero() {
             Some(Pos::new(vec![], $list, 0, zero()))
         } else {
-            let mut pos = traverse_while!($list; <= $target);
+            let mut pos = loop_while!($list; <= $target);
             if pos.position == $target {
                 Some(pos)
             } else {
@@ -270,7 +270,7 @@ macro_rules! traverse {
         } else if $target < zero() {
             Some(Pos::new(vec![], $list, 0, zero()))
         } else {
-            let mut pos = traverse_while!($list; <= $target);
+            let mut pos = loop_while!($list; <= $target);
             pos.next().unwrap();
             Some(pos)
         }
