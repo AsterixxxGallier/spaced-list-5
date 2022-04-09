@@ -1,13 +1,9 @@
 use std::default::default;
 
 use crate::{Iter, Position, SpacedList, SpacedListSkeleton, Spacing};
+use paste::paste;
 
-#[derive(Clone, Eq, PartialEq)]
-pub struct HollowSpacedList<S: Spacing> {
-    skeleton: SpacedListSkeleton<S, Self>,
-}
-
-spaced_list_impl!(HollowSpacedList<S>);
+spaced_list!(Hollow);
 
 macro_rules! delegates {
     {$fn:ident(&self$(, $param:ident: $param_type:ty)*)$( -> $return:ty)? $(;$($rest:tt)*)?} => {

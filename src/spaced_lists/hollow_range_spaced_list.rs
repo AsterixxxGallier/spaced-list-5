@@ -1,13 +1,10 @@
 use std::default::default;
 
+use paste::paste;
+
 use crate::{SpacedList, SpacedListSkeleton, Spacing, Todo};
 
-#[derive(Clone, Eq, PartialEq)]
-pub struct HollowRangeSpacedList<S: Spacing> {
-    skeleton: SpacedListSkeleton<S, Self>,
-}
-
-spaced_list_impl!(HollowRangeSpacedList<S>);
+spaced_list!(Hollow Range);
 
 #[allow(unused)]
 impl<S: Spacing> HollowRangeSpacedList<S> {

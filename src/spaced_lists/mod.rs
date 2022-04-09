@@ -21,8 +21,13 @@ macro_rules! default_as_new {
     };
 }
 
-macro_rules! spaced_list_impl {
-    ($Self:ty) => {
+macro_rules! spaced_list {
+    (@Hollow $Name:ident $Self:ty) => {
+        #[derive(Clone, Eq, PartialEq)]
+        pub struct $Name<S: Spacing> {
+            skeleton: SpacedListSkeleton<S, Self>,
+        }
+
         impl<S: Spacing> Default for $Self {
             fn default() -> Self {
                 Self {
@@ -41,7 +46,13 @@ macro_rules! spaced_list_impl {
             }
         }
     };
-    (T, $Self:ty) => {
+    (@Filled $Name:ident $Self:ty) => {
+        #[derive(Clone, Eq, PartialEq)]
+        pub struct $Name<S: Spacing, T> {
+            skeleton: SpacedListSkeleton<S, Self>,
+            elements: Vec<T>,
+        }
+
         impl<S: Spacing, T> Default for $Self {
             fn default() -> Self {
                 Self {
@@ -61,6 +72,18 @@ macro_rules! spaced_list_impl {
             }
         }
     };
+    (Hollow $($ranged:ident)?) => {
+        paste! {
+            spaced_list!(@Hollow
+                [<Hollow $($ranged)? SpacedList>] [<Hollow $($ranged)? SpacedList>]<S>);
+        }
+    };
+    (Filled $($ranged:ident)?) => {
+        paste! {
+            spaced_list!(@Filled
+                [<Filled $($ranged)? SpacedList>] [<Filled $($ranged)? SpacedList>]<S, T>);
+        }
+    }
 }
 
 mod skeleton;

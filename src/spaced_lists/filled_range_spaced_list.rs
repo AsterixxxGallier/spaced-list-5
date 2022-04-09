@@ -1,14 +1,10 @@
 use std::default::default;
 
+use paste::paste;
+
 use crate::{SpacedList, SpacedListSkeleton, Spacing, Todo};
 
-#[derive(Clone, Eq, PartialEq)]
-pub struct FilledRangeSpacedList<S: Spacing, T> {
-    skeleton: SpacedListSkeleton<S, Self>,
-    elements: Vec<T>,
-}
-
-spaced_list_impl!(T, FilledRangeSpacedList<S, T>);
+spaced_list!(Filled Range);
 
 #[allow(unused)]
 impl<S: Spacing, T> FilledRangeSpacedList<S, T> {
