@@ -118,9 +118,8 @@ pub trait SpacedList<S: Spacing>: Default {
         *self.skeleton_mut().node_size_mut() += 1;
         *self.skeleton_mut().node_size_deep_mut() += 1;
         self.skeleton_mut().inflate_at(link_size, distance);
-        let index = self.skeleton().link_size() - 1;
         let position = self.skeleton().length();
-        Position::new(vec![], self, index, position)
+        Position::new(vec![], self, link_size, position)
     }
 
     fn insert_node<'a>(&'a mut self, position: S) -> Position<'a, S, Self> where S: 'a {
