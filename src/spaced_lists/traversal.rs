@@ -56,6 +56,7 @@ macro_rules! descend {
                         $position = next_position;
                         $super_lists.push($list);
                         $list = sublist;
+                        $skeleton = $list.skeleton();
                         continue;
                     }
                 }
@@ -76,21 +77,21 @@ macro_rules! descend {
 }
 
 macro_rules! loop_while {
-    ($depth:tt; $cmp:tt $target:ident;
-        $list:ident, $degree:ident, $node_index:ident, $position:ident$(, $super_lists:ident)?) => {
+    ($depth:tt; $cmp:tt $target:ident; $list:ident, $skeleton:ident,
+        $degree:ident, $node_index:ident, $position:ident$(, $super_lists:ident)?) => {
         loop {
-            let skeleton = $list.skeleton();
+            // let skeleton = $list.skeleton();
             let link_index = link_index($node_index, $degree);
-            if !skeleton.link_index_is_in_bounds(link_index) {
+            if !$skeleton.link_index_is_in_bounds(link_index) {
                 if $degree == 0 {
                     break;
                 }
                 $degree -= 1;
                 continue;
             }
-            maybe_move_forwards!($cmp $target; skeleton, link_index,
+            maybe_move_forwards!($cmp $target; $skeleton, link_index,
                 $degree, $node_index, $position);
-            descend!($depth; $cmp $target, skeleton, $list, $($super_lists, )?$degree, $node_index, $position);
+            descend!($depth; $cmp $target, $skeleton, $list, $($super_lists, )?$degree, $node_index, $position);
         }
     }
 }
@@ -99,46 +100,45 @@ macro_rules! next {
     ($skeleton:ident, $list:ident, $node_index:ident, $position:ident$(, $super_lists:ident)?) => {
         'next: {
             $(
-            let skeleton = $list.skeleton();
-            if skeleton.sublist_index_is_in_bounds($node_index) {
-                if let Some(sublist) = skeleton.sublist_at($node_index) {
+            if $skeleton.sublist_index_is_in_bounds($node_index) {
+                if let Some(sublist) = $skeleton.sublist_at($node_index) {
                     let sub_skeleton = sublist.skeleton();
                     $node_index = 0;
                     $position += sub_skeleton.offset();
                     $super_lists.push($list);
                     $list = sublist;
+                    $skeleton = $list.skeleton();
                     break 'next;
                 }
             }
             )?
 
             loop {
-                let skeleton = $list.skeleton();
-                if $node_index < skeleton.link_size() {
+                if $node_index < $skeleton.link_size() {
                     break;
                 }
-                $(if let Some(new_index) = skeleton.index_in_super_list() {
+                $(if let Some(new_index) = $skeleton.index_in_super_list() {
                     $node_index = new_index;
-                    $position -= skeleton.length() + skeleton.offset();
+                    $position -= $skeleton.length() + $skeleton.offset();
                     $list = $super_lists.pop().unwrap();
+                    $skeleton = $list.skeleton();
                     continue
                 })?
                 panic!("Tried to move to next node but it's already the end of the list")
             }
 
-            let skeleton = $list.skeleton();
             let mut degree = 0;
             loop {
                 if degree < $node_index.trailing_zeros() as usize {
                     break;
                 }
-                $position -= skeleton.link_length_at($node_index - 1);
+                $position -= $skeleton.link_length_at($node_index - 1);
                 $node_index -= 1 << degree;
                 degree += 1;
             }
 
             $node_index += 1 << degree;
-            $position += skeleton.link_length_at($node_index - 1);
+            $position += $skeleton.link_length_at($node_index - 1);
         }
     };
 }
@@ -153,27 +153,27 @@ macro_rules! pos {
 }
 
 macro_rules! traverse_unchecked_with_variables {
-    ($depth:tt; < $target:ident;
-        $list:ident, $degree:ident, $node_index:ident, $position:ident$(, $super_lists:ident)?) => {
+    ($depth:tt; < $target:ident; $list:ident, $skeleton:ident,
+        $degree:ident, $node_index:ident, $position:ident$(, $super_lists:ident)?) => {
         {
             loop_while!($depth; < $target;
-                $list, $degree, $node_index, $position$(, $super_lists)?);
+                $list, $skeleton, $degree, $node_index, $position$(, $super_lists)?);
             Some(pos!($list, $node_index, $position$(, $super_lists)?))
         }
     };
-    ($depth:tt; <= $target:ident;
-        $list:ident, $degree:ident, $node_index:ident, $position:ident$(, $super_lists:ident)?) => {
+    ($depth:tt; <= $target:ident; $list:ident, $skeleton:ident,
+        $degree:ident, $node_index:ident, $position:ident$(, $super_lists:ident)?) => {
         {
             loop_while!($depth; <= $target;
-                $list, $degree, $node_index, $position$(, $super_lists)?);
+                $list, $skeleton, $degree, $node_index, $position$(, $super_lists)?);
             Some(pos!($list, $node_index, $position$(, $super_lists)?))
         }
     };
-    ($depth:tt; == $target:ident;
-        $list:ident, $degree:ident, $node_index:ident, $position:ident$(, $super_lists:ident)?) => {
+    ($depth:tt; == $target:ident; $list:ident, $skeleton:ident,
+        $degree:ident, $node_index:ident, $position:ident$(, $super_lists:ident)?) => {
         {
             loop_while!($depth; <= $target;
-                $list, $degree, $node_index, $position$(, $super_lists)?);
+                $list, $skeleton, $degree, $node_index, $position$(, $super_lists)?);
             if $position == $target {
                 Some(pos!($list, $node_index, $position$(, $super_lists)?))
             } else {
@@ -181,69 +181,65 @@ macro_rules! traverse_unchecked_with_variables {
             }
         }
     };
-    ($depth:tt; >= $target:ident;
-        $list:ident, $degree:ident, $node_index:ident, $position:ident$(, $super_lists:ident)?) => {
+    ($depth:tt; >= $target:ident; $list:ident, $skeleton:ident,
+        $degree:ident, $node_index:ident, $position:ident$(, $super_lists:ident)?) => {
         {
             loop_while!($depth; <= $target;
-                $list, $degree, $node_index, $position$(, $super_lists)?);
+                $list, $skeleton, $degree, $node_index, $position$(, $super_lists)?);
             if $position == $target {
                 Some(pos!($list, $node_index, $position$(, $super_lists)?))
             } else {
-                let skeleton = $list.skeleton();
-                next!(skeleton, $list, $node_index, $position$(, $super_lists)?);
+                next!($skeleton, $list, $node_index, $position$(, $super_lists)?);
                 Some(pos!($list, $node_index, $position$(, $super_lists)?))
             }
         }
     };
-    ($depth:tt; > $target:ident;
-        $list:ident, $degree:ident, $node_index:ident, $position:ident$(, $super_lists:ident)?) => {
+    ($depth:tt; > $target:ident; $list:ident, $skeleton:ident,
+        $degree:ident, $node_index:ident, $position:ident$(, $super_lists:ident)?) => {
         {
             loop_while!($depth; <= $target;
-                $list, $degree, $node_index, $position$(, $super_lists)?);
-            let skeleton = $list.skeleton();
-            next!(skeleton, $list, $node_index, $position$(, $super_lists)?);
+                $list, $skeleton, $degree, $node_index, $position$(, $super_lists)?);
+            next!($skeleton, $list, $node_index, $position$(, $super_lists)?);
             Some(pos!($list, $node_index, $position$(, $super_lists)?))
         }
     }
 }
 
 macro_rules! traverse_unchecked {
-    (deep; $list:expr; $cmp:tt $target:ident) => {
+    (deep; $list:expr, $skeleton:ident; $cmp:tt $target:ident) => {
         {
-            let skeleton = $list.skeleton();
-            if skeleton.link_size() == 0 {
-                if skeleton.offset() $cmp $target {
-                    Some(pos!($list, 0, skeleton.offset(), vec![]))
+            if $skeleton.link_size() == 0 {
+                if $skeleton.offset() $cmp $target {
+                    Some(pos!($list, 0, $skeleton.offset(), vec![]))
                 } else {
                     None
                 }
             } else {
                 let mut list = $list;
                 let mut super_lists = vec![];
-                let mut degree = skeleton.depth() - 1;
+                let mut degree = $skeleton.depth() - 1;
                 let mut node_index = 0;
-                let mut position = skeleton.offset();
+                let mut position = $skeleton.offset();
                 traverse_unchecked_with_variables!(deep; $cmp $target;
-                    list, degree, node_index, position, super_lists)
+                    list, $skeleton, degree, node_index, position, super_lists)
             }
         }
     };
-    (shallow; $list:expr; $cmp:tt $target:ident) => {
+    (shallow; $list:expr, $skeleton:ident; $cmp:tt $target:ident) => {
         {
-            let skeleton = $list.skeleton();
-            if skeleton.node_size() == 0 {
-                if skeleton.offset() $cmp $target {
-                    Some(pos!($list, 0, skeleton.offset()))
+            if $skeleton.node_size() == 0 {
+                if $skeleton.offset() $cmp $target {
+                    Some(pos!($list, 0, $skeleton.offset()))
                 } else {
                     None
                 }
             } else {
                 let list = $list;
-                let mut degree = skeleton.depth() - 1;
+                let mut degree = $skeleton.depth() - 1;
                 let mut node_index = 0;
-                let mut position = skeleton.offset();
+                let mut position = $skeleton.offset();
                 traverse_unchecked_with_variables!(shallow; $cmp $target;
-                    list, degree, node_index, position)
+                    list, $skeleton, degree, node_index, position)
             }
         }
     }
@@ -251,47 +247,60 @@ macro_rules! traverse_unchecked {
 
 macro_rules! traverse {
     ($depth:tt; $list:expr; < $target:ident) => {
-        if $target <= $list.skeleton().offset() {
-            None
-        } else {
-            traverse_unchecked!($depth; $list; < $target)
+        {
+            let mut skeleton = $list.skeleton();
+            if $target <= skeleton.offset() {
+                None
+            } else {
+                traverse_unchecked!($depth; $list, skeleton; < $target)
+            }
         }
     };
     ($depth:tt; $list:expr; <= $target:ident) => {
-        if $target < $list.skeleton().offset() {
-            None
-        } else {
-            traverse_unchecked!($depth; $list; <= $target)
+        {
+            let mut skeleton = $list.skeleton();
+            if $target < skeleton.offset() {
+                None
+            } else {
+                traverse_unchecked!($depth; $list, skeleton; <= $target)
+            }
         }
     };
     ($depth:tt; $list:expr; == $target:ident) => {
-        if $target < $list.skeleton().offset() {
-            None
-        } else {
-            traverse_unchecked!($depth; $list; == $target)
+        {
+            let mut skeleton = $list.skeleton();
+            if $target < skeleton.offset() {
+                None
+            } else {
+                traverse_unchecked!($depth; $list, skeleton; == $target)
+            }
         }
     };
     ($depth:tt; $list:expr; >= $target:ident) => {
-        if $target > $list.skeleton().length() + $list.skeleton().offset() {
-            None
-        } else if $target <= $list.skeleton().offset() {
-            Some(Position::new(vec![], $list, 0, $list.skeleton().offset()))
-        } else {
-            traverse_unchecked!($depth; $list; >= $target)
+        {
+            let mut skeleton = $list.skeleton();
+            if $target > skeleton.length() + skeleton.offset() {
+                None
+            } else if $target <= skeleton.offset() {
+                Some(Position::new(vec![], $list, 0, skeleton.offset()))
+            } else {
+                traverse_unchecked!($depth; $list, skeleton; >= $target)
+            }
         }
     };
     ($depth:tt; $list:expr; > $target:ident) => {
-        if $target >= $list.skeleton().length() + $list.skeleton().offset() {
-            None
-        } else if $target < $list.skeleton().offset() {
-            Some(Position::new(vec![], $list, 0, $list.skeleton().offset()))
-        } else {
-            traverse_unchecked!($depth; $list; > $target)
+        {
+            let mut skeleton = $list.skeleton();
+            if $target >= skeleton.length() + skeleton.offset() {
+                None
+            } else if $target < skeleton.offset() {
+                Some(Position::new(vec![], $list, 0, skeleton.offset()))
+            } else {
+                traverse_unchecked!($depth; $list, skeleton; > $target)
+            }
         }
     }
 }
-
-// TODO make skeleton a mutable variable
 
 pub(crate) use traverse;
 pub(crate) use traverse_unchecked;
