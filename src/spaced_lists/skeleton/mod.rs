@@ -59,7 +59,7 @@ impl<S: Spacing, Sub: SpacedList<S>> Skeleton<S, Sub> {
         pub mut offset: S;
 
         pub index link_length: S;
-        index mut link_length: S;
+        pub(crate) index mut link_length: S;
         pub index ref sublist: Option<Sub>;
         pub index mut sublist: Option<Sub>;
     }
