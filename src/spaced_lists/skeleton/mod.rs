@@ -198,8 +198,8 @@ impl<S: Spacing, Sub: SpacedList<S>> Skeleton<S, Sub> {
                             None => self.link_length_at(link_index_below)
                         };
                         sum_of_concrete_link_lengths_below += link_length;
-                        // link_index_below will not be used after the last iteration, meaning that we
-                        // can ignore the underflow that can only happen then
+                        // link_index_below will not be used after the last iteration, meaning that
+                        // we can ignore the underflow that can only happen then
                         link_index_below = link_index_below.wrapping_sub(1 << degree_below);
                     }
                     assert!(new_total_link_length >= sum_of_concrete_link_lengths_below,
