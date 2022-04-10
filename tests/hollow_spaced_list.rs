@@ -10,7 +10,6 @@ fn iterate() {
     list.insert_node(20);
     list.insert_node(16);
     let mut iter = list.iter();
-    assert_eq!(iter.next().unwrap().position(), 0);
     assert_eq!(iter.next().unwrap().position(), 7);
     assert_eq!(iter.next().unwrap().position(), 8);
     assert_eq!(iter.next().unwrap().position(), 13);

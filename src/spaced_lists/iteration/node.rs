@@ -12,24 +12,24 @@ struct IterPos<'list, S: 'list + Spacing, List: SpacedList<S>> {
 
 pub struct Iter<'list, S: 'list + Spacing, List: SpacedList<S>> {
     positions: Vec<IterPos<'list, S, List>>,
-    super_lists: Vec<&'list List>
+    super_lists: Vec<&'list List>,
 }
 
 impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
     pub fn new(list: &'list List) -> Iter<'list, S, List> {
         let mut this = Iter {
             positions: Vec::with_capacity(list.skeleton().depth()),
-            super_lists: vec![]
+            super_lists: vec![],
         };
 
         this.positions.push(IterPos {
             list,
-            position: zero(),
+            position: list.skeleton().offset(),
             node_index: 0,
             degree: list.skeleton().depth() - 1,
         });
 
-        this.descend();
+        this.descend_vertically();
 
         this
     }
@@ -41,25 +41,48 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
 
     fn next(&mut self) -> Result<(), ()> {
         let last = self.positions.last().unwrap();
-        if last.node_index == last.list.skeleton().link_size() {
-            let len = self.positions.len() - last.list.skeleton().depth();
+        let skeleton = last.list.skeleton();
+        if skeleton.sublist_index_is_in_bounds(last.node_index) {
+            if let Some(sublist) = skeleton.sublist_at(last.node_index) {
+                let sub_skeleton = sublist.skeleton();
+                self.super_lists.push(last.list);
+                let next_position = last.position + sub_skeleton.offset();
+                self.positions.push(IterPos {
+                    list: sublist,
+                    position: next_position,
+                    node_index: 0,
+                    degree: 0,
+                });
+                return Ok(());
+            }
+        }
+
+        loop {
+            let last = self.positions.last().unwrap();
+            if last.node_index < last.list.skeleton().link_size() {
+                break
+            }
+            let mut len = self.positions.len() - last.list.skeleton().depth();
+            if last.list.skeleton().link_size() == 0 {
+                len -= 1;
+            }
             self.positions.truncate(len);
             self.super_lists.pop();
             if len == 0 {
-                Err(())
-            } else {
-                self.next()
+                return Err(())
             }
-        } else {
-            let len = self.positions.len() - last.node_index.trailing_ones() as usize;
-            self.positions.truncate(len);
-
-            self.next_unchecked();
-
-            self.descend();
-
-            Ok(())
         }
+
+        let last = self.positions.last().unwrap();
+
+        let len = self.positions.len() - last.node_index.trailing_ones() as usize;
+        self.positions.truncate(len);
+
+        self.next_unchecked();
+
+        self.descend_vertically();
+
+        Ok(())
     }
 
     fn next_unchecked(&mut self) {
@@ -68,8 +91,7 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
         last.node_index += 1 << last.degree;
     }
 
-    /// Descends as far down as possible
-    fn descend(&mut self) {
+    fn descend_vertically(&mut self) {
         loop {
             let IterPos {
                 list,
@@ -88,21 +110,70 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
             let skeleton = list.skeleton();
             if skeleton.sublist_index_is_in_bounds(node_index) {
                 if let Some(sublist) = skeleton.sublist_at(node_index) {
-                    self.super_lists.push(list);
                     let sub_skeleton = sublist.skeleton();
-                    self.positions.push(IterPos {
-                        list: sublist,
-                        position,
-                        node_index: 0,
-                        // FIXME this might be wrong
-                        degree: sub_skeleton.depth().saturating_sub(1),
-                    });
-                    continue;
+                    if sub_skeleton.offset() == zero() {
+                        self.super_lists.push(list);
+                        self.positions.push(IterPos {
+                            list: sublist,
+                            position,
+                            node_index: 0,
+                            // FIXME this might be wrong
+                            degree: sub_skeleton.depth().saturating_sub(1),
+                        });
+                        continue;
+                    }
                 }
             }
             break;
         }
     }
+
+    /*    /// Descends as far down as possible
+        fn descend(&mut self) {
+            loop {
+                let IterPos {
+                    list,
+                    position,
+                    node_index,
+                    degree,
+                } = *self.positions.last().unwrap();
+                for degree in (0..degree).rev() {
+                    self.positions.push(IterPos {
+                        list,
+                        position,
+                        node_index,
+                        degree,
+                    })
+                }
+                let skeleton = list.skeleton();
+                if skeleton.sublist_index_is_in_bounds(node_index) {
+                    if let Some(sublist) = skeleton.sublist_at(node_index) {
+                        let sub_skeleton = sublist.skeleton();
+                        if sub_skeleton.link_size() == 0 {
+                            self.super_lists.push(list);
+                            self.positions.push(IterPos {
+                                list: sublist,
+                                position,
+                                node_index: 0,
+                                // FIXME this might be wrong
+                                degree: sub_skeleton.depth().saturating_sub(1),
+                            });
+                        }
+                        self.super_lists.push(list);
+                        self.positions.push(IterPos {
+                            list: sublist,
+                            position,
+                            node_index: 0,
+                            // FIXME this might be wrong
+                            degree: sub_skeleton.depth().saturating_sub(1),
+                        });
+                        continue;
+                    }
+                }
+                break;
+            }
+        }
+    */
 }
 
 impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iterator for Iter<'list, S, List> {
