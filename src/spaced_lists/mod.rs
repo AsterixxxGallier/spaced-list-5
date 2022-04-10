@@ -97,7 +97,7 @@ macro_rules! accessors {
 }
 
 macro_rules! spaced_list {
-    (@Hollow $Name:ident $Self:ty) => {
+    {@Hollow $Name:ident $Self:ty; $($item:item)*} => {
         #[derive(Clone, Eq, PartialEq)]
         pub struct $Name<S: Spacing> {
             skeleton: Skeleton<S, Self>,
@@ -117,8 +117,14 @@ macro_rules! spaced_list {
                 mut skeleton: Skeleton<S, Self>;
             }
         }
+
+        impl<S: Spacing> $Self {
+            default_as_new!();
+
+            $($item)*
+        }
     };
-    (@Filled $Name:ident $Self:ty) => {
+    {@Filled $Name:ident $Self:ty; $($item:item)*} => {
         #[derive(Clone, Eq, PartialEq)]
         pub struct $Name<S: Spacing, T> {
             skeleton: Skeleton<S, Self>,
@@ -140,19 +146,25 @@ macro_rules! spaced_list {
                 mut skeleton: Skeleton<S, Self>;
             }
         }
-    };
-    (Hollow $($ranged:ident)?) => {
-        paste! {
-            spaced_list!(@Hollow
-                [<Hollow $($ranged)? SpacedList>] [<Hollow $($ranged)? SpacedList>]<S>);
+
+        impl<S: Spacing, T> $Self {
+            default_as_new!();
+
+            $($item)*
         }
     };
-    (Filled $($ranged:ident)?) => {
+    {Hollow $($ranged:ident)?; $($item:item)*} => {
         paste! {
-            spaced_list!(@Filled
-                [<Filled $($ranged)? SpacedList>] [<Filled $($ranged)? SpacedList>]<S, T>);
+            spaced_list! {@Hollow [<Hollow $($ranged)? SpacedList>]
+                [<Hollow $($ranged)? SpacedList>]<S>; $($item)*}
         }
-    }
+    };
+    {Filled $($ranged:ident)?; $($item:item)*} => {
+        paste! {
+            spaced_list! {@Filled [<Filled $($ranged)? SpacedList>]
+                [<Filled $($ranged)? SpacedList>]<S, T>; $($item)*}
+        }
+    };
 }
 
 macro_rules! delegates {

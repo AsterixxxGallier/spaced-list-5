@@ -3,10 +3,8 @@ use std::default::default;
 use crate::{Iter, Position, SpacedList, Skeleton, Spacing};
 use paste::paste;
 
-spaced_list!(Hollow);
-
-impl<S: Spacing> HollowSpacedList<S> {
-    default_as_new!();
+spaced_list! {
+    Hollow;
 
     delegates! {
         iter(&mut self) -> Iter<S, Self>;
