@@ -48,10 +48,10 @@ macro_rules! flate_check {
 }
 
 macro_rules! flate_position {
-    (after; $self:expr, $position:expr) => {
+    (after; $self:expr, $position:ident) => {
         traverse!(shallow; &*$self; <= $position)
     };
-    (before; $self:expr, $position:expr) => {
+    (before; $self:expr, $position:ident) => {
         traverse!(shallow; &*$self; < $position)
     }
 }
@@ -102,7 +102,6 @@ pub trait SpacedList<S: Spacing>: Default {
         //  beyond the link length from the node the sublist is positioned after to the node the
         //  sublist is positioned before, but this should never happen because sublists are only
         //  accessible from within this crate
-        // TODO add edge case support for first addition that sets offset
         let link_size = self.skeleton().link_size();
         let node_size = self.skeleton().node_size();
         if node_size == 0 {
@@ -125,8 +124,7 @@ pub trait SpacedList<S: Spacing>: Default {
     }
 
     fn insert_node<'a>(&'a mut self, position: S) -> Position<'a, S, Self> where S: 'a {
-        // TODO check if smaller than offset instead
-        if position <= self.skeleton().offset() {
+        if position < self.skeleton().offset() {
             let offset = self.skeleton().offset();
             *self.skeleton_mut().offset_mut() = position;
             if self.skeleton().link_size() > 0 {
@@ -135,7 +133,6 @@ pub trait SpacedList<S: Spacing>: Default {
             self.insert_node(offset);
             return Position::new(vec![], self, 0, position);
         }
-        // TODO check if larger than or equal to length + offset instead
         if position >= self.skeleton().length() + self.skeleton().offset() {
             return self.append_node(position - self.skeleton().length() - self.skeleton().offset());
         }
