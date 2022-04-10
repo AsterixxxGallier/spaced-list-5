@@ -2,50 +2,33 @@ use std::default::default;
 
 use paste::paste;
 
-use crate::{SpacedList, Skeleton, Spacing, Todo};
+use crate::{SpacedList, Skeleton, Spacing, Position};
 
 spaced_list!(Filled Range);
 
 #[allow(unused)]
 impl<S: Spacing, T> FilledRangeSpacedList<S, T> {
-    pub fn element(&self, range_index: Todo) -> &T {
+    pub fn element(&self, range_position: Position<S, Self>) -> &T {
         todo!()
     }
 
-    pub fn element_mut(&mut self, range_index: Todo) -> &mut T {
+    pub fn element_mut(&mut self, range_position: Position<S, Self>) -> &mut T {
         todo!()
     }
 
-    pub fn append_range(&mut self, distance: S, span: S, element: T) -> Todo {
+    pub fn append_range(&mut self, distance: S, span: S, element: T) -> Position<S, Self> {
         todo!()
     }
 
-    pub fn insert_range(&mut self, position: S, span: S, element: T) -> Todo {
+    pub fn insert_range(&mut self, position: S, span: S, element: T) -> Position<S, Self> {
         todo!()
     }
 
-    pub fn inflate_after_range(&mut self, range_index: Todo, amount: S) {
-        todo!()
-    }
-
-    pub fn inflate_before_range(&mut self, range_index: Todo, amount: S) {
-        todo!()
-    }
-
-    pub fn inflate_range(&mut self, range_index: Todo, amount: S) {
-        todo!()
-    }
-
-    pub fn deflate_after_range(&mut self, range_index: Todo, amount: S) {
-        todo!()
-    }
-
-    pub fn deflate_before_range(&mut self, range_index: Todo, amount: S) {
-        todo!()
-    }
-
-    pub fn deflate_range(&mut self, range_index: Todo, amount: S) {
-        todo!()
+    delegates! {
+        inflate_after(&mut self, position: S, amount: S);
+        inflate_before(&mut self, position: S, amount: S);
+        deflate_after(&mut self, position: S, amount: S);
+        deflate_before(&mut self, position: S, amount: S);
     }
 
     pub fn range_starting_before(&self, position: S) -> &T {

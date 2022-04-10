@@ -2,17 +2,17 @@ use std::default::default;
 
 use paste::paste;
 
-use crate::{SpacedList, Skeleton, Spacing, Todo};
+use crate::{SpacedList, Skeleton, Spacing, Position};
 
 spaced_list!(Filled);
 
 #[allow(unused)]
 impl<S: Spacing, T> FilledSpacedList<S, T> {
-    pub fn element(&self, index: Todo) -> &T {
+    pub fn element(&self, position: Position<S, Self>) -> &T {
         todo!()
     }
 
-    pub fn element_mut(&mut self, index: Todo) -> &mut T {
+    pub fn element_mut(&mut self, position: Position<S, Self>) -> &mut T {
         todo!()
     }
 
