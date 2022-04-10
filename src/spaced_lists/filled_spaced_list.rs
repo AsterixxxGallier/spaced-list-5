@@ -4,9 +4,10 @@ use paste::paste;
 
 use crate::{SpacedList, Skeleton, Spacing, Todo};
 
-spaced_list! {
-    Filled;
+spaced_list!(Filled);
 
+#[allow(unused)]
+impl<S: Spacing, T> FilledSpacedList<S, T> {
     pub fn element(&self, index: Todo) -> &T {
         todo!()
     }

@@ -4,9 +4,10 @@ use paste::paste;
 
 use crate::{SpacedList, Skeleton, Spacing, Todo};
 
-spaced_list! {
-    Hollow Range;
+spaced_list!(Hollow Range);
 
+#[allow(unused)]
+impl<S: Spacing> HollowRangeSpacedList<S> {
     pub fn append_range(&mut self, distance: S, span: S) -> Todo {
         todo!()
     }
