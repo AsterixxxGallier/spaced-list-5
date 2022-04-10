@@ -1,8 +1,10 @@
+use std::fmt::Display;
 use std::ops::{Add, AddAssign, Sub, SubAssign};
 
 use num_traits::Zero;
 
-pub trait Spacing = Add<Output=Self> + AddAssign + Sub<Output=Self> + SubAssign + Zero + Ord + Copy;
+pub trait Spacing = Add<Output=Self> + AddAssign + Sub<Output=Self> + SubAssign + Zero + Ord + Copy
+    + Display /*todo remove*/;
 
 macro_rules! default_as_new {
     () => {
