@@ -149,6 +149,14 @@ macro_rules! spaced_list {
 
         impl<S: Spacing, T> $Self {
             default_as_new!();
+
+            pub fn element(&self, position: Position<S, Self>) -> &T {
+                todo!()
+            }
+
+            pub fn element_mut(&mut self, position: Position<S, Self>) -> &mut T {
+                todo!()
+            }
         }
     };
     (Hollow $($ranged:ident)?) => {
@@ -165,6 +173,7 @@ macro_rules! spaced_list {
     }
 }
 
+// TODO make it possible to delegate to traits other than SpacedList<S>
 macro_rules! delegates {
     {$fn:ident(&self$(, $param:ident: $param_type:ty)*)$( -> $return:ty)? $(;$($rest:tt)*)?} => {
         pub fn $fn(&self$(, $param: $param_type)*)$( -> $return)? {

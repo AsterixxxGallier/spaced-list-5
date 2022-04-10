@@ -8,6 +8,7 @@ use crate::spaced_lists::traversal::*;
 
 spaced_list!(Hollow Range);
 
+// TODO add a RangeSpacedList trait and move the method implementations below there
 #[allow(unused)]
 impl<S: Spacing> HollowRangeSpacedList<S> {
     pub fn append_range(&mut self, distance: S, span: S) -> Position<S, Self> {

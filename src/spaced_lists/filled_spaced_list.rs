@@ -8,14 +8,6 @@ spaced_list!(Filled);
 
 #[allow(unused)]
 impl<S: Spacing, T> FilledSpacedList<S, T> {
-    pub fn element(&self, position: Position<S, Self>) -> &T {
-        todo!()
-    }
-
-    pub fn element_mut(&mut self, position: Position<S, Self>) -> &mut T {
-        todo!()
-    }
-
     pub fn append_element(&mut self, distance: S, element: T) {
         todo!()
     }
