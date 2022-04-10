@@ -35,14 +35,14 @@ macro_rules! flate_offset_check {
 macro_rules! flate_check {
     ($action:ident after; $self:expr, $position:expr) => {
         if $position >= $self.skeleton().length() + $self.skeleton().offset() {
-            // TODO better error message
-            panic!(concat!("Cannot ", stringify!($action), " out of bounds"))
+            panic!(concat!("Cannot ", stringify!($action),
+                " after position {}, as that position is at or after this list"), $position)
         }
     };
     ($action:ident before; $self:expr, $position:expr) => {
         if $position > $self.skeleton().length() + $self.skeleton().offset() {
-            // TODO better error message
-            panic!(concat!("Cannot ", stringify!($action), " out of bounds"))
+            panic!(concat!("Cannot ", stringify!($action),
+                " before position {}, as that position is after this list"), $position)
         }
     }
 }
