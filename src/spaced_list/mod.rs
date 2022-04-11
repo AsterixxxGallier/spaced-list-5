@@ -49,10 +49,10 @@ macro_rules! flate_check {
 
 macro_rules! flate_position {
     (after; $self:expr, $position:ident) => {
-        traverse!(shallow; &*$self; <= $position)
+        traverse!(node; shallow; &*$self; <= $position)
     };
     (before; $self:expr, $position:ident) => {
-        traverse!(shallow; &*$self; < $position)
+        traverse!(node; shallow; &*$self; < $position)
     }
 }
 
@@ -80,7 +80,7 @@ macro_rules! traversal_methods {
     {$($pos:ident: $cmp:tt)+} => {
         paste! {
             $(fn [<node_ $pos>]<'a>(&'a self, target: S) -> Option<Position<'a, S, Self>> where S: 'a {
-                traverse!(deep; self; $cmp target)
+                traverse!(node; deep; self; $cmp target)
             })+
         }
     };
@@ -137,7 +137,7 @@ pub trait SpacedList<S: Spacing>: Default {
             return self.append_node(position - self.skeleton().last_position());
         }
         let ShallowPosition { index, position: node_position, .. } =
-            traverse!(shallow; &*self; <= position).unwrap();
+            traverse!(node; shallow; &*self; <= position).unwrap();
         *self.skeleton_mut().link_size_deep_mut() += 1;
         *self.skeleton_mut().node_size_deep_mut() += 1;
         let sublist = self.skeleton_mut().get_or_add_sublist_at_mut(index);

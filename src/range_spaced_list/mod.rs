@@ -68,7 +68,7 @@ pub trait RangeSpacedList<S: Spacing>: SpacedList<S> {
                 position - self.skeleton().last_position(), span);
         }
         let ShallowPosition { index, position: node_position, .. } =
-            traverse!(shallow; &*self; <= position).unwrap();
+            traverse!(node; shallow; &*self; <= position).unwrap();
         assert_eq!(index & 1, 1, "Cannot insert range inside of another range");
         *self.skeleton_mut().link_size_deep_mut() += 2;
         *self.skeleton_mut().node_size_deep_mut() += 2;
