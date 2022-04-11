@@ -41,6 +41,7 @@ pub use spaced_lists::positions::node::Position;
 pub use spaced_lists::Spacing;
 
 pub(crate) use spaced_lists::spaced_list::SpacedList;
+pub(crate) use spaced_lists::range_spaced_list::RangeSpacedList;
 pub(crate) use spaced_lists::skeleton::Skeleton;
 
 mod spaced_lists;
