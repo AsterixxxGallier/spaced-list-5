@@ -8,7 +8,6 @@ use crate::skeleton::traversal::*;
 
 spaced_list!(Hollow Range);
 
-// TODO add a RangeSpacedList trait and move the method implementations below there
 #[allow(unused)]
 impl<S: Spacing> HollowRangeSpacedList<S> {
     delegates! {
