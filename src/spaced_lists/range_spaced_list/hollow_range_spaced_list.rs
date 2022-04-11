@@ -11,13 +11,6 @@ spaced_list!(Hollow Range);
 // TODO add a RangeSpacedList trait and move the method implementations below there
 #[allow(unused)]
 impl<S: Spacing> HollowRangeSpacedList<S> {
-    pub fn print_positions(&self) {
-        for pos in self.iter() {
-            println!("{}", pos.position());
-        }
-        println!();
-    }
-
     delegates! {
         as SpacedList<S>:
 

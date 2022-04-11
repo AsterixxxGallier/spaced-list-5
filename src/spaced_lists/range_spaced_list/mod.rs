@@ -55,20 +55,12 @@ pub trait RangeSpacedList<S: Spacing>: SpacedList<S> {
         if position + span < self.skeleton().offset() {
             let offset = self.skeleton().offset();
             let previous_span = self.skeleton().link_length_at(0);
-            self.print_positions();
-            // 5 8 10 11
+            *self.skeleton_mut().link_size_deep_mut() += 2;
+            *self.skeleton_mut().node_size_deep_mut() += 2;
             *self.skeleton_mut().offset_mut() = position;
-            self.print_positions();
-            // 1 4 6 7
-            // 1 3 6 7
             self.skeleton_mut().inflate_at(1, offset - position);
-            self.print_positions();
-            // 1 4 10 11
             *self.skeleton_mut().link_length_at_mut(0) = span;
-            self.print_positions();
-            // 1 4 10 11
             self.insert_range(offset, previous_span);
-            self.print_positions();
             return Position::new(vec![], self, 0, position);
         }
         // TODO add a last_position() accessor to Skeleton and use it wherever possible
@@ -83,13 +75,6 @@ pub trait RangeSpacedList<S: Spacing>: SpacedList<S> {
         *self.skeleton_mut().node_size_deep_mut() += 2;
         let sublist = self.skeleton_mut().get_or_add_sublist_at_mut(index);
         sublist.insert_range(position - node_position, span)
-    }
-
-    fn print_positions(&self) {
-        for pos in self.iter() {
-            println!("{}", pos.position());
-        }
-        println!();
     }
 
     fn range_starting_before(&self, position: S) -> Option<Position<S, Self>> {
