@@ -118,7 +118,7 @@ macro_rules! next {
                 }
                 $(if let Some(new_index) = $skeleton.index_in_super_list() {
                     $node_index = new_index;
-                    $position -= $skeleton.length() + $skeleton.offset();
+                    $position -= $skeleton.last_position();
                     $list = $super_lists.pop().unwrap();
                     $skeleton = $list.skeleton();
                     continue
@@ -278,7 +278,7 @@ macro_rules! traverse {
     ($depth:tt; $list:expr; >= $target:ident) => {
         {
             let mut skeleton = $list.skeleton();
-            if $target > skeleton.length() + skeleton.offset() {
+            if $target > skeleton.last_position() {
                 None
             } else if $target <= skeleton.offset() {
                 Some(Position::new(vec![], $list, 0, skeleton.offset()))
@@ -290,7 +290,7 @@ macro_rules! traverse {
     ($depth:tt; $list:expr; > $target:ident) => {
         {
             let mut skeleton = $list.skeleton();
-            if $target >= skeleton.length() + skeleton.offset() {
+            if $target >= skeleton.last_position() {
                 None
             } else if $target < skeleton.offset() {
                 Some(Position::new(vec![], $list, 0, skeleton.offset()))

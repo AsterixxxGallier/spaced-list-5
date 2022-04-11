@@ -64,6 +64,10 @@ impl<S: Spacing, Sub: SpacedList<S>> Skeleton<S, Sub> {
         pub index mut sublist: Option<Sub>;
     }
 
+    pub fn last_position(&self) -> S {
+        self.offset() + self.length()
+    }
+
     pub fn node_capacity(&self) -> usize {
         self.link_capacity + 1
     }

@@ -34,13 +34,13 @@ macro_rules! flate_offset_check {
 
 macro_rules! flate_check {
     ($action:ident after; $self:expr, $position:expr) => {
-        if $position >= $self.skeleton().length() + $self.skeleton().offset() {
+        if $position >= $self.skeleton().last_position() {
             panic!(concat!("Cannot ", stringify!($action),
                 " after position {}, as that position is at or after this list"), $position)
         }
     };
     ($action:ident before; $self:expr, $position:expr) => {
-        if $position > $self.skeleton().length() + $self.skeleton().offset() {
+        if $position > $self.skeleton().last_position() {
             panic!(concat!("Cannot ", stringify!($action),
                 " before position {}, as that position is after this list"), $position)
         }
@@ -132,8 +132,8 @@ pub trait SpacedList<S: Spacing>: Default {
             self.insert_node(offset);
             return Position::new(vec![], self, 0, position);
         }
-        if position >= self.skeleton().length() + self.skeleton().offset() {
-            return self.append_node(position - self.skeleton().length() - self.skeleton().offset());
+        if position >= self.skeleton().last_position() {
+            return self.append_node(position - self.skeleton().last_position());
         }
         let ShallowPosition { index, position: node_position, .. } =
             traverse!(shallow; &*self; <= position).unwrap();

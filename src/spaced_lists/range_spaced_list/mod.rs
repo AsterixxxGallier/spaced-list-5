@@ -63,10 +63,9 @@ pub trait RangeSpacedList<S: Spacing>: SpacedList<S> {
             self.insert_range(offset, previous_span);
             return Position::new(vec![], self, 0, position);
         }
-        // TODO add a last_position() accessor to Skeleton and use it wherever possible
-        if position >= self.skeleton().offset() + self.skeleton().length() {
+        if position >= self.skeleton().last_position() {
             return self.append_range(
-                position - self.skeleton().offset() - self.skeleton().length(), span);
+                position - self.skeleton().last_position(), span);
         }
         let ShallowPosition { index, position: node_position, .. } =
             traverse!(shallow; &*self; <= position).unwrap();
