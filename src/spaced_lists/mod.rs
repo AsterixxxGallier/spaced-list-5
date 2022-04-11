@@ -250,15 +250,7 @@ pub(crate) mod skeleton;
 
 pub(crate) mod spaced_list;
 
-pub(crate) mod hollow_spaced_list;
-
-pub(crate) mod filled_spaced_list;
-
 pub(crate) mod range_spaced_list;
-
-pub(crate) mod hollow_range_spaced_list;
-
-pub(crate) mod filled_range_spaced_list;
 
 pub(crate) mod traversal;
 

@@ -26,13 +26,13 @@
 #![allow(unused)]
 
 #[doc(inline)]
-pub use spaced_lists::filled_range_spaced_list::FilledRangeSpacedList;
+pub use spaced_lists::spaced_list::filled_spaced_list::FilledSpacedList;
 #[doc(inline)]
-pub use spaced_lists::filled_spaced_list::FilledSpacedList;
+pub use spaced_lists::spaced_list::hollow_spaced_list::HollowSpacedList;
 #[doc(inline)]
-pub use spaced_lists::hollow_range_spaced_list::HollowRangeSpacedList;
+pub use spaced_lists::range_spaced_list::hollow_range_spaced_list::HollowRangeSpacedList;
 #[doc(inline)]
-pub use spaced_lists::hollow_spaced_list::HollowSpacedList;
+pub use spaced_lists::range_spaced_list::filled_range_spaced_list::FilledRangeSpacedList;
 #[doc(inline)]
 pub use spaced_lists::iteration::node::Iter;
 #[doc(inline)]
