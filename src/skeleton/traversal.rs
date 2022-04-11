@@ -146,6 +146,15 @@ macro_rules! pos {
     }
 }
 
+macro_rules! index_is_at_bound {
+    (start; $node_index:expr) => {
+        $node_index & 0 == 0
+    };
+    (end; $node_index:expr) => {
+        $node_index & 0 == 1
+    };
+}
+
 // ╭───────────────────────────────────────────────────────────────╮
 // ├───────────────────────────────╮                               │
 // ├───────────────╮               ├───────────────╮               │
@@ -227,10 +236,9 @@ macro_rules! traverse_unchecked_with_variables {
     ((range $bound:tt); $depth:tt; $list:ident, $skeleton:ident; == $target:ident;
         $degree:ident, $node_index:ident, $position:ident$(; $super_lists:ident)?) => {
         {
-            todo!(); // TODO
             loop_while!($depth; $list, $skeleton; <= $target;
                 $degree, $node_index, $position$(; $super_lists)?);
-            if $position == $target {
+            if $position == $target && is_at_bound!($bound; $node_index) {
                 Some(pos!($list; $node_index, $position$(; $super_lists)?))
             } else {
                 None
