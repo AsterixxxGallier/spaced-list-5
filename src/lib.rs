@@ -188,11 +188,11 @@ macro_rules! spaced_list {
                 default_as_new!();
 
                 $(pub fn element(&self, position: Position<S, Self>) -> &$T {
-                    todo!()
+                    todo!() // TODO
                 }
 
                 pub fn element_mut(&mut self, position: Position<S, Self>) -> &mut $T {
-                    todo!()
+                    todo!() // TODO
                 })?
 
                 delegates! {
