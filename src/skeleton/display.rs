@@ -4,7 +4,7 @@ use std::fmt::{Display, Formatter, Write};
 use std::iter::repeat;
 use std::ops::{Bound, RangeBounds};
 
-use crate::spaced_lists::skeleton::display::Cell::*;
+use crate::skeleton::display::Cell::*;
 
 #[derive(Copy, Clone, Eq, PartialEq)]
 enum Cell {
