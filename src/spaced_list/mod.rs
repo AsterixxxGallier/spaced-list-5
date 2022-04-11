@@ -36,13 +36,13 @@ macro_rules! flate_check {
     ($action:ident after; $self:expr, $position:expr) => {
         if $position >= $self.skeleton().last_position() {
             panic!(concat!("Cannot ", stringify!($action),
-                " after position {}, as that position is at or after this list"), $position)
+                " after the given position, as that position is at or after this list"));
         }
     };
     ($action:ident before; $self:expr, $position:expr) => {
         if $position > $self.skeleton().last_position() {
             panic!(concat!("Cannot ", stringify!($action),
-                " before position {}, as that position is after this list"), $position)
+                " before the given position, as that position is after this list"));
         }
     }
 }

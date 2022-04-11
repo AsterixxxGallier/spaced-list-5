@@ -30,8 +30,7 @@ use std::ops::{Add, AddAssign, Sub, SubAssign};
 
 use num_traits::Zero;
 
-pub trait Spacing = Add<Output=Self> + AddAssign + Sub<Output=Self> + SubAssign + Zero + Ord + Copy
-+ Display /*todo remove*/;
+pub trait Spacing = Add<Output=Self> + AddAssign + Sub<Output=Self> + SubAssign + Zero + Ord + Copy;
 
 macro_rules! default_as_new {
     () => {
