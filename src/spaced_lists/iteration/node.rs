@@ -1,7 +1,7 @@
 use num_traits::zero;
 
 use crate::{Position, SpacedList, Spacing};
-use crate::spaced_lists::traversal::link_index;
+use crate::spaced_lists::skeleton::traversal::link_index;
 
 struct IterPos<'list, S: 'list + Spacing, List: SpacedList<S>> {
     list: &'list List,

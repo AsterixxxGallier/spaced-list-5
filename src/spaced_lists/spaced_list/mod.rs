@@ -3,7 +3,7 @@ use paste::paste;
 
 use crate::{Iter, Position, Skeleton, Spacing};
 use crate::spaced_lists::positions::shallow::ShallowPosition;
-use crate::spaced_lists::traversal::*;
+use crate::spaced_lists::skeleton::traversal::*;
 
 macro_rules! flate_offset_check {
     (inflate after; $self:expr, $position:expr, $amount:expr) => {

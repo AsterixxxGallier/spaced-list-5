@@ -1,6 +1,6 @@
 use crate::{Position, SpacedList, Spacing};
 use crate::spaced_lists::positions::shallow::ShallowPosition;
-use crate::spaced_lists::traversal::*;
+use crate::spaced_lists::skeleton::traversal::*;
 
 #[allow(unused)]
 pub trait RangeSpacedList<S: Spacing>: SpacedList<S> {

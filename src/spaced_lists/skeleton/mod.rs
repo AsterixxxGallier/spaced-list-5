@@ -225,3 +225,4 @@ impl<S: Spacing, Sub: SpacedList<S>> Skeleton<S, Sub> {
 mod display;
 
 mod tests;
+pub(crate) mod traversal;

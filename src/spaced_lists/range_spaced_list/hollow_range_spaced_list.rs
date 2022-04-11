@@ -4,7 +4,7 @@ use paste::paste;
 
 use crate::{SpacedList, Skeleton, Spacing, Position, Iter, RangeSpacedList};
 use crate::spaced_lists::positions::shallow::ShallowPosition;
-use crate::spaced_lists::traversal::*;
+use crate::spaced_lists::skeleton::traversal::*;
 
 spaced_list!(Hollow Range);
 

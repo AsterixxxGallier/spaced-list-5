@@ -252,8 +252,6 @@ pub(crate) mod spaced_list;
 
 pub(crate) mod range_spaced_list;
 
-pub(crate) mod traversal;
-
 pub(crate) mod iteration;
 
 pub(crate) mod positions;
