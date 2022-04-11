@@ -11,6 +11,3 @@ edition = "2021"
 
 [dev-dependencies]
 "rand" = "0.8.5"
-
-[profile.test]
-"opt-level" = 3
