@@ -92,7 +92,7 @@ impl<S: Spacing, Sub: SpacedList<S>> Skeleton<S, Sub> {
     // ╵ 0 ╵ 1 ╵ 0 ╵ 2 ╵ 0 ╵ 1 ╵ 0 ╵ 3 ╵ 0 ╵ 1 ╵ 0 ╵ 2 ╵ 0 ╵ 1 ╵ 0 ╵ 4 ╵
     // 00000   00010   00100   00110   01000   01010   01100   01110   10000
     //     00001   00011   00101   00111   01001   01011   01101   01111
-    pub fn link_length_at_node(&self, index: usize, degree: usize) -> S {
+    pub fn link_length_at_node(&self, index: usize) -> S {
         let mut length = self.link_length_at(index);
         for degree in 0..index.trailing_ones() {
             length -= self.link_length_at(index - (1 << degree));
