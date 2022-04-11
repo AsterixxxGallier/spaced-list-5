@@ -1,6 +1,7 @@
 #![cfg(test)]
 
-use rand::{Rng, thread_rng};
+use rand::{Rng, SeedableRng, thread_rng};
+use rand::rngs::StdRng;
 
 use crate::{HollowSpacedList, SpacedList};
 
@@ -159,7 +160,7 @@ fn bad_deflate_should_panic_3() {
 #[test]
 fn random_insertions() {
     let mut list: HollowSpacedList<u64> = HollowSpacedList::new();
-    let mut rng = thread_rng();
+    let mut rng = StdRng::seed_from_u64(0);
     // performance for random:
     // 1 << 20: 1.4 s = 1.3 µs/node
     // 1 << 21: 3.4 s = 1.6 µs/node
