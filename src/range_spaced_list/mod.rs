@@ -72,7 +72,10 @@ pub trait RangeSpacedList<S: Spacing>: SpacedList<S> {
         assert_eq!(index & 1, 1, "Cannot insert range inside of another range");
         *self.skeleton_mut().link_size_deep_mut() += 2;
         *self.skeleton_mut().node_size_deep_mut() += 2;
+        let link_length = self.skeleton().link_length_at_node(index, 0);
         let sublist = self.skeleton_mut().get_or_add_sublist_at_mut(index);
+        assert!(position - node_position + span < link_length,
+                "There is not enough space for this range between the neighbouring ranges");
         sublist.insert_range(position - node_position, span)
     }
 
