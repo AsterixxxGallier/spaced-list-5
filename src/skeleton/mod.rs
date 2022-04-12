@@ -139,9 +139,6 @@ impl<S: Spacing, Sub: SpacedList<S>> Skeleton<S, Sub> {
         self.depth += 1;
     }
 
-    // TODO possibly make the methods below more efficient by skipping ones, not just iterating over
-    //  all bits and checking if they're zero (benchmarks required)
-
     /// Inflates the link at the specified index.
     pub fn inflate_at(&mut self, link_index: usize, amount: S) {
         // TODO add inflate_at_unchecked maybe
