@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use spaced_list_5::HollowSpacedList;
 
 #[test]
@@ -49,162 +50,162 @@ fn inflate_deflate() {
 
 #[test]
 fn queries() {
-    let mut list: HollowSpacedList<i64> = HollowSpacedList::new();
-    list.insert_node(1);
-    list.insert_node(5);
-    list.insert_node(3);
-    list.insert_node(0);
+    let positions = [0, 1, 3, 5];
+    for positions in positions.iter().permutations(positions.len()) {
+        let mut list: HollowSpacedList<i64> = HollowSpacedList::new();
+        for &position in positions {
+            list.insert_node(position);
+        }
 
-    // region -1
-    let query_pos = -1;
+        // region -1
+        let query_pos = -1;
 
-    let pos = list.node_before(query_pos);
-    assert!(pos.is_none());
+        let pos = list.node_before(query_pos);
+        assert!(pos.is_none());
 
-    let pos = list.node_at_or_before(query_pos);
-    assert!(pos.is_none());
+        let pos = list.node_at_or_before(query_pos);
+        assert!(pos.is_none());
 
-    let pos = list.node_at(query_pos);
-    assert!(pos.is_none());
+        let pos = list.node_at(query_pos);
+        assert!(pos.is_none());
 
-    let pos = list.node_at_or_after(query_pos).unwrap();
-    assert_eq!(pos.position(), 0);
+        let pos = list.node_at_or_after(query_pos).unwrap();
+        assert_eq!(pos.position(), 0);
 
-    let pos = list.node_after(query_pos).unwrap();
-    assert_eq!(pos.position(), 0);
-    // endregion
+        let pos = list.node_after(query_pos).unwrap();
+        assert_eq!(pos.position(), 0);
+        // endregion
 
-    // region 0
-    let query_pos = 0;
+        // region 0
+        let query_pos = 0;
 
-    let pos = list.node_before(query_pos);
-    assert!(pos.is_none());
+        let pos = list.node_before(query_pos);
+        assert!(pos.is_none());
 
-    let pos = list.node_at_or_before(query_pos).unwrap();
-    assert_eq!(pos.position(), 0);
+        let pos = list.node_at_or_before(query_pos).unwrap();
+        assert_eq!(pos.position(), 0);
 
-    let pos = list.node_at(query_pos).unwrap();
-    assert_eq!(pos.position(), 0);
+        let pos = list.node_at(query_pos).unwrap();
+        assert_eq!(pos.position(), 0);
 
-    let pos = list.node_at_or_after(query_pos).unwrap();
-    assert_eq!(pos.position(), 0);
+        let pos = list.node_at_or_after(query_pos).unwrap();
+        assert_eq!(pos.position(), 0);
 
-    let pos = list.node_after(query_pos).unwrap();
-    assert_eq!(pos.position(), 1);
-    // endregion
+        let pos = list.node_after(query_pos).unwrap();
+        assert_eq!(pos.position(), 1);
+        // endregion
 
-    // region 1
-    let query_pos = 1;
+        // region 1
+        let query_pos = 1;
 
-    let pos = list.node_before(query_pos).unwrap();
-    assert_eq!(pos.position(), 0);
+        let pos = list.node_before(query_pos).unwrap();
+        assert_eq!(pos.position(), 0);
 
-    let pos = list.node_at_or_before(query_pos).unwrap();
-    assert_eq!(pos.position(), 1);
+        let pos = list.node_at_or_before(query_pos).unwrap();
+        assert_eq!(pos.position(), 1);
 
-    let pos = list.node_at(query_pos).unwrap();
-    assert_eq!(pos.position(), 1);
+        let pos = list.node_at(query_pos).unwrap();
+        assert_eq!(pos.position(), 1);
 
-    let pos = list.node_at_or_after(query_pos).unwrap();
-    assert_eq!(pos.position(), 1);
+        let pos = list.node_at_or_after(query_pos).unwrap();
+        assert_eq!(pos.position(), 1);
 
-    // TODO fix this
-    let pos = list.node_after(query_pos).unwrap();
-    assert_eq!(pos.position(), 3);
-    // endregion
+        let pos = list.node_after(query_pos).unwrap();
+        assert_eq!(pos.position(), 3);
+        // endregion
 
-    // region 2
-    let query_pos = 2;
+        // region 2
+        let query_pos = 2;
 
-    let pos = list.node_before(query_pos).unwrap();
-    assert_eq!(pos.position(), 1);
+        let pos = list.node_before(query_pos).unwrap();
+        assert_eq!(pos.position(), 1);
 
-    let pos = list.node_at_or_before(query_pos).unwrap();
-    assert_eq!(pos.position(), 1);
+        let pos = list.node_at_or_before(query_pos).unwrap();
+        assert_eq!(pos.position(), 1);
 
-    let pos = list.node_at(query_pos);
-    assert!(pos.is_none());
+        let pos = list.node_at(query_pos);
+        assert!(pos.is_none());
 
-    let pos = list.node_at_or_after(query_pos).unwrap();
-    assert_eq!(pos.position(), 3);
+        let pos = list.node_at_or_after(query_pos).unwrap();
+        assert_eq!(pos.position(), 3);
 
-    let pos = list.node_after(query_pos).unwrap();
-    assert_eq!(pos.position(), 3);
-    // endregion
+        let pos = list.node_after(query_pos).unwrap();
+        assert_eq!(pos.position(), 3);
+        // endregion
 
-    // region 3
-    let query_pos = 3;
+        // region 3
+        let query_pos = 3;
 
-    let pos = list.node_before(query_pos).unwrap();
-    assert_eq!(pos.position(), 1);
+        let pos = list.node_before(query_pos).unwrap();
+        assert_eq!(pos.position(), 1);
 
-    let pos = list.node_at_or_before(query_pos).unwrap();
-    assert_eq!(pos.position(), 3);
+        let pos = list.node_at_or_before(query_pos).unwrap();
+        assert_eq!(pos.position(), 3);
 
-    let pos = list.node_at(query_pos).unwrap();
-    assert_eq!(pos.position(), 3);
+        let pos = list.node_at(query_pos).unwrap();
+        assert_eq!(pos.position(), 3);
 
-    let pos = list.node_at_or_after(query_pos).unwrap();
-    assert_eq!(pos.position(), 3);
+        let pos = list.node_at_or_after(query_pos).unwrap();
+        assert_eq!(pos.position(), 3);
 
-    let pos = list.node_after(query_pos).unwrap();
-    assert_eq!(pos.position(), 5);
-    // endregion
+        let pos = list.node_after(query_pos).unwrap();
+        assert_eq!(pos.position(), 5);
+        // endregion
 
-    // region 4
-    let query_pos = 4;
+        // region 4
+        let query_pos = 4;
 
-    let pos = list.node_before(query_pos).unwrap();
-    assert_eq!(pos.position(), 3);
+        let pos = list.node_before(query_pos).unwrap();
+        assert_eq!(pos.position(), 3);
 
-    let pos = list.node_at_or_before(query_pos).unwrap();
-    assert_eq!(pos.position(), 3);
+        let pos = list.node_at_or_before(query_pos).unwrap();
+        assert_eq!(pos.position(), 3);
 
-    let pos = list.node_at(query_pos);
-    assert!(pos.is_none());
+        let pos = list.node_at(query_pos);
+        assert!(pos.is_none());
 
-    let pos = list.node_at_or_after(query_pos).unwrap();
-    assert_eq!(pos.position(), 5);
+        let pos = list.node_at_or_after(query_pos).unwrap();
+        assert_eq!(pos.position(), 5);
 
-    let pos = list.node_after(query_pos).unwrap();
-    assert_eq!(pos.position(), 5);
-    // endregion
+        let pos = list.node_after(query_pos).unwrap();
+        assert_eq!(pos.position(), 5);
+        // endregion
 
-    // region 5
-    let query_pos = 5;
+        // region 5
+        let query_pos = 5;
 
-    let pos = list.node_before(query_pos).unwrap();
-    assert_eq!(pos.position(), 3);
+        let pos = list.node_before(query_pos).unwrap();
+        assert_eq!(pos.position(), 3);
 
-    let pos = list.node_at_or_before(query_pos).unwrap();
-    assert_eq!(pos.position(), 5);
+        let pos = list.node_at_or_before(query_pos).unwrap();
+        assert_eq!(pos.position(), 5);
 
-    let pos = list.node_at(query_pos).unwrap();
-    assert_eq!(pos.position(), 5);
+        let pos = list.node_at(query_pos).unwrap();
+        assert_eq!(pos.position(), 5);
 
-    let pos = list.node_at_or_after(query_pos).unwrap();
-    assert_eq!(pos.position(), 5);
+        let pos = list.node_at_or_after(query_pos).unwrap();
+        assert_eq!(pos.position(), 5);
 
-    let pos = list.node_after(query_pos);
-    assert!(pos.is_none());
-    // endregion
+        let pos = list.node_after(query_pos);
+        assert!(pos.is_none());
+        // endregion
 
-    // region 6
-    let query_pos = 6;
+        // region 6
+        let query_pos = 6;
 
-    let pos = list.node_before(query_pos).unwrap();
-    assert_eq!(pos.position(), 5);
+        let pos = list.node_before(query_pos).unwrap();
+        assert_eq!(pos.position(), 5);
 
-    let pos = list.node_at_or_before(query_pos).unwrap();
-    assert_eq!(pos.position(), 5);
+        let pos = list.node_at_or_before(query_pos).unwrap();
+        assert_eq!(pos.position(), 5);
 
-    let pos = list.node_at(query_pos);
-    assert!(pos.is_none());
+        let pos = list.node_at(query_pos);
+        assert!(pos.is_none());
 
-    let pos = list.node_at_or_after(query_pos);
-    assert!(pos.is_none());
+        let pos = list.node_at_or_after(query_pos);
+        assert!(pos.is_none());
 
-    let pos = list.node_after(query_pos);
-    assert!(pos.is_none());
-    // endregion
-}
+        let pos = list.node_after(query_pos);
+        assert!(pos.is_none());
+        // endregion
+    }}
