@@ -5,6 +5,11 @@ use crate::{Iter, Position, Skeleton, Spacing};
 use crate::positions::shallow::ShallowPosition;
 use crate::skeleton::traversal::*;
 
+macro_rules! flate_cmp {
+    (after; $a:expr, $b:expr) => { $a < $b };
+    (before; $a:expr, $b:expr) => { $a <= $b }
+}
+
 macro_rules! flate_offset_check {
     (inflate after; $self:expr, $position:expr, $amount:expr) => {
         if $position < $self.skeleton().offset() {
@@ -67,7 +72,7 @@ macro_rules! flate_methods {
                 self.skeleton_mut().[<$action _at>](index, amount);
                 if let Some(sublist) = self.skeleton_mut().sublist_at_mut(index) {
                     let position_in_sublist = position - node_position;
-                    if position_in_sublist < sublist.skeleton().length() {
+                    if flate_cmp!($pos; position_in_sublist, sublist.skeleton().last_position()) {
                         sublist.[<$action _ $pos>](position_in_sublist, amount);
                     }
                 }
@@ -128,7 +133,7 @@ pub trait SpacedList<S: Spacing>: Default {
             let offset = self.skeleton().offset();
             *self.skeleton_mut().offset_mut() = position;
             if self.skeleton().link_size() > 0 {
-                self.skeleton_mut().inflate_at(0, offset - position);
+                self.inflate_after(self.skeleton().offset(), offset - position);
             }
             self.insert_node(offset);
             return Position::new(vec![], self, 0, position);

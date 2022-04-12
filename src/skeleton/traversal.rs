@@ -95,6 +95,9 @@ macro_rules! next {
     ($skeleton:ident, $list:ident; $node_index:ident, $position:ident$(; $super_lists:ident)?) => {
         'next: {
             $(
+            // TODO change Skeleton::sublist_at method to return None if index is out of bounds,
+            //  then replace this nested if with a single if let else, removing the 'next label, the
+            //  associated feature and warnings; also do that for the previous! macro and edge cases
             if $skeleton.sublist_index_is_in_bounds($node_index) {
                 if let Some(sublist) = $skeleton.sublist_at($node_index) {
                     let sub_skeleton = sublist.skeleton();
@@ -103,7 +106,7 @@ macro_rules! next {
                     $super_lists.push($list);
                     $list = sublist;
                     $skeleton = $list.skeleton();
-                    break 'next;
+                    break 'next Ok(());
                 }
             }
             )?
@@ -120,11 +123,13 @@ macro_rules! next {
                     $skeleton = $list.skeleton();
                     continue
                 })?
-                panic!("Tried to move to next node but it's already the end of the list")
+                break 'next Err("Tried to move to next node but it's already the end of the list");
             }
 
             $position += $skeleton.link_length_at_node($node_index);
             $node_index += 1;
+
+            Ok(())
         }
     };
 }
@@ -133,39 +138,41 @@ macro_rules! previous {
     // TODO swap $skeleton and $list
     ($skeleton:ident, $list:ident; $node_index:ident, $position:ident$(; $super_lists:ident)?) => {
         'previous: {
-            loop {
-                if $node_index > 0 {
-                    break;
-                }
-                $(if let Some(new_index) = $skeleton.index_in_super_list() {
-                    $node_index = new_index;
-                    $position -= $skeleton.last_position();
-                    $list = $super_lists.pop().unwrap();
-                    $skeleton = $list.skeleton();
-                    continue
-                })?
-                panic!("Tried to move to previous node but it's already the start of the list")
-            }
-
-            let index_before = $node_index - 1;
             $(
-            if $skeleton.node_index_is_in_bounds(index_before) {
-                if let Some(sublist) = $skeleton.sublist_at(index_before) {
-                    let sub_skeleton = sublist.skeleton();
-                    $node_index = sub_skeleton.node_size() - 1;
-                    $position -=
-                        $skeleton.link_length_at_node(index_before)
-                            - sub_skeleton.last_position();
-                    $super_lists.push($list);
-                    $list = sublist;
-                    $skeleton = $list.skeleton();
-                    break 'previous;
+            if $node_index > 0 {
+                let index_before = $node_index - 1;
+                if $skeleton.node_index_is_in_bounds(index_before) {
+                    if let Some(sublist) = $skeleton.sublist_at(index_before) {
+                        let sub_skeleton = sublist.skeleton();
+                        $node_index = sub_skeleton.node_size() - 1;
+                        $position -=
+                            $skeleton.link_length_at_node(index_before)
+                                - sub_skeleton.last_position();
+                        $super_lists.push($list);
+                        $list = sublist;
+                        $skeleton = $list.skeleton();
+                        break 'previous Ok(());
+                    }
                 }
             }
             )?
 
-            $position -= $skeleton.link_length_at_node(index_before);
+            if $node_index == 0 {
+                $(if let Some(new_index) = $skeleton.index_in_super_list() {
+                    $node_index = new_index; // + 1 maybe?
+                    $position -= $skeleton.offset();
+                    $list = $super_lists.pop().unwrap();
+                    $skeleton = $list.skeleton();
+                    break 'previous Ok(());
+                })?
+                break 'previous
+                    Err("Tried to move to previous node but it's already the start of the list");
+            }
+
             $node_index -= 1;
+            $position -= $skeleton.link_length_at_node($node_index);
+
+            Ok(())
         }
     };
 }
@@ -181,10 +188,10 @@ macro_rules! pos {
 
 macro_rules! index_is_at_bound {
     (start; $node_index:expr) => {
-        $node_index & 0 == 0
+        $node_index & 1 == 0
     };
     (end; $node_index:expr) => {
-        $node_index & 0 == 1
+        $node_index & 1 == 1
     };
 }
 
@@ -225,7 +232,7 @@ macro_rules! traverse_unchecked_with_variables {
             if $position == $target {
                 Some(pos!($list; $node_index, $position$(; $super_lists)?))
             } else {
-                next!($skeleton, $list; $node_index, $position$(; $super_lists)?);
+                next!($skeleton, $list; $node_index, $position$(; $super_lists)?).unwrap();
                 Some(pos!($list; $node_index, $position$(; $super_lists)?))
             }
         }
@@ -235,7 +242,7 @@ macro_rules! traverse_unchecked_with_variables {
         {
             loop_while!($depth; $list, $skeleton; <= $target;
                 $degree, $node_index, $position$(; $super_lists)?);
-            next!($skeleton, $list; $node_index, $position$(; $super_lists)?);
+            next!($skeleton, $list; $node_index, $position$(; $super_lists)?).unwrap();
             Some(pos!($list; $node_index, $position$(; $super_lists)?))
         }
     };
@@ -245,7 +252,7 @@ macro_rules! traverse_unchecked_with_variables {
             loop_while!($depth; $list, $skeleton; < $target;
                 $degree, $node_index, $position$(; $super_lists)?);
             if !index_is_at_bound!($bound; $node_index) {
-                previous!($skeleton, $list; $node_index, $position$(; $super_lists)?);
+                previous!($skeleton, $list; $node_index, $position$(; $super_lists)?).ok()?;
             }
             Some(pos!($list; $node_index, $position$(; $super_lists)?))
         }
@@ -256,7 +263,7 @@ macro_rules! traverse_unchecked_with_variables {
             loop_while!($depth; $list, $skeleton; <= $target;
                 $degree, $node_index, $position$(; $super_lists)?);
             if !index_is_at_bound!($bound; $node_index) {
-                previous!($skeleton, $list; $node_index, $position$(; $super_lists)?);
+                previous!($skeleton, $list; $node_index, $position$(; $super_lists)?).ok()?;
             }
             Some(pos!($list; $node_index, $position$(; $super_lists)?))
         }
@@ -266,7 +273,7 @@ macro_rules! traverse_unchecked_with_variables {
         {
             loop_while!($depth; $list, $skeleton; <= $target;
                 $degree, $node_index, $position$(; $super_lists)?);
-            if $position == $target && is_at_bound!($bound; $node_index) {
+            if $position == $target && index_is_at_bound!($bound; $node_index) {
                 Some(pos!($list; $node_index, $position$(; $super_lists)?))
             } else {
                 None
@@ -280,15 +287,15 @@ macro_rules! traverse_unchecked_with_variables {
                 $degree, $node_index, $position$(; $super_lists)?);
             if $position == $target {
                 if !index_is_at_bound!($bound; $node_index) {
-                    next!($skeleton, $list; $node_index, $position$(; $super_lists)?);
+                    next!($skeleton, $list; $node_index, $position$(; $super_lists)?).ok()?;
                 }
                 Some(pos!($list; $node_index, $position$(; $super_lists)?))
             } else {
-                next!($skeleton, $list; $node_index, $position$(; $super_lists)?);
+                next!($skeleton, $list; $node_index, $position$(; $super_lists)?).unwrap();
                 if !index_is_at_bound!($bound; $node_index) {
                     // FIXME might panic, return None instead
                     //  double check that the next call below and the previous calls above are good
-                    next!($skeleton, $list; $node_index, $position$(; $super_lists)?);
+                    next!($skeleton, $list; $node_index, $position$(; $super_lists)?).ok()?;
                 }
                 Some(pos!($list; $node_index, $position$(; $super_lists)?))
             }
@@ -299,13 +306,18 @@ macro_rules! traverse_unchecked_with_variables {
         {
             loop_while!($depth; $list, $skeleton; <= $target;
                 $degree, $node_index, $position$(; $super_lists)?);
-            next!($skeleton, $list; $node_index, $position$(; $super_lists)?);
+            next!($skeleton, $list; $node_index, $position$(; $super_lists)?).unwrap();
             if !index_is_at_bound!($bound; $node_index) {
-                next!($skeleton, $list; $node_index, $position$(; $super_lists)?);
+                next!($skeleton, $list; $node_index, $position$(; $super_lists)?).ok()?;
             }
             Some(pos!($list; $node_index, $position$(; $super_lists)?))
         }
     };
+}
+
+macro_rules! is_at_bound_if_range {
+    (node; $_node_index:expr) => { true };
+    ((range $bound:tt); $node_index:expr) => { index_is_at_bound!($bound; $node_index) };
 }
 
 macro_rules! traverse_unchecked {
@@ -313,7 +325,11 @@ macro_rules! traverse_unchecked {
         {
             if $skeleton.link_size() == 0 {
                 if $skeleton.offset() $cmp $target {
-                    Some(pos!($list; 0, $skeleton.offset(); vec![]))
+                    if is_at_bound_if_range!($kind; 0) {
+                        Some(pos!($list; 0, $skeleton.offset(); vec![]))
+                    } else {
+                        None
+                    }
                 } else {
                     None
                 }
@@ -332,7 +348,11 @@ macro_rules! traverse_unchecked {
         {
             if $skeleton.node_size() == 0 {
                 if $skeleton.offset() $cmp $target {
-                    Some(pos!($list; 0, $skeleton.offset()))
+                    if is_at_bound_if_range!($kind; 0) {
+                        Some(pos!($list; 0, $skeleton.offset()))
+                    } else {
+                        None
+                    }
                 } else {
                     None
                 }
@@ -385,7 +405,22 @@ macro_rules! traverse {
             if $target > skeleton.last_position() {
                 None
             } else if $target <= skeleton.offset() {
-                Some(Position::new(vec![], $list, 0, skeleton.offset()))
+                // TODO make a macro for this if statement and use it below too
+                if is_at_bound_if_range!($kind; 0) {
+                    Some(pos!($list; 0, skeleton.offset(); vec![]))
+                } else if skeleton.link_size() >= 1 {
+                    let mut position = skeleton.offset();
+                    if let Some(sublist) = skeleton.sublist_at(0) {
+                        let sub_skeleton = sublist.skeleton();
+                        position += sub_skeleton.offset();
+                        Some(pos!(sublist; 0, position; vec![$list]))
+                    } else {
+                        position += skeleton.link_length_at(0);
+                        Some(pos!($list; 1, position; vec![]))
+                    }
+                } else {
+                    Some(Position::new(vec![], $list, 0, skeleton.offset()))
+                }
             } else {
                 traverse_unchecked!($kind; $depth; $list, skeleton; >= $target)
             }
@@ -397,7 +432,21 @@ macro_rules! traverse {
             if $target >= skeleton.last_position() {
                 None
             } else if $target < skeleton.offset() {
-                Some(Position::new(vec![], $list, 0, skeleton.offset()))
+                if is_at_bound_if_range!($kind; 0) {
+                    Some(pos!($list; 0, skeleton.offset(); vec![]))
+                } else if skeleton.link_size() >= 1 {
+                    let mut position = skeleton.offset();
+                    if let Some(sublist) = skeleton.sublist_at(0) {
+                        let sub_skeleton = sublist.skeleton();
+                        position += sub_skeleton.offset();
+                        Some(pos!(sublist; 0, position; vec![$list]))
+                    } else {
+                        position += skeleton.link_length_at(0);
+                        Some(pos!($list; 1, position; vec![]))
+                    }
+                } else {
+                    Some(Position::new(vec![], $list, 0, skeleton.offset()))
+                }
             } else {
                 traverse_unchecked!($kind; $depth; $list, skeleton; > $target)
             }
@@ -414,3 +463,6 @@ pub(crate) use maybe_move_forwards;
 pub(crate) use next;
 pub(crate) use descend;
 pub(crate) use pos;
+pub(crate) use index_is_at_bound;
+pub(crate) use previous;
+pub(crate) use is_at_bound_if_range;

@@ -53,58 +53,67 @@ fn queries() {
     list.insert_node(1);
     list.insert_node(5);
     list.insert_node(3);
+    list.insert_node(0);
 
-    // let query_pos = -1;
-    //
-    // let pos = list.node_before(query_pos);
-    // assert!(pos.is_none());
-    //
-    // let pos = list.node_at_or_before(query_pos);
-    // assert!(pos.is_none());
-    //
-    // let pos = list.node_at(query_pos);
-    // assert!(pos.is_none());
-    //
-    // let pos = list.node_at_or_after(query_pos).unwrap();
-    // assert_eq!(pos.position(), 0);
-    //
-    // let pos = list.node_after(query_pos).unwrap();
-    // assert_eq!(pos.position(), 0);
-    //
-    // let query_pos = 0;
-    //
-    // let pos = list.node_before(query_pos);
-    // assert!(pos.is_none());
+    // region -1
+    let query_pos = -1;
 
-    // let pos = list.node_at_or_before(query_pos).unwrap();
-    // assert_eq!(pos.position(), 0);
+    let pos = list.node_before(query_pos);
+    assert!(pos.is_none());
 
-    // let pos = list.node_at(query_pos).unwrap();
-    // assert_eq!(pos.position(), 0);
+    let pos = list.node_at_or_before(query_pos);
+    assert!(pos.is_none());
 
-    // let pos = list.node_at_or_after(query_pos).unwrap();
-    // assert_eq!(pos.position(), 1);
-    //
-    // let pos = list.node_after(query_pos).unwrap();
-    // assert_eq!(pos.position(), 1);
+    let pos = list.node_at(query_pos);
+    assert!(pos.is_none());
 
-    let query_pos = 1;
-
-    // let pos = list.node_before(query_pos).unwrap();
-    // assert_eq!(pos.position(), 0);
-
-    // let pos = list.node_at_or_before(query_pos).unwrap();
-    // assert_eq!(pos.position(), 1);
-    //
-    // let pos = list.node_at(query_pos).unwrap();
-    // assert_eq!(pos.position(), 1);
-    //
-    // let pos = list.node_at_or_after(query_pos).unwrap();
-    // assert_eq!(pos.position(), 1);
+    let pos = list.node_at_or_after(query_pos).unwrap();
+    assert_eq!(pos.position(), 0);
 
     let pos = list.node_after(query_pos).unwrap();
-    assert_eq!(pos.position(), 3);
+    assert_eq!(pos.position(), 0);
+    // endregion
 
+    // region 0
+    let query_pos = 0;
+
+    let pos = list.node_before(query_pos);
+    assert!(pos.is_none());
+
+    let pos = list.node_at_or_before(query_pos).unwrap();
+    assert_eq!(pos.position(), 0);
+
+    let pos = list.node_at(query_pos).unwrap();
+    assert_eq!(pos.position(), 0);
+
+    let pos = list.node_at_or_after(query_pos).unwrap();
+    assert_eq!(pos.position(), 0);
+
+    let pos = list.node_after(query_pos).unwrap();
+    assert_eq!(pos.position(), 1);
+    // endregion
+
+    // region 1
+    let query_pos = 1;
+
+    let pos = list.node_before(query_pos).unwrap();
+    assert_eq!(pos.position(), 0);
+
+    let pos = list.node_at_or_before(query_pos).unwrap();
+    assert_eq!(pos.position(), 1);
+
+    let pos = list.node_at(query_pos).unwrap();
+    assert_eq!(pos.position(), 1);
+
+    let pos = list.node_at_or_after(query_pos).unwrap();
+    assert_eq!(pos.position(), 1);
+
+    // TODO fix this
+    let pos = list.node_after(query_pos).unwrap();
+    assert_eq!(pos.position(), 3);
+    // endregion
+
+    // region 2
     let query_pos = 2;
 
     let pos = list.node_before(query_pos).unwrap();
@@ -121,7 +130,9 @@ fn queries() {
 
     let pos = list.node_after(query_pos).unwrap();
     assert_eq!(pos.position(), 3);
+    // endregion
 
+    // region 3
     let query_pos = 3;
 
     let pos = list.node_before(query_pos).unwrap();
@@ -138,7 +149,9 @@ fn queries() {
 
     let pos = list.node_after(query_pos).unwrap();
     assert_eq!(pos.position(), 5);
+    // endregion
 
+    // region 4
     let query_pos = 4;
 
     let pos = list.node_before(query_pos).unwrap();
@@ -155,7 +168,9 @@ fn queries() {
 
     let pos = list.node_after(query_pos).unwrap();
     assert_eq!(pos.position(), 5);
+    // endregion
 
+    // region 5
     let query_pos = 5;
 
     let pos = list.node_before(query_pos).unwrap();
@@ -172,7 +187,9 @@ fn queries() {
 
     let pos = list.node_after(query_pos);
     assert!(pos.is_none());
+    // endregion
 
+    // region 6
     let query_pos = 6;
 
     let pos = list.node_before(query_pos).unwrap();
@@ -189,4 +206,5 @@ fn queries() {
 
     let pos = list.node_after(query_pos);
     assert!(pos.is_none());
+    // endregion
 }

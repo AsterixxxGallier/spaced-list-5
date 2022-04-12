@@ -1,6 +1,23 @@
+use paste::paste;
+
 use crate::{Position, SpacedList, Spacing};
 use crate::positions::shallow::ShallowPosition;
 use crate::skeleton::traversal::*;
+
+macro_rules! range_traversal_methods {
+    {$($pos:ident: $cmp:tt)+} => {
+        paste! {
+            $(fn [<range_starting_ $pos>]<'a>(&'a self, target: S) -> Option<Position<'a, S, Self>>
+                where S: 'a {
+                traverse!((range start); deep; self; $cmp target)
+            })+
+            $(fn [<range_ending_ $pos>]<'a>(&'a self, target: S) -> Option<Position<'a, S, Self>>
+                where S: 'a {
+                traverse!((range end); deep; self; $cmp target)
+            })+
+        }
+    };
+}
 
 #[allow(unused)]
 pub trait RangeSpacedList<S: Spacing>: SpacedList<S> {
@@ -58,6 +75,7 @@ pub trait RangeSpacedList<S: Spacing>: SpacedList<S> {
             *self.skeleton_mut().link_size_deep_mut() += 2;
             *self.skeleton_mut().node_size_deep_mut() += 2;
             *self.skeleton_mut().offset_mut() = position;
+            // TODO maybe this should use inflate_after instead
             self.skeleton_mut().inflate_at(1, offset - position);
             *self.skeleton_mut().link_length_at_mut(0) = span;
             self.insert_range(offset, previous_span);
@@ -79,44 +97,12 @@ pub trait RangeSpacedList<S: Spacing>: SpacedList<S> {
         sublist.insert_range(position - node_position, span)
     }
 
-    fn range_starting_before(&self, position: S) -> Option<Position<S, Self>> {
-        todo!()
-    }
-
-    fn range_starting_at_or_before(&self, position: S) -> Option<Position<S, Self>> {
-        todo!()
-    }
-
-    fn range_starting_at(&self, position: S) -> Option<Position<S, Self>> {
-        todo!()
-    }
-
-    fn range_starting_at_or_after(&self, position: S) -> Option<Position<S, Self>> {
-        todo!()
-    }
-
-    fn range_starting_after(&self, position: S) -> Option<Position<S, Self>> {
-        todo!()
-    }
-
-    fn range_ending_before(&self, position: S) -> Option<Position<S, Self>> {
-        todo!()
-    }
-
-    fn range_ending_at_or_before(&self, position: S) -> Option<Position<S, Self>> {
-        todo!()
-    }
-
-    fn range_ending_at(&self, position: S) -> Option<Position<S, Self>> {
-        todo!()
-    }
-
-    fn range_ending_at_or_after(&self, position: S) -> Option<Position<S, Self>> {
-        todo!()
-    }
-
-    fn range_ending_after(&self, position: S) -> Option<Position<S, Self>> {
-        todo!()
+    range_traversal_methods! {
+        before: <
+        at_or_before: <=
+        at: ==
+        at_or_after: >=
+        after: >
     }
 }
 
