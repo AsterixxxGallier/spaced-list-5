@@ -75,8 +75,9 @@ pub trait RangeSpacedList<S: Spacing>: SpacedList<S> {
             *self.skeleton_mut().link_size_deep_mut() += 2;
             *self.skeleton_mut().node_size_deep_mut() += 2;
             *self.skeleton_mut().offset_mut() = position;
-            // TODO maybe this should use inflate_after instead
-            self.skeleton_mut().inflate_at(1, offset - position);
+            if self.skeleton().link_size() > 1 {
+                self.inflate_after(position, offset - position);
+            }
             *self.skeleton_mut().link_length_at_mut(0) = span;
             self.insert_range(offset, previous_span);
             return Position::new(vec![], self, 0, position);
