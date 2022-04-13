@@ -353,6 +353,35 @@ macro_rules! traverse_unchecked {
     }
 }
 
+macro_rules! handle_before_offset {
+    ($kind:tt; deep; $list:expr, $skeleton:expr) => {
+        if is_at_bound_if_range!($kind; 0) {
+            Some(pos!($list; 0, $skeleton.offset(); vec![]))
+        } else if $skeleton.link_size() >= 1 {
+            let mut position = $skeleton.offset();
+            if let Some(sublist) = $skeleton.sublist_at(0) {
+                let sub_skeleton = sublist.skeleton();
+                position += sub_skeleton.offset();
+                Some(pos!(sublist; 0, position; vec![$list]))
+            } else {
+                position += $skeleton.link_length_at(0);
+                Some(pos!($list; 1, position; vec![]))
+            }
+        } else {
+            Some(Position::new(vec![], $list, 0, $skeleton.offset()))
+        }
+    };
+    ($kind:tt; shallow; $list:expr, $skeleton:expr) => {
+        if is_at_bound_if_range!($kind; 0) {
+            Some(pos!($list; 0, $skeleton.offset(); vec![]))
+        } else if $skeleton.link_size() >= 1 {
+            Some(pos!($list; 1, $skeleton.offset() + $skeleton.link_length_at(0); vec![]))
+        } else {
+            Some(Position::new(vec![], $list, 0, $skeleton.offset()))
+        }
+    };
+}
+
 macro_rules! traverse {
     ($kind:tt; $depth:tt; $list:expr; < $target:ident) => {
         {
@@ -390,22 +419,7 @@ macro_rules! traverse {
             if $target > skeleton.last_position() {
                 None
             } else if $target <= skeleton.offset() {
-                // TODO make a macro for this if statement and use it below too
-                if is_at_bound_if_range!($kind; 0) {
-                    Some(pos!($list; 0, skeleton.offset(); vec![]))
-                } else if skeleton.link_size() >= 1 {
-                    let mut position = skeleton.offset();
-                    if let Some(sublist) = skeleton.sublist_at(0) {
-                        let sub_skeleton = sublist.skeleton();
-                        position += sub_skeleton.offset();
-                        Some(pos!(sublist; 0, position; vec![$list]))
-                    } else {
-                        position += skeleton.link_length_at(0);
-                        Some(pos!($list; 1, position; vec![]))
-                    }
-                } else {
-                    Some(Position::new(vec![], $list, 0, skeleton.offset()))
-                }
+                handle_before_offset!($kind; $depth; $list, skeleton)
             } else {
                 traverse_unchecked!($kind; $depth; $list, skeleton; >= $target)
             }
@@ -417,21 +431,7 @@ macro_rules! traverse {
             if $target >= skeleton.last_position() {
                 None
             } else if $target < skeleton.offset() {
-                if is_at_bound_if_range!($kind; 0) {
-                    Some(pos!($list; 0, skeleton.offset(); vec![]))
-                } else if skeleton.link_size() >= 1 {
-                    let mut position = skeleton.offset();
-                    if let Some(sublist) = skeleton.sublist_at(0) {
-                        let sub_skeleton = sublist.skeleton();
-                        position += sub_skeleton.offset();
-                        Some(pos!(sublist; 0, position; vec![$list]))
-                    } else {
-                        position += skeleton.link_length_at(0);
-                        Some(pos!($list; 1, position; vec![]))
-                    }
-                } else {
-                    Some(Position::new(vec![], $list, 0, skeleton.offset()))
-                }
+                handle_before_offset!($kind; $depth; $list, skeleton)
             } else {
                 traverse_unchecked!($kind; $depth; $list, skeleton; > $target)
             }
@@ -451,3 +451,4 @@ pub(crate) use pos;
 pub(crate) use index_is_at_bound;
 pub(crate) use previous;
 pub(crate) use is_at_bound_if_range;
+pub(crate) use handle_before_offset;
