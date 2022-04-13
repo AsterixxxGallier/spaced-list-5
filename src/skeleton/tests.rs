@@ -1,6 +1,6 @@
 #![cfg(test)]
 
-use rand::{Rng, SeedableRng, thread_rng};
+use rand::{Rng, SeedableRng};
 use rand::rngs::StdRng;
 
 use crate::{HollowSpacedList, SpacedList};

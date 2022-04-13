@@ -3,8 +3,6 @@ use std::default::default;
 use paste::paste;
 
 use crate::{SpacedList, Skeleton, Spacing, Position, Iter, RangeSpacedList};
-use crate::positions::shallow::ShallowPosition;
-use crate::skeleton::traversal::*;
 
 spaced_list!(Hollow Range);
 

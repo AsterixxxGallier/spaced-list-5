@@ -1,4 +1,3 @@
-use num_traits::zero;
 use paste::paste;
 
 use crate::{Iter, Position, Skeleton, Spacing};

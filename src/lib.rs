@@ -18,14 +18,12 @@
 //  and iterate many times to reproduce)
 
 #![feature(trait_alias)]
-#![feature(never_type)]
 #![feature(default_free_fn)]
 #![feature(option_get_or_insert_default)]
 #![feature(slice_ptr_get)]
 #![feature(label_break_value)]
 #![allow(unused)]
 
-use std::fmt::Display;
 use std::ops::{Add, AddAssign, Sub, SubAssign};
 
 use num_traits::Zero;
