@@ -60,8 +60,14 @@ impl<S: Spacing, Sub: SpacedList<S>> Skeleton<S, Sub> {
 
         pub index link_length: S;
         pub(crate) index mut link_length: S;
-        pub index ref sublist: Option<Sub>;
-        pub index mut sublist: Option<Sub>;
+    }
+
+    pub fn sublist_at(&self, index: usize) -> Option<&Sub> {
+        self.sublists.get(index).and_then(|opt| opt.as_ref())
+    }
+
+    pub fn sublist_at_mut(&mut self, index: usize) -> Option<&mut Sub> {
+        self.sublists.get_mut(index).and_then(|opt| opt.as_mut())
     }
 
     pub fn last_position(&self) -> S {
