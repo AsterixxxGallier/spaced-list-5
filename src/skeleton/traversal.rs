@@ -293,8 +293,6 @@ macro_rules! traverse_unchecked_with_variables {
             } else {
                 next!($skeleton, $list; $node_index, $position$(; $super_lists)?).unwrap();
                 if !index_is_at_bound!($bound; $node_index) {
-                    // FIXME might panic, return None instead
-                    //  double check that the next call below and the previous calls above are good
                     next!($skeleton, $list; $node_index, $position$(; $super_lists)?).ok()?;
                 }
                 Some(pos!($list; $node_index, $position$(; $super_lists)?))
