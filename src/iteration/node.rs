@@ -42,19 +42,17 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
     fn next(&mut self) -> Result<(), ()> {
         let last = self.positions.last().unwrap();
         let skeleton = last.list.skeleton();
-        if skeleton.sublist_index_is_in_bounds(last.node_index) {
-            if let Some(sublist) = skeleton.sublist_at(last.node_index) {
-                let sub_skeleton = sublist.skeleton();
-                self.super_lists.push(last.list);
-                let next_position = last.position + sub_skeleton.offset();
-                self.positions.push(IterPos {
-                    list: sublist,
-                    position: next_position,
-                    node_index: 0,
-                    degree: 0,
-                });
-                return Ok(());
-            }
+        if let Some(sublist) = skeleton.sublist_at(last.node_index) {
+            let sub_skeleton = sublist.skeleton();
+            self.super_lists.push(last.list);
+            let next_position = last.position + sub_skeleton.offset();
+            self.positions.push(IterPos {
+                list: sublist,
+                position: next_position,
+                node_index: 0,
+                degree: 0,
+            });
+            return Ok(());
         }
 
         loop {
@@ -108,19 +106,17 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
                 })
             }
             let skeleton = list.skeleton();
-            if skeleton.sublist_index_is_in_bounds(node_index) {
-                if let Some(sublist) = skeleton.sublist_at(node_index) {
-                    let sub_skeleton = sublist.skeleton();
-                    if sub_skeleton.offset() == zero() {
-                        self.super_lists.push(list);
-                        self.positions.push(IterPos {
-                            list: sublist,
-                            position,
-                            node_index: 0,
-                            degree: sub_skeleton.depth().saturating_sub(1),
-                        });
-                        continue;
-                    }
+            if let Some(sublist) = skeleton.sublist_at(node_index) {
+                let sub_skeleton = sublist.skeleton();
+                if sub_skeleton.offset() == zero() {
+                    self.super_lists.push(list);
+                    self.positions.push(IterPos {
+                        list: sublist,
+                        position,
+                        node_index: 0,
+                        degree: sub_skeleton.depth().saturating_sub(1),
+                    });
+                    continue;
                 }
             }
             break;

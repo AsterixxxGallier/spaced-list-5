@@ -41,19 +41,17 @@ macro_rules! descend {
     (deep; $list:ident, $skeleton:ident; $cmp:tt $target:ident;
         $degree:ident, $node_index:ident, $position:ident; $super_lists:ident) => {
         if $degree == 0 {
-            if $skeleton.sublist_index_is_in_bounds($node_index) {
-                if let Some(sublist) = $skeleton.sublist_at($node_index) {
-                    let sub_skeleton = sublist.skeleton();
-                    let next_position = $position + sub_skeleton.offset();
-                    if next_position $cmp $target {
-                        $degree = sub_skeleton.depth().saturating_sub(1);
-                        $node_index = 0;
-                        $position = next_position;
-                        $super_lists.push($list);
-                        $list = sublist;
-                        $skeleton = $list.skeleton();
-                        continue;
-                    }
+            if let Some(sublist) = $skeleton.sublist_at($node_index) {
+                let sub_skeleton = sublist.skeleton();
+                let next_position = $position + sub_skeleton.offset();
+                if next_position $cmp $target {
+                    $degree = sub_skeleton.depth().saturating_sub(1);
+                    $node_index = 0;
+                    $position = next_position;
+                    $super_lists.push($list);
+                    $list = sublist;
+                    $skeleton = $list.skeleton();
+                    continue;
                 }
             }
             break;
@@ -97,16 +95,14 @@ macro_rules! next {
             // TODO change Skeleton::sublist_at method to return None if index is out of bounds,
             //  then replace this nested if with a single if let else, removing the 'next label, the
             //  associated feature and warnings; also do that for the previous! macro and edge cases
-            if $skeleton.sublist_index_is_in_bounds($node_index) {
-                if let Some(sublist) = $skeleton.sublist_at($node_index) {
-                    let sub_skeleton = sublist.skeleton();
-                    $node_index = 0;
-                    $position += sub_skeleton.offset();
-                    $super_lists.push($list);
-                    $list = sublist;
-                    $skeleton = $list.skeleton();
-                    break 'next Ok(());
-                }
+            if let Some(sublist) = $skeleton.sublist_at($node_index) {
+                let sub_skeleton = sublist.skeleton();
+                $node_index = 0;
+                $position += sub_skeleton.offset();
+                $super_lists.push($list);
+                $list = sublist;
+                $skeleton = $list.skeleton();
+                break 'next Ok(());
             }
             )?
 
@@ -139,18 +135,16 @@ macro_rules! previous {
             $(
             if $node_index > 0 {
                 let index_before = $node_index - 1;
-                if $skeleton.node_index_is_in_bounds(index_before) {
-                    if let Some(sublist) = $skeleton.sublist_at(index_before) {
-                        let sub_skeleton = sublist.skeleton();
-                        $node_index = sub_skeleton.node_size() - 1;
-                        $position -=
-                            $skeleton.link_length_at_node(index_before)
-                                - sub_skeleton.last_position();
-                        $super_lists.push($list);
-                        $list = sublist;
-                        $skeleton = $list.skeleton();
-                        break 'previous Ok(());
-                    }
+                if let Some(sublist) = $skeleton.sublist_at(index_before) {
+                    let sub_skeleton = sublist.skeleton();
+                    $node_index = sub_skeleton.node_size() - 1;
+                    $position -=
+                        $skeleton.link_length_at_node(index_before)
+                            - sub_skeleton.last_position();
+                    $super_lists.push($list);
+                    $list = sublist;
+                    $skeleton = $list.skeleton();
+                    break 'previous Ok(());
                 }
             }
             )?
