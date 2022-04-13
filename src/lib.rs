@@ -187,12 +187,17 @@ macro_rules! spaced_list {
             impl<S: Spacing$(, $T)?> $Self {
                 default_as_new!();
 
-                $(pub fn element(&self, position: Position<S, Self>) -> &$T {
-                    todo!() // TODO
+                $(pub fn element<'a>(&'a self, position: Position<'a, S, Self>) -> &'a $T {
+                    &position.list().elements[position.index()]
                 }
 
-                pub fn element_mut(&mut self, position: Position<S, Self>) -> &mut $T {
-                    todo!() // TODO
+                pub fn element_mut<'a>(&'a mut self, position: Position<'a, S, Self>) -> &'a mut $T {
+                    let mut list = self;
+                    for super_sub_list in position.super_lists().iter().skip(1) {
+                        let index = super_sub_list.skeleton().index_in_super_list().unwrap();
+                        list = list.skeleton_mut().sublist_at_mut(index).unwrap();
+                    }
+                    &mut list.elements[position.index()]
                 })?
 
                 delegates! {
