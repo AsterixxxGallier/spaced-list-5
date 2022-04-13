@@ -91,8 +91,7 @@ macro_rules! loop_while {
 }
 
 macro_rules! next {
-    // TODO swap $skeleton and $list
-    ($skeleton:ident, $list:ident; $node_index:ident, $position:ident$(; $super_lists:ident)?) => {
+    ($list:ident, $skeleton:ident; $node_index:ident, $position:ident$(; $super_lists:ident)?) => {
         'next: {
             $(
             // TODO change Skeleton::sublist_at method to return None if index is out of bounds,
@@ -135,8 +134,7 @@ macro_rules! next {
 }
 
 macro_rules! previous {
-    // TODO swap $skeleton and $list
-    ($skeleton:ident, $list:ident; $node_index:ident, $position:ident$(; $super_lists:ident)?) => {
+    ($list:ident, $skeleton:ident; $node_index:ident, $position:ident$(; $super_lists:ident)?) => {
         'previous: {
             $(
             if $node_index > 0 {
@@ -232,7 +230,7 @@ macro_rules! traverse_unchecked_with_variables {
             if $position == $target {
                 Some(pos!($list; $node_index, $position$(; $super_lists)?))
             } else {
-                next!($skeleton, $list; $node_index, $position$(; $super_lists)?).unwrap();
+                next!($list, $skeleton; $node_index, $position$(; $super_lists)?).unwrap();
                 Some(pos!($list; $node_index, $position$(; $super_lists)?))
             }
         }
@@ -242,7 +240,7 @@ macro_rules! traverse_unchecked_with_variables {
         {
             loop_while!($depth; $list, $skeleton; <= $target;
                 $degree, $node_index, $position$(; $super_lists)?);
-            next!($skeleton, $list; $node_index, $position$(; $super_lists)?).unwrap();
+            next!($list, $skeleton; $node_index, $position$(; $super_lists)?).unwrap();
             Some(pos!($list; $node_index, $position$(; $super_lists)?))
         }
     };
@@ -252,7 +250,7 @@ macro_rules! traverse_unchecked_with_variables {
             loop_while!($depth; $list, $skeleton; < $target;
                 $degree, $node_index, $position$(; $super_lists)?);
             if !index_is_at_bound!($bound; $node_index) {
-                previous!($skeleton, $list; $node_index, $position$(; $super_lists)?).ok()?;
+                previous!($list, $skeleton; $node_index, $position$(; $super_lists)?).ok()?;
             }
             Some(pos!($list; $node_index, $position$(; $super_lists)?))
         }
@@ -263,7 +261,7 @@ macro_rules! traverse_unchecked_with_variables {
             loop_while!($depth; $list, $skeleton; <= $target;
                 $degree, $node_index, $position$(; $super_lists)?);
             if !index_is_at_bound!($bound; $node_index) {
-                previous!($skeleton, $list; $node_index, $position$(; $super_lists)?).ok()?;
+                previous!($list, $skeleton; $node_index, $position$(; $super_lists)?).ok()?;
             }
             Some(pos!($list; $node_index, $position$(; $super_lists)?))
         }
@@ -287,13 +285,13 @@ macro_rules! traverse_unchecked_with_variables {
                 $degree, $node_index, $position$(; $super_lists)?);
             if $position == $target {
                 if !index_is_at_bound!($bound; $node_index) {
-                    next!($skeleton, $list; $node_index, $position$(; $super_lists)?).ok()?;
+                    next!($list, $skeleton; $node_index, $position$(; $super_lists)?).ok()?;
                 }
                 Some(pos!($list; $node_index, $position$(; $super_lists)?))
             } else {
-                next!($skeleton, $list; $node_index, $position$(; $super_lists)?).unwrap();
+                next!($list, $skeleton; $node_index, $position$(; $super_lists)?).unwrap();
                 if !index_is_at_bound!($bound; $node_index) {
-                    next!($skeleton, $list; $node_index, $position$(; $super_lists)?).ok()?;
+                    next!($list, $skeleton; $node_index, $position$(; $super_lists)?).ok()?;
                 }
                 Some(pos!($list; $node_index, $position$(; $super_lists)?))
             }
@@ -304,9 +302,9 @@ macro_rules! traverse_unchecked_with_variables {
         {
             loop_while!($depth; $list, $skeleton; <= $target;
                 $degree, $node_index, $position$(; $super_lists)?);
-            next!($skeleton, $list; $node_index, $position$(; $super_lists)?).unwrap();
+            next!($list, $skeleton; $node_index, $position$(; $super_lists)?).unwrap();
             if !index_is_at_bound!($bound; $node_index) {
-                next!($skeleton, $list; $node_index, $position$(; $super_lists)?).ok()?;
+                next!($list, $skeleton; $node_index, $position$(; $super_lists)?).ok()?;
             }
             Some(pos!($list; $node_index, $position$(; $super_lists)?))
         }
