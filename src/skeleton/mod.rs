@@ -5,6 +5,7 @@ use num_traits::zero;
 use paste::paste;
 
 use crate::{SpacedList, Spacing};
+use crate::skeleton::traversal::link_index;
 
 #[derive(Clone, Eq, PartialEq)]
 pub struct Skeleton<S: Spacing, Sub: SpacedList<S>> {
@@ -145,19 +146,49 @@ impl<S: Spacing, Sub: SpacedList<S>> Skeleton<S, Sub> {
         self.depth += 1;
     }
 
+    // ╭───────────────────────────────────────────────────────────────╮
+    // ├───────────────────────────────╮                               │
+    // ├───────────────╮               ├───────────────╮               │
+    // ├───────╮       ├───────╮       ├───────╮       ├───────╮       │
+    // ├───╮   ├───╮   ├───╮   ├───╮   ├───╮   ├───╮   ├───╮   ├───╮   │
+    // ╵ 0 ╵ 1 ╵ 0 ╵ 2 ╵ 0 ╵ 1 ╵ 0 ╵ 3 ╵ 0 ╵ 1 ╵ 0 ╵ 2 ╵ 0 ╵ 1 ╵ 0 ╵ 4 ╵
+    // 00000   00010   00100   00110   01000   01010   01100   01110   10000
+    //     00001   00011   00101   00111   01001   01011   01101   01111
     /// Inflates the link at the specified index.
-    pub fn inflate_at(&mut self, link_index: usize, amount: S) {
+    pub fn inflate_at(&mut self, index: usize, amount: S) {
         // TODO add inflate_at_unchecked maybe
-        assert!(self.link_index_is_in_bounds(link_index), "Link index not in bounds");
+        assert!(self.link_index_is_in_bounds(index), "Link index not in bounds");
         assert!(amount >= zero(), "Cannot inflate by negative amount, explicitly deflate for that");
-        let mut link_index = link_index;
-        for degree in 0..self.depth() {
-            let bit = 1 << degree;
-            if link_index & bit == 0 {
-                *self.link_length_at_mut(link_index) += amount;
-                link_index += bit;
+        println!("index: {}", index);
+        {
+            let mut link_index = index;
+            for degree in 0..self.depth() {
+                let bit = 1 << degree;
+                if index & bit == 0 {
+                    *self.link_length_at_mut(link_index) += amount;
+                    println!("0 at bit {}", bit);
+                    println!("inflated at: {} (degree {})", link_index, degree);
+                    link_index += bit;
+                }
             }
         }
+        {
+            println!("new:");
+            let mut node_index = index;
+            for degree in 0..self.depth() {
+                let bit = 1 << degree;
+                if index & bit == 0 {
+                    println!("0 at bit {}", bit);
+                    // *self.link_length_at_mut(link_index(node_index, degree)) += amount;
+                    let link_index = link_index(node_index << degree, degree);
+                    println!("inflated at: {} (degree {})", link_index, degree);
+                    node_index >>= 1;
+                } else {
+                    node_index >>= 1;
+                }
+            }
+        }
+        println!("end");
         self.length += amount;
     }
 
