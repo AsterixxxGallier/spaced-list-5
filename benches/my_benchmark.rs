@@ -47,7 +47,7 @@ fn node_index(n: u32) -> u32 {
     let mut counter = 0;
     let mut node_index = n;
     for degree in 0..16 {
-        if n & (1 << degree) == 0 {
+        if node_index & 1 == 0 {
             counter += link_index(node_index << degree, degree);
         }
         node_index >>= 1;
@@ -58,7 +58,7 @@ fn node_index(n: u32) -> u32 {
 fn node_index_opt(n: u32) -> u32 {
     let mut counter = 0;
     for degree in 0..16 {
-        if n & (1 << degree) == 0 {
+        if n >> degree & 1 == 0 {
             counter += link_index(n >> degree << degree, degree);
         }
     }
