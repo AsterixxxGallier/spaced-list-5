@@ -92,9 +92,6 @@ macro_rules! next {
     ($list:ident, $skeleton:ident; $node_index:ident, $position:ident$(; $super_lists:ident)?) => {
         'next: {
             $(
-            // TODO change Skeleton::sublist_at method to return None if index is out of bounds,
-            //  then replace this nested if with a single if let else, removing the 'next label, the
-            //  associated feature and warnings; also do that for the previous! macro and edge cases
             if let Some(sublist) = $skeleton.sublist_at($node_index) {
                 let sub_skeleton = sublist.skeleton();
                 $node_index = 0;
@@ -106,17 +103,13 @@ macro_rules! next {
             }
             )?
 
-            // TODO make a macro for (parts of) this loop because a similar loop is below
-            loop {
-                if $node_index < $skeleton.link_size() {
-                    break;
-                }
+            while $node_index == $skeleton.link_size() {
                 $(if let Some(new_index) = $skeleton.index_in_super_list() {
                     $node_index = new_index;
                     $position -= $skeleton.last_position();
                     $list = $super_lists.pop().unwrap();
                     $skeleton = $list.skeleton();
-                    continue
+                    continue;
                 })?
                 break 'next Err("Tried to move to next node but it's already the end of the list");
             }
