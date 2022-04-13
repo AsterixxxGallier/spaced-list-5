@@ -36,23 +36,23 @@ impl<S: Spacing, T> FilledSpacedList<S, T> {
         Some(self.element(self.node_after(position)?))
     }
 
-    pub fn element_before_mut(&mut self, position: S) -> &mut T {
+    pub fn element_before_mut(&mut self, position: S) -> Option<&mut T> {
         todo!()
     }
 
-    pub fn element_at_or_before_mut(&mut self, position: S) -> &mut T {
+    pub fn element_at_or_before_mut(&mut self, position: S) -> Option<&mut T> {
         todo!()
     }
 
-    pub fn element_at_mut(&mut self, position: S) -> &mut T {
+    pub fn element_at_mut(&mut self, position: S) -> Option<&mut T> {
         todo!()
     }
 
-    pub fn element_at_or_after_mut(&mut self, position: S) -> &mut T {
+    pub fn element_at_or_after_mut(&mut self, position: S) -> Option<&mut T> {
         todo!()
     }
 
-    pub fn element_after_mut(&mut self, position: S) -> &mut T {
+    pub fn element_after_mut(&mut self, position: S) -> Option<&mut T> {
         todo!()
     }
 }
