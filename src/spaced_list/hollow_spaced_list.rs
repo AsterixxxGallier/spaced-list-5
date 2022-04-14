@@ -1,7 +1,9 @@
 use std::default::default;
 
-use crate::{Iter, Position, SpacedList, Skeleton, Spacing};
 use paste::paste;
+use num_traits::zero;
+
+use crate::{Iter, Position, SpacedList, Spacing};
 
 spaced_list!(Hollow);
 

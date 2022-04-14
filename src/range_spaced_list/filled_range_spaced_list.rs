@@ -1,8 +1,9 @@
 use std::default::default;
 
 use paste::paste;
+use num_traits::zero;
 
-use crate::{SpacedList, Skeleton, Spacing, Position, RangeSpacedList};
+use crate::{SpacedList, Spacing, Position, RangeSpacedList};
 
 spaced_list!(Filled Range);
 

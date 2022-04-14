@@ -42,7 +42,7 @@ macro_rules! descend {
         $degree:ident, $node_index:ident, $position:ident; $super_lists:ident) => {
         if $degree == 0 {
             if let Some(sublist) = $skeleton.sublist_at($node_index) {
-                let sub_skeleton = sublist.skeleton();
+                let sub_skeleton = sublist;
                 let next_position = $position + sub_skeleton.offset();
                 if next_position $cmp $target {
                     $degree = sub_skeleton.depth().saturating_sub(1);
@@ -50,7 +50,7 @@ macro_rules! descend {
                     $position = next_position;
                     $super_lists.push($list);
                     $list = sublist;
-                    $skeleton = $list.skeleton();
+                    $skeleton = $list;
                     continue;
                 }
             }
@@ -93,12 +93,12 @@ macro_rules! next {
         'next: {
             $(
             if let Some(sublist) = $skeleton.sublist_at($node_index) {
-                let sub_skeleton = sublist.skeleton();
+                let sub_skeleton = sublist;
                 $node_index = 0;
                 $position += sub_skeleton.offset();
                 $super_lists.push($list);
                 $list = sublist;
-                $skeleton = $list.skeleton();
+                $skeleton = $list;
                 break 'next Ok(());
             }
             )?
@@ -108,7 +108,7 @@ macro_rules! next {
                     $node_index = new_index;
                     $position -= $skeleton.last_position();
                     $list = $super_lists.pop().unwrap();
-                    $skeleton = $list.skeleton();
+                    $skeleton = $list;
                     continue;
                 })?
                 break 'next Err("Tried to move to next node but it's already the end of the list");
@@ -129,14 +129,14 @@ macro_rules! previous {
             if $node_index > 0 {
                 let index_before = $node_index - 1;
                 if let Some(sublist) = $skeleton.sublist_at(index_before) {
-                    let sub_skeleton = sublist.skeleton();
+                    let sub_skeleton = sublist;
                     $node_index = sub_skeleton.node_size() - 1;
                     $position -=
                         $skeleton.link_length_at_node(index_before)
                             - sub_skeleton.last_position();
                     $super_lists.push($list);
                     $list = sublist;
-                    $skeleton = $list.skeleton();
+                    $skeleton = $list;
                     break 'previous Ok(());
                 }
             }
@@ -147,7 +147,7 @@ macro_rules! previous {
                     $node_index = new_index; // + 1 maybe?
                     $position -= $skeleton.offset();
                     $list = $super_lists.pop().unwrap();
-                    $skeleton = $list.skeleton();
+                    $skeleton = $list;
                     break 'previous Ok(());
                 })?
                 break 'previous
@@ -360,7 +360,7 @@ macro_rules! handle_before_offset {
         } else if $skeleton.link_size() >= 1 {
             let mut position = $skeleton.offset();
             if let Some(sublist) = $skeleton.sublist_at(0) {
-                let sub_skeleton = sublist.skeleton();
+                let sub_skeleton = sublist;
                 position += sub_skeleton.offset();
                 Some(pos!(sublist; 0, position; vec![$list]))
             } else {
@@ -385,7 +385,7 @@ macro_rules! handle_before_offset {
 macro_rules! traverse {
     ($kind:tt; $depth:tt; $list:expr; < $target:ident) => {
         {
-            let mut skeleton = $list.skeleton();
+            let mut skeleton = $list;
             if $target <= skeleton.offset() {
                 None
             } else {
@@ -395,7 +395,7 @@ macro_rules! traverse {
     };
     ($kind:tt; $depth:tt; $list:expr; <= $target:ident) => {
         {
-            let mut skeleton = $list.skeleton();
+            let mut skeleton = $list;
             if $target < skeleton.offset() {
                 None
             } else {
@@ -405,7 +405,7 @@ macro_rules! traverse {
     };
     ($kind:tt; $depth:tt; $list:expr; == $target:ident) => {
         {
-            let mut skeleton = $list.skeleton();
+            let mut skeleton = $list;
             if $target < skeleton.offset() {
                 None
             } else {
@@ -415,7 +415,7 @@ macro_rules! traverse {
     };
     ($kind:tt; $depth:tt; $list:expr; >= $target:ident) => {
         {
-            let mut skeleton = $list.skeleton();
+            let mut skeleton = $list;
             if $target > skeleton.last_position() {
                 None
             } else if $target <= skeleton.offset() {
@@ -427,7 +427,7 @@ macro_rules! traverse {
     };
     ($kind:tt; $depth:tt; $list:expr; > $target:ident) => {
         {
-            let mut skeleton = $list.skeleton();
+            let mut skeleton = $list;
             if $target >= skeleton.last_position() {
                 None
             } else if $target < skeleton.offset() {

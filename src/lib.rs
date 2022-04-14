@@ -122,6 +122,72 @@ macro_rules! accessors {
     () => {}
 }
 
+macro_rules! trait_accessors {
+    {
+        $field:ident: $type:ty
+        $(;$($rest:tt)*)?
+    } => {
+        fn $field(&self) -> $type;
+        trait_accessors! {
+            $($($rest)*)?
+        }
+    };
+    {
+        ref $field:ident: $type:ty
+        $(;$($rest:tt)*)?
+    } => {
+        fn $field(&self) -> &$type;
+        trait_accessors! {
+            $($($rest)*)?
+        }
+    };
+    {
+        mut $field:ident: $type:ty
+        $(;$($rest:tt)*)?
+    } => {
+        paste! {
+            fn [<$field _mut>](&mut self) -> &mut $type;
+            trait_accessors! {
+                $($($rest)*)?
+            }
+        }
+    };
+    {
+        index $field:ident: $type:ty
+        $(;$($rest:tt)*)?
+    } => {
+        paste! {
+            fn [<$field _at>](&self, index: usize) -> $type;
+            trait_accessors! {
+                $($($rest)*)?
+            }
+        }
+    };
+    {
+        index ref $field:ident: $type:ty
+        $(;$($rest:tt)*)?
+    } => {
+        paste! {
+            fn [<$field _at>](&self, index: usize) -> &$type;
+            trait_accessors! {
+                $($($rest)*)?
+            }
+        }
+    };
+    {
+        index mut $field:ident: $type:ty
+        $(;$($rest:tt)*)?
+    } => {
+        paste! {
+            fn [<$field _at _mut>](&mut self, index: usize) -> &mut $type;
+            trait_accessors! {
+                $($($rest)*)?
+            }
+        }
+    };
+    () => {}
+}
+
 macro_rules! spaced_list {
     (@<S: Spacing$(, $T:ident)?> $Self:ty; Range) => {
         impl<S: Spacing$(, $T)?> RangeSpacedList<S> for $Self {}
@@ -162,14 +228,34 @@ macro_rules! spaced_list {
         paste! {
             #[derive(Clone, Eq, PartialEq)]
             pub struct $Name<S: Spacing$(, $T)?> {
-                skeleton: Skeleton<S, Self>,
+                link_lengths: Vec<S>,
+                sublists: Vec<Option<Self>>,
+                index_in_super_list: Option<usize>,
+                link_capacity: usize,
+                link_size: usize,
+                link_size_deep: usize,
+                node_size: usize,
+                node_size_deep: usize,
+                depth: usize,
+                length: S,
+                offset: S,
                 $(elements: Vec<$T>,)?
             }
 
             impl<S: Spacing$(, $T)?> Default for $Self {
                 fn default() -> Self {
                     Self {
-                        skeleton: default(),
+                        link_lengths: vec![],
+                        sublists: vec![],
+                        link_capacity: 0,
+                        depth: 0,
+                        length: zero(),
+                        offset: zero(),
+                        link_size: 0,
+                        link_size_deep: 0,
+                        node_size: 0,
+                        node_size_deep: 0,
+                        index_in_super_list: None,
                         $(elements: Vec::<$T>::new(),)?
                     }
                 }
@@ -177,8 +263,30 @@ macro_rules! spaced_list {
 
             impl<S: Spacing$(, $T)?> SpacedList<S> for $Self {
                 accessors! {
-                    ref skeleton: Skeleton<S, Self>;
-                    mut skeleton: Skeleton<S, Self>;
+                    index_in_super_list: Option<usize>;
+                    mut index_in_super_list: Option<usize>;
+                    ref link_lengths: Vec<S>;
+                    mut link_lengths: Vec<S>;
+                    ref sublists: Vec<Option<Self>>;
+                    mut sublists: Vec<Option<Self>>;
+                    link_size: usize;
+                    mut link_size: usize;
+                    link_size_deep: usize;
+                    mut link_size_deep: usize;
+                    link_capacity: usize;
+                    mut link_capacity: usize;
+                    node_size: usize;
+                    mut node_size: usize;
+                    node_size_deep: usize;
+                    mut node_size_deep: usize;
+                    depth: usize;
+                    mut depth: usize;
+                    length: S;
+                    mut length: S;
+                    offset: S;
+                    mut offset: S;
+                    index link_length: S;
+                    index mut link_length: S;
                 }
             }
 
@@ -192,8 +300,8 @@ macro_rules! spaced_list {
                 pub fn element_mut<'a>(&'a mut self, position: Position<'a, S, Self>) -> &'a mut $T {
                     let mut list = self;
                     for super_sub_list in position.super_lists().iter().skip(1) {
-                        let index = super_sub_list.skeleton().index_in_super_list().unwrap();
-                        list = list.skeleton_mut().sublist_at_mut(index).unwrap();
+                        let index = super_sub_list.index_in_super_list().unwrap();
+                        list = list.sublist_at_mut(index).unwrap();
                     }
                     &mut list.elements[position.index()]
                 })?
@@ -300,5 +408,4 @@ pub use positions::node::Position;
 
 pub(crate) use spaced_list::SpacedList;
 pub(crate) use range_spaced_list::RangeSpacedList;
-pub(crate) use skeleton::Skeleton;
 

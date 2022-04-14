@@ -18,15 +18,15 @@ pub struct Iter<'list, S: 'list + Spacing, List: SpacedList<S>> {
 impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
     pub fn new(list: &'list List) -> Iter<'list, S, List> {
         let mut this = Iter {
-            positions: Vec::with_capacity(list.skeleton().depth()),
+            positions: Vec::with_capacity(list.depth()),
             super_lists: vec![],
         };
 
         this.positions.push(IterPos {
             list,
-            position: list.skeleton().offset(),
+            position: list.offset(),
             node_index: 0,
-            degree: list.skeleton().depth() - 1,
+            degree: list.depth() - 1,
         });
 
         this.descend();
@@ -41,9 +41,9 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
 
     fn next(&mut self) -> Result<(), ()> {
         let last = self.positions.last().unwrap();
-        let skeleton = last.list.skeleton();
+        let skeleton = last.list;
         if let Some(sublist) = skeleton.sublist_at(last.node_index) {
-            let sub_skeleton = sublist.skeleton();
+            let sub_skeleton = sublist;
             self.super_lists.push(last.list);
             let next_position = last.position + sub_skeleton.offset();
             self.positions.push(IterPos {
@@ -57,11 +57,11 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
 
         loop {
             let last = self.positions.last().unwrap();
-            if last.node_index < last.list.skeleton().link_size() {
+            if last.node_index < last.list.link_size() {
                 break
             }
-            let mut len = self.positions.len() - last.list.skeleton().depth();
-            if last.list.skeleton().link_size() == 0 {
+            let mut len = self.positions.len() - last.list.depth();
+            if last.list.link_size() == 0 {
                 len -= 1;
             }
             self.positions.truncate(len);
@@ -85,7 +85,7 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
 
     fn next_unchecked(&mut self) {
         let last = self.positions.last_mut().unwrap();
-        last.position += last.list.skeleton().link_length_at(link_index(last.node_index, last.degree));
+        last.position += last.list.link_length_at(link_index(last.node_index, last.degree));
         last.node_index += 1 << last.degree;
     }
 
@@ -105,9 +105,9 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
                     degree,
                 })
             }
-            let skeleton = list.skeleton();
+            let skeleton = list;
             if let Some(sublist) = skeleton.sublist_at(node_index) {
-                let sub_skeleton = sublist.skeleton();
+                let sub_skeleton = sublist;
                 if sub_skeleton.offset() == zero() {
                     self.super_lists.push(list);
                     self.positions.push(IterPos {

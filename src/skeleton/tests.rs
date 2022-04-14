@@ -8,33 +8,33 @@ use crate::{HollowSpacedList, SpacedList};
 #[test]
 fn grow() {
     let mut list: HollowSpacedList<u32> = HollowSpacedList::new();
-    let skeleton = list.skeleton_mut();
+    let mut skeleton = list;
 
-    assert_eq!(skeleton.sublists.len(), 0);
+    assert_eq!(skeleton.sublists().len(), 0);
     assert_eq!(skeleton.link_capacity(), 0);
     assert_eq!(skeleton.depth(), 0);
 
     skeleton.grow();
 
-    assert_eq!(skeleton.sublists.len(), 1);
+    assert_eq!(skeleton.sublists().len(), 1);
     assert_eq!(skeleton.link_capacity(), 1);
     assert_eq!(skeleton.depth(), 1);
 
     skeleton.grow();
 
-    assert_eq!(skeleton.sublists.len(), 2);
+    assert_eq!(skeleton.sublists().len(), 2);
     assert_eq!(skeleton.link_capacity(), 2);
     assert_eq!(skeleton.depth(), 2);
 
     skeleton.grow();
 
-    assert_eq!(skeleton.sublists.len(), 4);
+    assert_eq!(skeleton.sublists().len(), 4);
     assert_eq!(skeleton.link_capacity(), 4);
     assert_eq!(skeleton.depth(), 3);
 
     skeleton.grow();
 
-    assert_eq!(skeleton.sublists.len(), 8);
+    assert_eq!(skeleton.sublists().len(), 8);
     assert_eq!(skeleton.link_capacity(), 8);
     assert_eq!(skeleton.depth(), 4);
 }
@@ -42,51 +42,50 @@ fn grow() {
 #[test]
 fn inflate_deflate() {
     let mut list: HollowSpacedList<u32> = HollowSpacedList::new();
-    let skeleton = list.skeleton_mut();
+    let mut skeleton = list;
 
     skeleton.grow();
     skeleton.grow();
     skeleton.grow();
     skeleton.set_size_to_capacity();
 
-    assert_eq!(skeleton.depth, 3);
-    assert_eq!(skeleton.length, 0);
+    assert_eq!(skeleton.depth(), 3);
+    assert_eq!(skeleton.length(), 0);
     assert_eq!(skeleton.link_capacity(), 4);
-    assert_eq!(skeleton.link_capacity, 4);
 
     skeleton.inflate_at(0, 1);
-    assert_eq!(skeleton.link_lengths, vec![1, 1, 0, 1]);
+    assert_eq!(skeleton.link_lengths(), &vec![1, 1, 0, 1]);
 
     skeleton.inflate_at(0, 3);
-    assert_eq!(skeleton.link_lengths, vec![4, 4, 0, 4]);
+    assert_eq!(skeleton.link_lengths(), &vec![4, 4, 0, 4]);
 
     unsafe { skeleton.deflate_at_unchecked(0, 2); }
-    assert_eq!(skeleton.link_lengths, vec![2, 2, 0, 2]);
+    assert_eq!(skeleton.link_lengths(), &vec![2, 2, 0, 2]);
 
     skeleton.inflate_at(1, 3);
-    assert_eq!(skeleton.link_lengths, vec![2, 5, 0, 5]);
+    assert_eq!(skeleton.link_lengths(), &vec![2, 5, 0, 5]);
 
     skeleton.inflate_at(2, 1);
-    assert_eq!(skeleton.link_lengths, vec![2, 5, 1, 6]);
+    assert_eq!(skeleton.link_lengths(), &vec![2, 5, 1, 6]);
 
     skeleton.inflate_at(0, 0);
     skeleton.inflate_at(1, 0);
     skeleton.inflate_at(2, 0);
     skeleton.inflate_at(3, 0);
-    assert_eq!(skeleton.link_lengths, vec![2, 5, 1, 6]);
+    assert_eq!(skeleton.link_lengths(), &vec![2, 5, 1, 6]);
 
     skeleton.deflate_at(0, 0);
     skeleton.deflate_at(1, 0);
     skeleton.deflate_at(2, 0);
     skeleton.deflate_at(3, 0);
-    assert_eq!(skeleton.link_lengths, vec![2, 5, 1, 6]);
+    assert_eq!(skeleton.link_lengths(), &vec![2, 5, 1, 6]);
 }
 
 #[test]
 #[should_panic(expected = "index")]
 fn bad_inflate_should_panic_0() {
     let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
-    let skeleton = list.skeleton_mut();
+    let mut skeleton = list;
     skeleton.set_size_to_capacity();
     skeleton.inflate_at(0, 1);
 }
@@ -95,7 +94,7 @@ fn bad_inflate_should_panic_0() {
 #[should_panic(expected = "negative")]
 fn bad_inflate_should_panic_1() {
     let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
-    let skeleton = list.skeleton_mut();
+    let mut skeleton = list;
     skeleton.grow();
     skeleton.set_size_to_capacity();
     skeleton.inflate_at(0, -1);
@@ -105,7 +104,7 @@ fn bad_inflate_should_panic_1() {
 #[should_panic(expected = "index")]
 fn bad_inflate_should_panic_2() {
     let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
-    let skeleton = list.skeleton_mut();
+    let mut skeleton = list;
     skeleton.grow();
     skeleton.set_size_to_capacity();
     skeleton.inflate_at(1, 0);
@@ -115,7 +114,7 @@ fn bad_inflate_should_panic_2() {
 #[should_panic(expected = "index")]
 fn bad_deflate_should_panic_0() {
     let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
-    let skeleton = list.skeleton_mut();
+    let mut skeleton = list;
     skeleton.set_size_to_capacity();
     skeleton.deflate_at(0, 0);
 }
@@ -124,7 +123,7 @@ fn bad_deflate_should_panic_0() {
 #[should_panic(expected = "negative")]
 fn bad_deflate_should_panic_1() {
     let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
-    let skeleton = list.skeleton_mut();
+    let mut skeleton = list;
     skeleton.grow();
     skeleton.set_size_to_capacity();
     skeleton.deflate_at(0, -1);
@@ -134,7 +133,7 @@ fn bad_deflate_should_panic_1() {
 #[should_panic(expected = "negative")]
 fn bad_deflate_should_panic_2() {
     let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
-    let skeleton = list.skeleton_mut();
+    let mut skeleton = list;
     skeleton.grow();
     skeleton.grow();
     skeleton.set_size_to_capacity();
@@ -146,7 +145,7 @@ fn bad_deflate_should_panic_2() {
 #[should_panic(expected = "below zero")]
 fn bad_deflate_should_panic_3() {
     let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
-    let skeleton = list.skeleton_mut();
+    let mut skeleton = list;
     skeleton.grow();
     skeleton.grow();
     skeleton.grow();
@@ -178,7 +177,7 @@ fn random_insertions() {
         // let pos = max - n;
         // println!("inserting node at {}, iteration: {}", pos, n);
         list.insert_node(pos);
-        // println!("{:?}", list.skeleton().format(
+        // println!("{:?}", list.format(
         //     true,
         //     true,
         //     true,
@@ -192,7 +191,7 @@ fn random_insertions() {
         assert_eq!(list.node_at_or_after(pos).unwrap().position(), pos);
         assert_eq!(list.node_after(pos - 1).unwrap().position(), pos);
     }
-    println!("{}", list.skeleton().node_size_deep())
+    println!("{}", list.node_size_deep())
 
     // let mut list: HollowSpacedList<u64> = HollowSpacedList::new();
     // list.insert_node(1);
