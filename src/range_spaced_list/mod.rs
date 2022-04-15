@@ -1,6 +1,6 @@
 use paste::paste;
 
-use crate::{Position, SpacedList, Spacing};
+use crate::{Position, CrateSpacedList, Spacing, SpacedList};
 use crate::positions::shallow::ShallowPosition;
 use crate::traversal::*;
 
@@ -8,7 +8,8 @@ macro_rules! range_traversal_methods {
     (@$bound:ident $pos:ident: $cmp:tt) => {
         paste! {
             fn [<range_ $bound ing_ $pos>]<'a>(&'a self, target: S) -> Option<Position<'a, S, Self>>
-                where S: 'a {
+                where S: 'a,
+                      Self: SpacedList<S> {
                 traverse!((range $bound); deep; self; $cmp target)
             }
         }
@@ -20,8 +21,9 @@ macro_rules! range_traversal_methods {
 }
 
 #[allow(unused)]
-pub trait RangeSpacedList<S: Spacing>: SpacedList<S> {
-    fn append_range(&mut self, distance: S, span: S) -> Position<S, Self> {
+pub trait RangeSpacedList<S: Spacing>: CrateSpacedList<S> {
+    fn append_range(&mut self, distance: S, span: S) -> Position<S, Self>
+        where Self: SpacedList<S> {
         assert_eq!(self.node_size() & 1, 0);
         let link_size = self.link_size();
         let node_size = self.node_size();
@@ -68,7 +70,9 @@ pub trait RangeSpacedList<S: Spacing>: SpacedList<S> {
     ///   __f-e__             = (b-a) - (b-a) + (f-e)
     /// ( e ) ( f ) ( c ) ( d )
     ///            \(a-f) (b-f)
-    fn insert_range<'a>(&'a mut self, position: S, span: S) -> Position<'a, S, Self> where S: 'a {
+    fn insert_range<'a>(&'a mut self, position: S, span: S) -> Position<'a, S, Self>
+        where S: 'a,
+              Self: SpacedList<S> {
         if position + span < self.offset() {
             let offset = self.offset();
             let previous_span = self.link_length_at(0);

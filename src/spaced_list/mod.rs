@@ -85,7 +85,9 @@ macro_rules! flate_methods {
 macro_rules! traversal_methods {
     (@$pos:ident: $cmp:tt) => {
         paste! {
-            fn [<node_ $pos>]<'a>(&'a self, target: S) -> Option<Position<'a, S, Self>> where S: 'a {
+            fn [<node_ $pos>]<'a>(&'a self, target: S) -> Option<Position<'a, S, Self>>
+                where S: 'a,
+                      Self: SpacedList<S> {
                 traverse!(node; deep; self; $cmp target)
             }
         }
@@ -95,7 +97,7 @@ macro_rules! traversal_methods {
     }
 }
 
-pub trait SpacedList<S: Spacing>: Default {
+pub trait CrateSpacedList<S: Spacing>: Default {
     trait_accessors! {
         index_in_super_list: Option<usize>;
         mut index_in_super_list: Option<usize>;
@@ -260,13 +262,13 @@ pub trait SpacedList<S: Spacing>: Default {
         }
     }
 
-    fn iter(&self) -> Iter<S, Self> {
+    fn iter(&self) -> Iter<S, Self> where Self: SpacedList<S> {
         Iter::new(self)
     }
 
     // TODO add try_ versions of the methods below
 
-    fn append_node(&mut self, distance: S) -> Position<S, Self> {
+    fn append_node(&mut self, distance: S) -> Position<S, Self> where Self: SpacedList<S> {
         // possibly, there might be future problems when increasing the length of a sublist beyond
         // the link length from the node the sublist is positioned after to the node the sublist is
         // positioned before, but this should never happen because sublists are only accessible from
@@ -292,7 +294,9 @@ pub trait SpacedList<S: Spacing>: Default {
         Position::new(vec![], self, link_size, position)
     }
 
-    fn insert_node<'a>(&'a mut self, position: S) -> Position<'a, S, Self> where S: 'a {
+    fn insert_node<'a>(&'a mut self, position: S) -> Position<'a, S, Self>
+        where S: 'a,
+              Self: SpacedList<S> {
         if position < self.offset() {
             let offset = self.offset();
             *self.offset_mut() = position;
@@ -336,6 +340,8 @@ pub trait SpacedList<S: Spacing>: Default {
 
     traversal_methods!();
 }
+
+pub trait SpacedList<S: Spacing>: CrateSpacedList<S> {}
 
 pub(crate) mod hollow_spaced_list;
 

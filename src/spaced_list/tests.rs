@@ -3,7 +3,7 @@
 use rand::{Rng, SeedableRng};
 use rand::rngs::StdRng;
 
-use crate::{HollowSpacedList, SpacedList};
+use crate::{HollowSpacedList, CrateSpacedList};
 
 #[test]
 fn grow() {

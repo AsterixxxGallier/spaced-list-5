@@ -200,7 +200,7 @@ macro_rules! spaced_list {
     (@<S: Spacing$(, $T:ident)?> $Self:ty) => {
         impl<S: Spacing$(, $T)?> $Self {
             delegates! {
-                as SpacedList<S>:
+                as CrateSpacedList<S>:
 
                 node_before(&self, position: S) -> Option<Position<S, Self>>;
                 node_at_or_before(&self, position: S) -> Option<Position<S, Self>>;
@@ -248,7 +248,7 @@ macro_rules! spaced_list {
                 }
             }
 
-            impl<S: Spacing$(, $T)?> SpacedList<S> for $Self {
+            impl<S: Spacing$(, $T)?> CrateSpacedList<S> for $Self {
                 accessors! {
                     index_in_super_list: Option<usize>;
                     mut index_in_super_list: Option<usize>;
@@ -296,7 +296,7 @@ macro_rules! spaced_list {
                 })?
 
                 delegates! {
-                    as SpacedList<S>:
+                    as CrateSpacedList<S>:
 
                     inflate_after(&mut self, position: S, amount: S);
                     inflate_before(&mut self, position: S, amount: S);
@@ -327,8 +327,9 @@ macro_rules! spaced_list {
 macro_rules! delegates {
     {as $trait:ty:
         $fn:ident(&self$(, $param:ident: $param_type:ty)*)$( -> $return:ty)?
+        $(where $($where:tt)+)?
         $(; as $new_trait:ty: $($rest:tt)*)?} => {
-        pub fn $fn(&self$(, $param: $param_type)*)$( -> $return)? {
+        pub fn $fn(&self$(, $param: $param_type)*)$( -> $return)?$( where $($where)*)? {
             <Self as $trait>::$fn(self$(, $param)*)
         }
 
@@ -338,8 +339,9 @@ macro_rules! delegates {
     };
     {as $trait:ty:
         $fn:ident(&mut self$(, $param:ident: $param_type:ty)*)$( -> $return:ty)?
+        $(where $($where:tt)+)?
         $(; as $new_trait:ty: $($rest:tt)*)?} => {
-        pub fn $fn(&mut self$(, $param: $param_type)*)$( -> $return)? {
+        pub fn $fn(&mut self$(, $param: $param_type)*)$( -> $return)?$( where $($where)*)? {
             <Self as $trait>::$fn(self$(, $param)*)
         }
 
@@ -349,8 +351,9 @@ macro_rules! delegates {
     };
     {as $trait:ty:
         $fn:ident(&self$(, $param:ident: $param_type:ty)*)$( -> $return:ty)?
+        $(where $($where:tt)+)?
         $(;$($rest:tt)*)?} => {
-        pub fn $fn(&self$(, $param: $param_type)*)$( -> $return)? {
+        pub fn $fn(&self$(, $param: $param_type)*)$( -> $return)?$( where $($where)*)? {
             <Self as $trait>::$fn(self$(, $param)*)
         }
 
@@ -360,8 +363,9 @@ macro_rules! delegates {
     };
     {as $trait:ty:
         $fn:ident(&mut self$(, $param:ident: $param_type:ty)*)$( -> $return:ty)?
+        $(where $($where:tt)+)?
         $(;$($rest:tt)*)?} => {
-        pub fn $fn(&mut self$(, $param: $param_type)*)$( -> $return)? {
+        pub fn $fn(&mut self$(, $param: $param_type)*)$( -> $return)?$( where $($where)*)? {
             <Self as $trait>::$fn(self$(, $param)*)
         }
 
@@ -393,6 +397,8 @@ pub(crate) mod positions;
 pub(crate) mod traversal;
 
 #[doc(inline)]
+pub use spaced_list::SpacedList;
+#[doc(inline)]
 pub use spaced_list::hollow_spaced_list::HollowSpacedList;
 #[doc(inline)]
 pub use spaced_list::filled_spaced_list::FilledSpacedList;
@@ -405,6 +411,6 @@ pub use iteration::node::Iter;
 #[doc(inline)]
 pub use positions::node::Position;
 
-pub(crate) use spaced_list::SpacedList;
+pub(crate) use spaced_list::CrateSpacedList;
 pub(crate) use range_spaced_list::RangeSpacedList;
 

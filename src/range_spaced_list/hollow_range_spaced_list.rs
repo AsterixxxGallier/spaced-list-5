@@ -1,14 +1,14 @@
 use paste::paste;
 use num_traits::zero;
 
-use crate::{SpacedList, Spacing, Position, Iter, RangeSpacedList};
+use crate::{CrateSpacedList, Spacing, Position, Iter, RangeSpacedList};
 
 spaced_list!(Hollow Range);
 
 #[allow(unused)]
 impl<S: Spacing> HollowRangeSpacedList<S> {
     delegates! {
-        as SpacedList<S>:
+        as CrateSpacedList<S>:
 
         iter(&self) -> Iter<S, Self>;
 

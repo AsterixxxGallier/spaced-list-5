@@ -1,7 +1,7 @@
 use num_traits::zero;
 use paste::paste;
 
-use crate::{Position, SpacedList, Spacing};
+use crate::{Position, CrateSpacedList, Spacing};
 
 spaced_list!(Filled);
 
