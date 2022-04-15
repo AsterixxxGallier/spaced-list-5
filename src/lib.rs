@@ -30,14 +30,6 @@ use num_traits::Zero;
 
 pub trait Spacing = Add<Output=Self> + AddAssign + Sub<Output=Self> + SubAssign + Zero + Ord + Copy;
 
-macro_rules! default_as_new {
-    () => {
-        pub fn new() -> Self {
-            default()
-        }
-    };
-}
-
 macro_rules! accessors {
     {
         $vis:vis $field:ident: $type:ty
@@ -291,7 +283,9 @@ macro_rules! spaced_list {
             }
 
             impl<S: Spacing$(, $T)?> $Self {
-                default_as_new!();
+                pub fn new() -> Self {
+                    default()
+                }
 
                 $(pub fn element<'a>(&'a self, position: Position<'a, S, Self>) -> &'a $T {
                     &position.list().elements[position.index()]
