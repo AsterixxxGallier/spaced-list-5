@@ -5,18 +5,18 @@ use crate::positions::shallow::ShallowPosition;
 use crate::traversal::*;
 
 macro_rules! range_traversal_methods {
-    {$($pos:ident: $cmp:tt)+} => {
+    (@$bound:ident $pos:ident: $cmp:tt) => {
         paste! {
-            $(fn [<range_starting_ $pos>]<'a>(&'a self, target: S) -> Option<Position<'a, S, Self>>
+            fn [<range_ $bound ing_ $pos>]<'a>(&'a self, target: S) -> Option<Position<'a, S, Self>>
                 where S: 'a {
-                traverse!((range start); deep; self; $cmp target)
-            })+
-            $(fn [<range_ending_ $pos>]<'a>(&'a self, target: S) -> Option<Position<'a, S, Self>>
-                where S: 'a {
-                traverse!((range end); deep; self; $cmp target)
-            })+
+                traverse!((range $bound); deep; self; $cmp target)
+            }
         }
     };
+    () => {
+        for_all_traversals!(range_traversal_methods @start);
+        for_all_traversals!(range_traversal_methods @end);
+    }
 }
 
 #[allow(unused)]
@@ -98,13 +98,7 @@ pub trait RangeSpacedList<S: Spacing>: SpacedList<S> {
         sublist.insert_range(position - node_position, span)
     }
 
-    range_traversal_methods! {
-        before: <
-        at_or_before: <=
-        at: ==
-        at_or_after: >=
-        after: >
-    }
+    range_traversal_methods!();
 }
 
 pub(crate) mod hollow_range_spaced_list;
