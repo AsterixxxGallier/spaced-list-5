@@ -18,7 +18,6 @@
 //  and iterate many times to reproduce)
 
 #![feature(trait_alias)]
-#![feature(default_free_fn)]
 #![feature(slice_ptr_get)]
 // #![allow(unused)]
 
@@ -282,7 +281,7 @@ macro_rules! spaced_list {
 
             impl<S: Spacing$(, $T)?> $Self {
                 pub fn new() -> Self {
-                    default()
+                    Self::default()
                 }
 
                 $(pub fn element<'a>(&'a self, position: Position<'a, S, Self>) -> &'a $T {
