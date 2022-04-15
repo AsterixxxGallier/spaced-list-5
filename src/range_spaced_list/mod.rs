@@ -22,6 +22,8 @@ macro_rules! range_traversal_methods {
 
 #[allow(unused)]
 pub trait RangeSpacedList<S: Spacing>: CrateSpacedList<S> {
+    // TODO add try_ versions of the methods below
+
     fn append_range(&mut self, distance: S, span: S) -> Position<S, Self>
         where Self: SpacedList<S> {
         assert_eq!(self.node_size() & 1, 0);
