@@ -22,7 +22,7 @@
 #![feature(option_get_or_insert_default)]
 #![feature(slice_ptr_get)]
 #![feature(label_break_value)]
-#![allow(unused)]
+// #![allow(unused)]
 
 use std::ops::{Add, AddAssign, Sub, SubAssign};
 
