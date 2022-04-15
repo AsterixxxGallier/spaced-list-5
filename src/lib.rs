@@ -18,7 +18,6 @@
 //  and iterate many times to reproduce)
 
 #![feature(trait_alias)]
-#![feature(slice_ptr_get)]
 // #![allow(unused)]
 
 use std::ops::{Add, AddAssign, Sub, SubAssign};
