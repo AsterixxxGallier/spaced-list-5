@@ -277,6 +277,8 @@ macro_rules! spaced_list {
                 }
             }
 
+            impl<S: Spacing$(, $T)?> SpacedList<S> for $Self {}
+
             impl<S: Spacing$(, $T)?> $Self {
                 pub fn new() -> Self {
                     Self::default()
@@ -327,9 +329,8 @@ macro_rules! spaced_list {
 macro_rules! delegates {
     {as $trait:ty:
         $fn:ident(&self$(, $param:ident: $param_type:ty)*)$( -> $return:ty)?
-        $(where $($where:tt)+)?
         $(; as $new_trait:ty: $($rest:tt)*)?} => {
-        pub fn $fn(&self$(, $param: $param_type)*)$( -> $return)?$( where $($where)*)? {
+        pub fn $fn(&self$(, $param: $param_type)*)$( -> $return)? where Self: SpacedList<S> {
             <Self as $trait>::$fn(self$(, $param)*)
         }
 
@@ -339,9 +340,8 @@ macro_rules! delegates {
     };
     {as $trait:ty:
         $fn:ident(&mut self$(, $param:ident: $param_type:ty)*)$( -> $return:ty)?
-        $(where $($where:tt)+)?
         $(; as $new_trait:ty: $($rest:tt)*)?} => {
-        pub fn $fn(&mut self$(, $param: $param_type)*)$( -> $return)?$( where $($where)*)? {
+        pub fn $fn(&mut self$(, $param: $param_type)*)$( -> $return)? where Self: SpacedList<S> {
             <Self as $trait>::$fn(self$(, $param)*)
         }
 
@@ -351,9 +351,8 @@ macro_rules! delegates {
     };
     {as $trait:ty:
         $fn:ident(&self$(, $param:ident: $param_type:ty)*)$( -> $return:ty)?
-        $(where $($where:tt)+)?
         $(;$($rest:tt)*)?} => {
-        pub fn $fn(&self$(, $param: $param_type)*)$( -> $return)?$( where $($where)*)? {
+        pub fn $fn(&self$(, $param: $param_type)*)$( -> $return)? where Self: SpacedList<S> {
             <Self as $trait>::$fn(self$(, $param)*)
         }
 
@@ -363,9 +362,8 @@ macro_rules! delegates {
     };
     {as $trait:ty:
         $fn:ident(&mut self$(, $param:ident: $param_type:ty)*)$( -> $return:ty)?
-        $(where $($where:tt)+)?
         $(;$($rest:tt)*)?} => {
-        pub fn $fn(&mut self$(, $param: $param_type)*)$( -> $return)?$( where $($where)*)? {
+        pub fn $fn(&mut self$(, $param: $param_type)*)$( -> $return)? where Self: SpacedList<S> {
             <Self as $trait>::$fn(self$(, $param)*)
         }
 

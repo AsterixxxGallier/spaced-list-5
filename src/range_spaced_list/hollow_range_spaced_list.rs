@@ -1,7 +1,7 @@
 use paste::paste;
 use num_traits::zero;
 
-use crate::{CrateSpacedList, Spacing, Position, Iter, RangeSpacedList};
+use crate::{SpacedList, CrateSpacedList, Spacing, Position, Iter, RangeSpacedList};
 
 spaced_list!(Hollow Range);
 
