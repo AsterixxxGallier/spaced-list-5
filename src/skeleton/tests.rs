@@ -168,7 +168,7 @@ fn random_insertions() {
     // 1 << 24:  45 s = 2.7 µs/node
     // 1 << 25: 125 s = 3.7 µs/node
     // 1 << 26: doesn't stop, apparently
-    let max = 1 << 20;
+    let max = 1 << 16;
     for n in 0..max {
         if n % 100000 == 0 {
             println!("n = {}", n);
