@@ -5,6 +5,27 @@ use crate::{Position, SpacedList, Spacing};
 
 spaced_list!(Filled);
 
+macro_rules! element_traversal_methods {
+    (@$pos:ident: $cmp:tt) => {
+        paste! {
+            pub fn [<element_ $pos>](&self, target: S) -> Option<&T> {
+                Some(self.element(self.[<node_ $pos>](target)?))
+            }
+        }
+    };
+    (@mut $pos:ident: $cmp:tt) => {
+        paste! {
+            pub fn [<element_ $pos _mut>](&mut self, target: S) -> Option<&mut T> {
+                todo!() // TODO
+            }
+        }
+    };
+    () => {
+        for_all_traversals!(element_traversal_methods @);
+        for_all_traversals!(element_traversal_methods @mut);
+    }
+}
+
 #[allow(unused)]
 impl<S: Spacing, T> FilledSpacedList<S, T> {
     fn element_index(index: usize) -> usize {
@@ -19,43 +40,5 @@ impl<S: Spacing, T> FilledSpacedList<S, T> {
         todo!()
     }
 
-    pub fn element_before(&self, position: S) -> Option<&T> {
-        Some(self.element(self.node_before(position)?))
-    }
-
-    pub fn element_at_or_before(&self, position: S) -> Option<&T> {
-        Some(self.element(self.node_at_or_before(position)?))
-    }
-
-    pub fn element_at(&self, position: S) -> Option<&T> {
-        Some(self.element(self.node_at(position)?))
-    }
-
-    pub fn element_at_or_after(&self, position: S) -> Option<&T> {
-        Some(self.element(self.node_at_or_after(position)?))
-    }
-
-    pub fn element_after(&self, position: S) -> Option<&T> {
-        Some(self.element(self.node_after(position)?))
-    }
-
-    pub fn element_before_mut(&mut self, position: S) -> Option<&mut T> {
-        todo!()
-    }
-
-    pub fn element_at_or_before_mut(&mut self, position: S) -> Option<&mut T> {
-        todo!()
-    }
-
-    pub fn element_at_mut(&mut self, position: S) -> Option<&mut T> {
-        todo!()
-    }
-
-    pub fn element_at_or_after_mut(&mut self, position: S) -> Option<&mut T> {
-        todo!()
-    }
-
-    pub fn element_after_mut(&mut self, position: S) -> Option<&mut T> {
-        todo!()
-    }
+    element_traversal_methods!();
 }
