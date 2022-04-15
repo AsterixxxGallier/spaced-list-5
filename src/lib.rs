@@ -283,7 +283,7 @@ macro_rules! spaced_list {
                 }
 
                 $(pub fn element<'a>(&'a self, position: Position<'a, S, Self>) -> &'a $T {
-                    &position.list().elements[position.index()]
+                    &position.list().elements[Self::element_index(position.index())]
                 }
 
                 pub fn element_mut<'a>(&'a mut self, position: Position<'a, S, Self>) -> &'a mut $T {
@@ -292,7 +292,7 @@ macro_rules! spaced_list {
                         let index = super_sub_list.index_in_super_list().unwrap();
                         list = list.sublist_at_mut(index).unwrap();
                     }
-                    &mut list.elements[position.index()]
+                    &mut list.elements[Self::element_index(position.index())]
                 })?
 
                 delegates! {

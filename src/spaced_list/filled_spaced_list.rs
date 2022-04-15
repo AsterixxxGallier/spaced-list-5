@@ -1,12 +1,16 @@
-use paste::paste;
 use num_traits::zero;
+use paste::paste;
 
-use crate::{SpacedList, Spacing, Position};
+use crate::{Position, SpacedList, Spacing};
 
 spaced_list!(Filled);
 
 #[allow(unused)]
 impl<S: Spacing, T> FilledSpacedList<S, T> {
+    fn element_index(index: usize) -> usize {
+        index
+    }
+
     pub fn append_element(&mut self, distance: S, element: T) {
         todo!()
     }
