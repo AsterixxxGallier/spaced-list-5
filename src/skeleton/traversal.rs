@@ -126,38 +126,34 @@ macro_rules! next {
 
 macro_rules! previous {
     ($list:ident; $node_index:ident, $position:ident$(; $super_lists:ident)?) => {
-        'previous: {
-            $(
-            if $node_index > 0 {
-                let index_before = $node_index - 1;
-                if let Some(sublist) = $list.sublist_at(index_before) {
-                    $node_index = sublist.node_size() - 1;
-                    $position -=
-                        $list.link_length_at_node(index_before)
-                            - sublist.last_position();
-                    $super_lists.push($list);
-                    $list = sublist;
-                    break 'previous Ok(());
-                }
+        if $node_index == 0 {
+            $(if let Some(new_index) = $list.index_in_super_list() {
+                $node_index = new_index;
+                $position -= $list.offset();
+                $list = $super_lists.pop().unwrap();
+                Ok(())
+            } else )? {
+                Err("Tried to move to previous node but it's already the start of the list")
             }
-            )?
-
-            if $node_index == 0 {
-                $(if let Some(new_index) = $list.index_in_super_list() {
-                    $node_index = new_index; // + 1 maybe?
-                    $position -= $list.offset();
-                    $list = $super_lists.pop().unwrap();
-                    break 'previous Ok(());
-                })?
-                break 'previous
-                    Err("Tried to move to previous node but it's already the start of the list");
-            }
-
-            $node_index -= 1;
-            $position -= $list.link_length_at_node($node_index);
-
-            Ok(())
         }
+        $(
+        else {
+            let index_before = $node_index - 1;
+            if let Some(sublist) = $list.sublist_at(index_before) {
+                $node_index = sublist.node_size() - 1;
+                $position -=
+                    $list.link_length_at_node(index_before)
+                        - sublist.last_position();
+                $super_lists.push($list);
+                $list = sublist;
+                Ok(())
+            } else {
+                $node_index -= 1;
+                $position -= $list.link_length_at_node($node_index);
+                Ok(())
+            }
+        }
+        )?
     };
 }
 
