@@ -372,6 +372,16 @@ macro_rules! delegates {
     {as $trait:ty:} => {};
 }
 
+macro_rules! for_all_traversals {
+    ($macro:ident $($prefixes:tt)*) => {
+        $macro!($($prefixes)*before: <);
+        $macro!($($prefixes)*at_or_before: <=);
+        $macro!($($prefixes)*at: ==);
+        $macro!($($prefixes)*at_or_after: >=);
+        $macro!($($prefixes)*after: >);
+    };
+}
+
 pub(crate) mod spaced_list;
 
 pub(crate) mod range_spaced_list;

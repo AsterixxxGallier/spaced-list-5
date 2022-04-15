@@ -83,13 +83,16 @@ macro_rules! flate_methods {
 }
 
 macro_rules! traversal_methods {
-    {$($pos:ident: $cmp:tt)+} => {
+    (@$pos:ident: $cmp:tt) => {
         paste! {
-            $(fn [<node_ $pos>]<'a>(&'a self, target: S) -> Option<Position<'a, S, Self>> where S: 'a {
+            fn [<node_ $pos>]<'a>(&'a self, target: S) -> Option<Position<'a, S, Self>> where S: 'a {
                 traverse!(node; deep; self; $cmp target)
-            })+
+            }
         }
     };
+    () => {
+        for_all_traversals!(traversal_methods @);
+    }
 }
 
 pub trait SpacedList<S: Spacing>: Default {
@@ -331,13 +334,7 @@ pub trait SpacedList<S: Spacing>: Default {
 
     TODO long term implement all of these*/
 
-    traversal_methods! {
-        before: <
-        at_or_before: <=
-        at: ==
-        at_or_after: >=
-        after: >
-    }
+    traversal_methods!();
 }
 
 pub(crate) mod hollow_spaced_list;
