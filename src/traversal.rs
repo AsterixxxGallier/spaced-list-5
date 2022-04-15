@@ -312,8 +312,8 @@ macro_rules! traverse_unchecked {
             }
         } else {
             let mut list = $list;
-            // TODO Optimizations may be possible if it's possible to know how many super lists
-            //  should be expected to be pushed to this vector
+            // Optimizations may be possible if it's possible to know how many super lists
+            // should be expected to be pushed to this vector
             let mut super_lists = vec![];
             let mut degree = $list.depth() - 1;
             let mut node_index = 0;
