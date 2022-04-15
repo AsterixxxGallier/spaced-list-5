@@ -18,7 +18,6 @@
 //  and iterate many times to reproduce)
 
 #![feature(trait_alias)]
-// #![allow(unused)]
 
 use std::ops::{Add, AddAssign, Sub, SubAssign};
 
