@@ -88,31 +88,38 @@ macro_rules! loop_while {
 
 macro_rules! next {
     ($list:ident; $node_index:ident, $position:ident$(; $super_lists:ident)?) => {
-        'next: {
-            $(
-            if let Some(sublist) = $list.sublist_at($node_index) {
-                $node_index = 0;
-                $position += sublist.offset();
-                $super_lists.push($list);
-                $list = sublist;
-                break 'next Ok(());
-            }
-            )?
-
-            while $node_index == $list.link_size() {
+        $(
+        if let Some(sublist) = $list.sublist_at($node_index) {
+            $node_index = 0;
+            $position += sublist.offset();
+            $super_lists.push($list);
+            $list = sublist;
+            Ok(())
+        } else
+        )?
+        {
+            match loop {
+                if $node_index < $list.link_size() {
+                    break Ok(())
+                }
                 $(if let Some(new_index) = $list.index_in_super_list() {
                     $node_index = new_index;
                     $position -= $list.last_position();
                     $list = $super_lists.pop().unwrap();
                     continue;
                 })?
-                break 'next Err("Tried to move to next node but it's already the end of the list");
+                break Err("Tried to move to next node but it's already the end of the list");
+            } {
+                Ok(()) => {
+                    $position += $list.link_length_at_node($node_index);
+                    $node_index += 1;
+
+                    Ok(())
+                }
+                err => {
+                    err
+                }
             }
-
-            $position += $list.link_length_at_node($node_index);
-            $node_index += 1;
-
-            Ok(())
         }
     };
 }
