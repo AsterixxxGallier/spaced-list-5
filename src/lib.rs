@@ -19,7 +19,6 @@
 
 #![feature(trait_alias)]
 #![feature(default_free_fn)]
-#![feature(option_get_or_insert_default)]
 #![feature(slice_ptr_get)]
 // #![allow(unused)]
 
