@@ -4,7 +4,7 @@ use paste::paste;
 
 use crate::{Iter, Position, Spacing};
 use crate::positions::shallow::ShallowPosition;
-use crate::skeleton::traversal::*;
+use crate::traversal::*;
 
 macro_rules! flate_cmp {
     (after; $a:expr, $b:expr) => { $a < $b };

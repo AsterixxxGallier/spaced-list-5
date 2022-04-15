@@ -2,7 +2,7 @@ use paste::paste;
 
 use crate::{Position, SpacedList, Spacing};
 use crate::positions::shallow::ShallowPosition;
-use crate::skeleton::traversal::*;
+use crate::traversal::*;
 
 macro_rules! range_traversal_methods {
     {$($pos:ident: $cmp:tt)+} => {

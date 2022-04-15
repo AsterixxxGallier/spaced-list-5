@@ -374,8 +374,6 @@ macro_rules! delegates {
     {as $trait:ty:} => {};
 }
 
-pub(crate) mod skeleton;
-
 pub(crate) mod spaced_list;
 
 pub(crate) mod range_spaced_list;
@@ -383,6 +381,8 @@ pub(crate) mod range_spaced_list;
 pub(crate) mod iteration;
 
 pub(crate) mod positions;
+
+pub(crate) mod traversal;
 
 #[doc(inline)]
 pub use spaced_list::filled_spaced_list::FilledSpacedList;
