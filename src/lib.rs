@@ -393,9 +393,9 @@ pub(crate) mod positions;
 pub(crate) mod traversal;
 
 #[doc(inline)]
-pub use spaced_list::filled_spaced_list::FilledSpacedList;
-#[doc(inline)]
 pub use spaced_list::hollow_spaced_list::HollowSpacedList;
+#[doc(inline)]
+pub use spaced_list::filled_spaced_list::FilledSpacedList;
 #[doc(inline)]
 pub use range_spaced_list::hollow_range_spaced_list::HollowRangeSpacedList;
 #[doc(inline)]
