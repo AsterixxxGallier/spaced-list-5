@@ -5,6 +5,29 @@ use crate::{Position, RangeSpacedList, SpacedList, Spacing};
 
 spaced_list!(Filled Range);
 
+macro_rules! element_of_range_traversal_methods {
+    (@$bound:ident $pos:ident: $cmp:tt) => {
+        paste! {
+            pub fn [<element_of_range_ $bound ing_ $pos>](&self, target: S) -> Option<&T> {
+                Some(self.element(self.[<range_ $bound ing_ $pos>](target)?))
+            }
+        }
+    };
+    (@mut $bound:ident $pos:ident: $cmp:tt) => {
+        paste! {
+            pub fn [<element_of_range_ $bound ing_ $pos _mut>](&mut self, target: S) -> Option<&mut T> {
+                todo!() // TODO
+            }
+        }
+    };
+    () => {
+        for_all_traversals!(element_of_range_traversal_methods @start);
+        for_all_traversals!(element_of_range_traversal_methods @end);
+        for_all_traversals!(element_of_range_traversal_methods @mut start);
+        for_all_traversals!(element_of_range_traversal_methods @mut end);
+    }
+}
+
 #[allow(unused)]
 impl<S: Spacing, T> FilledRangeSpacedList<S, T> {
     fn element_index(index: usize) -> usize {
@@ -19,83 +42,5 @@ impl<S: Spacing, T> FilledRangeSpacedList<S, T> {
         todo!()
     }
 
-    pub fn element_of_range_starting_before(&self, position: S) -> Option<&T> {
-        Some(self.element(self.range_starting_before(position)?))
-    }
-
-    pub fn element_of_range_starting_at_or_before(&self, position: S) -> Option<&T> {
-        Some(self.element(self.range_starting_at_or_before(position)?))
-    }
-
-    pub fn element_of_range_starting_at(&self, position: S) -> Option<&T> {
-        Some(self.element(self.range_starting_at(position)?))
-    }
-
-    pub fn element_of_range_starting_at_or_after(&self, position: S) -> Option<&T> {
-        Some(self.element(self.range_starting_at_or_after(position)?))
-    }
-
-    pub fn element_of_range_starting_after(&self, position: S) -> Option<&T> {
-        Some(self.element(self.range_starting_after(position)?))
-    }
-
-    pub fn element_of_range_ending_before(&self, position: S) -> Option<&T> {
-        Some(self.element(self.range_ending_before(position)?))
-    }
-
-    pub fn element_of_range_ending_at_or_before(&self, position: S) -> Option<&T> {
-        Some(self.element(self.range_ending_at_or_before(position)?))
-    }
-
-    pub fn element_of_range_ending_at(&self, position: S) -> Option<&T> {
-        Some(self.element(self.range_ending_at(position)?))
-    }
-
-    pub fn element_of_range_ending_at_or_after(&self, position: S) -> Option<&T> {
-        Some(self.element(self.range_ending_at_or_after(position)?))
-    }
-
-    pub fn element_of_range_ending_after(&self, position: S) -> Option<&T> {
-        Some(self.element(self.range_ending_after(position)?))
-    }
-
-    pub fn element_of_range_starting_before_mut(&mut self, position: S) -> Option<&mut T> {
-        todo!()
-    }
-
-    pub fn element_of_range_starting_at_or_before_mut(&mut self, position: S) -> Option<&mut T> {
-        todo!()
-    }
-
-    pub fn element_of_range_starting_at_mut(&mut self, position: S) -> Option<&mut T> {
-        todo!()
-    }
-
-    pub fn element_of_range_starting_at_or_after_mut(&mut self, position: S) -> Option<&mut T> {
-        todo!()
-    }
-
-    pub fn element_of_range_starting_after_mut(&mut self, position: S) -> Option<&mut T> {
-        todo!()
-    }
-
-    pub fn element_of_range_ending_before_mut(&mut self, position: S) -> Option<&mut T> {
-        todo!()
-    }
-
-    pub fn element_of_range_ending_at_or_before_mut(&mut self, position: S) -> Option<&mut T> {
-        todo!()
-    }
-
-    pub fn element_of_range_ending_at_mut(&mut self, position: S) -> Option<&mut T> {
-        todo!()
-    }
-
-    pub fn element_of_range_ending_at_or_after_mut(&mut self, position: S) -> Option<&mut T> {
-        todo!()
-    }
-
-    pub fn element_of_range_ending_after_mut(&mut self, position: S) -> Option<&mut T> {
-        todo!()
-    }
+    element_of_range_traversal_methods!();
 }
