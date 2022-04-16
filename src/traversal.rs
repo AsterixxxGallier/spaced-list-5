@@ -313,7 +313,8 @@ macro_rules! traverse_unchecked {
         } else {
             let mut list = $list;
             // Optimizations may be possible if it's possible to know how many super lists
-            // should be expected to be pushed to this vector
+            // should be expected to be pushed to this vector (maybe, use ArrayVec and store the
+            // maximum sublist depth in SpacedLists, freeing traversal from heap allocations)
             let mut super_lists = vec![];
             let mut degree = $list.depth() - 1;
             let mut node_index = 0;
