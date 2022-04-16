@@ -32,11 +32,12 @@ impl<S: Spacing, T> FilledSpacedList<S, T> {
         index
     }
 
-    pub fn append_element(&mut self, distance: S, element: T) {
-        todo!()
+    pub fn append_element(&mut self, distance: S, element: T) -> Position<S, Self> {
+        self.elements.push(element);
+        <Self as CrateSpacedList<S>>::append_node(self, distance)
     }
 
-    pub fn insert_element(&mut self, position: S, element: T) {
+    pub fn insert_element(&mut self, position: S, element: T) -> Position<S, Self> {
         todo!()
     }
 
