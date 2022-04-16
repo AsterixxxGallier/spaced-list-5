@@ -16,7 +16,7 @@ macro_rules! element_traversal_methods {
     (@mut $pos:ident: $cmp:tt) => {
         paste! {
             pub fn [<element_ $pos _mut>](&mut self, target: S) -> Option<&mut T> {
-                todo!() // TODO
+                todo!() // TODO(mut)
             }
         }
     };

@@ -18,7 +18,7 @@ macro_rules! element_of_range_traversal_methods {
         paste! {
             pub fn [<element_of_range_ $bound ing_ $pos _mut>](&mut self, target: S) -> Option<&mut T>
                 where Self: SpacedList<S> {
-                todo!() // TODO
+                todo!() // TODO(mut)
             }
         }
     };
