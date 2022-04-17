@@ -1,6 +1,48 @@
+use std::collections::BTreeSet;
+use std::time::Instant;
 use itertools::Itertools;
+use rand::prelude::StdRng;
+use rand::{Rng, SeedableRng};
 
 use spaced_list_5::HollowSpacedList;
+
+#[test]
+fn randomized() {
+    let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
+    let mut set: BTreeSet<i32> = BTreeSet::new();
+
+    let timestamp = Instant::now();
+    let mut rng = StdRng::seed_from_u64(1);
+    for _n in 0..1_000_000 {
+        // let pos = rng.gen_range(-100_000_000..100_000_000);
+        let pos = _n;
+
+        // println!("{}", pos);
+
+        list.insert_node(pos);
+        // set.insert(pos);
+    }
+    println!("{:?}", timestamp.elapsed());
+
+    let timestamp = Instant::now();
+    let mut rng = StdRng::seed_from_u64(1);
+    for _n in 0..1_000_000 {
+        // let pos = rng.gen_range(-100_000_000..100_000_000);
+        let pos = _n;
+
+        set.insert(pos);
+    }
+    println!("{:?}", timestamp.elapsed());
+
+    let mut list_iter = list.iter();
+    let set_iter = set.iter();
+
+    for (index, &position) in set_iter.enumerate() {
+        let list_next_position = list_iter.next().unwrap().position();
+        // println!("{}: {}, {}", index, position, list_next_position);
+        assert_eq!(position, list_next_position);
+    }
+}
 
 #[test]
 fn iterate() {
