@@ -76,17 +76,13 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
         let len = self.positions.len() - last.node_index.trailing_ones() as usize;
         self.positions.truncate(len);
 
-        self.next_unchecked();
+        let last = self.positions.last_mut().unwrap();
+        last.position += last.list.link_length_at(link_index(last.node_index, last.degree));
+        last.node_index += 1 << last.degree;
 
         self.descend();
 
         Ok(())
-    }
-
-    fn next_unchecked(&mut self) {
-        let last = self.positions.last_mut().unwrap();
-        last.position += last.list.link_length_at(link_index(last.node_index, last.degree));
-        last.node_index += 1 << last.degree;
     }
 
     fn descend(&mut self) {
