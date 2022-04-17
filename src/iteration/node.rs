@@ -39,7 +39,7 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
             list,
             position: list.offset(),
             node_index: 0,
-            degree: list.depth() - 1,
+            degree: list.depth().saturating_sub(1),
         });
 
         this.descend();
