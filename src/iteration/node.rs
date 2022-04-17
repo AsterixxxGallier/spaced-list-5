@@ -41,11 +41,9 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
 
     fn next(&mut self) -> Result<(), ()> {
         let last = self.positions.last().unwrap();
-        let skeleton = last.list;
-        if let Some(sublist) = skeleton.sublist_at(last.node_index) {
-            let sub_skeleton = sublist;
+        if let Some(sublist) = last.list.sublist_at(last.node_index) {
             self.super_lists.push(last.list);
-            let next_position = last.position + sub_skeleton.offset();
+            let next_position = last.position + sublist.offset();
             self.positions.push(IterPos {
                 list: sublist,
                 position: next_position,
@@ -101,16 +99,14 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
                     degree,
                 })
             }
-            let skeleton = list;
-            if let Some(sublist) = skeleton.sublist_at(node_index) {
-                let sub_skeleton = sublist;
-                if sub_skeleton.offset() == zero() {
+            if let Some(sublist) = list.sublist_at(node_index) {
+                if sublist.offset() == zero() {
                     self.super_lists.push(list);
                     self.positions.push(IterPos {
                         list: sublist,
                         position,
                         node_index: 0,
-                        degree: sub_skeleton.depth().saturating_sub(1),
+                        degree: sublist.depth().saturating_sub(1),
                     });
                     continue;
                 }
