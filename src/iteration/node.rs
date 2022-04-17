@@ -10,6 +10,19 @@ struct IterPos<'list, S: 'list + Spacing, List: SpacedList<S>> {
     degree: usize,
 }
 
+impl<'list, S: 'list + Spacing, List: SpacedList<S>> Clone for IterPos<'list, S, List> {
+    fn clone(&self) -> Self {
+        Self {
+            list: self.list,
+            position: self.position,
+            node_index: self.node_index,
+            degree: self.degree,
+        }
+    }
+}
+
+impl<'list, S: 'list + Spacing, List: SpacedList<S>> Copy for IterPos<'list, S, List> {}
+
 pub struct Iter<'list, S: 'list + Spacing, List: SpacedList<S>> {
     positions: Vec<IterPos<'list, S, List>>,
     super_lists: Vec<&'list List>,
@@ -56,7 +69,7 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
         loop {
             let last = self.positions.last().unwrap();
             if last.node_index < last.list.link_size() {
-                break
+                break;
             }
             let mut len = self.positions.len() - last.list.depth();
             if last.list.link_size() == 0 {
@@ -65,7 +78,7 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
             self.positions.truncate(len);
             self.super_lists.pop();
             if len == 0 {
-                return Err(())
+                return Err(());
             }
         }
 
@@ -85,26 +98,19 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iter<'list, S, List> {
 
     fn descend(&mut self) {
         loop {
-            let IterPos {
-                list,
-                position,
-                node_index,
-                degree,
-            } = *self.positions.last().unwrap();
-            for degree in (0..degree).rev() {
+            let last = *self.positions.last().unwrap();
+            for degree in (0..last.degree).rev() {
                 self.positions.push(IterPos {
-                    list,
-                    position,
-                    node_index,
                     degree,
+                    ..last
                 })
             }
-            if let Some(sublist) = list.sublist_at(node_index) {
+            if let Some(sublist) = last.list.sublist_at(last.node_index) {
                 if sublist.offset() == zero() {
-                    self.super_lists.push(list);
+                    self.super_lists.push(last.list);
                     self.positions.push(IterPos {
                         list: sublist,
-                        position,
+                        position: last.position,
                         node_index: 0,
                         degree: sublist.depth().saturating_sub(1),
                     });
