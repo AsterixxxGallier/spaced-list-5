@@ -1,4 +1,5 @@
 use itertools::Itertools;
+
 use spaced_list_5::HollowSpacedList;
 
 #[test]
@@ -208,4 +209,5 @@ fn queries() {
         let pos = list.node_after(query_pos);
         assert!(pos.is_none());
         // endregion
-    }}
+    }
+}
