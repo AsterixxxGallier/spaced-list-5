@@ -84,7 +84,14 @@ pub trait RangeSpacedList<S: Spacing>: CrateSpacedList<S> + SpacedList<S> {
         let sublist = self.get_or_add_sublist_at_mut(index);
         assert!(position - node_position + span < link_length,
                 "There is not enough space for this range between the neighbouring ranges");
-        sublist.insert_range(position - node_position, span)
+        let position_in_sublist = sublist.insert_range(position - node_position, span);
+        // TODO avoid the clone here
+        Position::new(
+            position_in_sublist.super_lists().clone(),
+            position_in_sublist.list(),
+            position_in_sublist.index(),
+            position_in_sublist.position() + node_position
+        )
     }
 
     range_traversal_methods!();

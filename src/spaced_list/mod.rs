@@ -295,7 +295,6 @@ pub trait CrateSpacedList<S: Spacing>: Default {
         Position::new(vec![], self, link_size, position)
     }
 
-    // TODO double check that the position of the returned position is actually correct and absolute
     fn insert_node<'a>(&'a mut self, position: S) -> Position<'a, S, Self>
         where S: 'a,
               Self: SpacedList<S> {
@@ -323,7 +322,14 @@ pub trait CrateSpacedList<S: Spacing>: Default {
         *self.link_size_deep_mut() += 1;
         *self.node_size_deep_mut() += 1;
         let sublist = self.get_or_add_sublist_at_mut(index);
-        sublist.insert_node(position - node_position)
+        let position_in_sublist = sublist.insert_node(position - node_position);
+        // TODO avoid the clone here
+        Position::new(
+            position_in_sublist.super_lists().clone(),
+            position_in_sublist.list(),
+            position_in_sublist.index(),
+            position_in_sublist.position() + node_position
+        )
     }
 
     flate_methods! {
