@@ -1,12 +1,11 @@
 use std::fmt::{Display};
 use itertools::Itertools;
 
-use spaced_list_5::{HollowRangeSpacedList, Position, Spacing};
+use spaced_list_5::{HollowRangeSpacedList, RangeIter, Spacing};
 
-fn print<'a, S, Iter>(iter: Iter)
-    where S: 'a + Spacing + Display,
-          Iter: Iterator<Item=Position<'a, S, HollowRangeSpacedList<S>>> {
-    for (start, end) in iter.tuples() {
+fn print<'a, S>(iter: RangeIter<S, HollowRangeSpacedList<S>>)
+    where S: 'a + Spacing + Display {
+    for (start, end) in iter {
         print!("{}->{}  ", start.position(), end.position());
     }
     println!();
