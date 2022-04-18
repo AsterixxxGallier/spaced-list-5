@@ -413,6 +413,8 @@ pub use range_spaced_list::filled_range_spaced_list::FilledRangeSpacedList;
 #[doc(inline)]
 pub use iteration::node::Iter;
 #[doc(inline)]
+pub use iteration::range::RangeIter;
+#[doc(inline)]
 pub use positions::node::Position;
 
 pub(crate) use spaced_list::CrateSpacedList;
