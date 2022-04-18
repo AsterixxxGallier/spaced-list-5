@@ -306,7 +306,13 @@ pub trait CrateSpacedList<S: Spacing>: Default {
         if position < self.offset() {
             let offset = self.offset();
             // TODO fix insert_range too
-            self.inflate_after_offset( offset - position);
+            let amount = offset - position;
+            if self.link_size() > 0 {
+                self.inflate_at(0, amount);
+                if let Some(sublist) = self.sublist_at_mut(0) {
+                    *sublist.offset_mut() += amount;
+                }
+            };
             *self.offset_mut() = position;
             self.insert_node(offset);
             return Position::new(vec![], self, 0, position);
@@ -320,15 +326,6 @@ pub trait CrateSpacedList<S: Spacing>: Default {
         *self.node_size_deep_mut() += 1;
         let sublist = self.get_or_add_sublist_at_mut(index);
         sublist.insert_node(position - node_position)
-    }
-
-    fn inflate_after_offset(&mut self, amount: S) {
-        if self.link_size() > 0 {
-            self.inflate_at(0, amount);
-            if let Some(sublist) = self.sublist_at_mut(0) {
-                *sublist.offset_mut() += amount;
-            }
-        }
     }
 
     flate_methods! {
