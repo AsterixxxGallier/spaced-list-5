@@ -51,15 +51,22 @@ pub trait RangeSpacedList<S: Spacing>: CrateSpacedList<S> + SpacedList<S> {
     }
 
     fn insert_range<'a>(&'a mut self, position: S, span: S) -> Position<'a, S, Self> where S: 'a {
+        if self.node_size() == 0 {
+            return self.append_range(position, span);
+        }
         if position + span < self.offset() {
             let offset = self.offset();
             let previous_span = self.link_length_at(0);
             *self.link_size_deep_mut() += 2;
             *self.node_size_deep_mut() += 2;
             *self.offset_mut() = position;
+            let amount = offset - position;
             if self.link_size() > 1 {
-                self.inflate_after(position, offset - position);
-            }
+                self.inflate_at(0, amount);
+                if let Some(sublist) = self.sublist_at_mut(0) {
+                    *sublist.offset_mut() += amount;
+                }
+            };
             *self.link_length_at_mut(0) = span;
             self.insert_range(offset, previous_span);
             return Position::new(vec![], self, 0, position);

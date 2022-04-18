@@ -299,13 +299,11 @@ pub trait CrateSpacedList<S: Spacing>: Default {
     fn insert_node<'a>(&'a mut self, position: S) -> Position<'a, S, Self>
         where S: 'a,
               Self: SpacedList<S> {
-        // TODO fix insert_range too
         if self.node_size() == 0 {
             return self.append_node(position);
         }
         if position < self.offset() {
             let offset = self.offset();
-            // TODO fix insert_range too
             let amount = offset - position;
             if self.link_size() > 0 {
                 self.inflate_at(0, amount);
