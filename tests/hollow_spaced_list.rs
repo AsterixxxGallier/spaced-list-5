@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 use std::collections::BTreeSet;
 use std::time::Instant;
 use itertools::Itertools;
@@ -13,6 +15,17 @@ fn randomized() {
     let range = -100_000_000..100_000_000;
 
     let seed = random();
+    // let seed = 2;
+
+    let timestamp = Instant::now();
+    let mut rng = StdRng::seed_from_u64(seed);
+    for _n in 0..40_000 {
+        let pos = rng.gen_range(range.clone());
+        // let pos = _n;
+
+        set.insert(pos);
+    }
+    println!("insert into set: {:?}", timestamp.elapsed());
 
     let timestamp = Instant::now();
     let mut rng = StdRng::seed_from_u64(seed);
@@ -30,21 +43,11 @@ fn randomized() {
     println!("insert into list: {:?}", timestamp.elapsed());
 
     let timestamp = Instant::now();
-    let mut rng = StdRng::seed_from_u64(seed);
-    for _n in 0..40_000 {
-        let pos = rng.gen_range(range.clone());
-        // let pos = _n;
-
-        set.insert(pos);
-    }
-    println!("insert into set: {:?}", timestamp.elapsed());
-
-    let timestamp = Instant::now();
     let mut list_iter = list.iter();
     let set_iter = set.iter();
     for (index, &position) in set_iter.enumerate() {
         let list_next_position = list_iter.next().unwrap().position();
-        // println!("{}: {}, {}", index, position, list_next_position);
+        // println!("{}: expected: {}, actual: {}", index, position, list_next_position);
         assert_eq!(position, list_next_position);
     }
     println!("iterate over both: {:?}", timestamp.elapsed());
