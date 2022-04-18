@@ -263,10 +263,6 @@ pub trait CrateSpacedList<S: Spacing>: Default {
         }
     }
 
-    fn iter(&self) -> Iter<S, Self> where Self: SpacedList<S> {
-        Iter::new(self)
-    }
-
     // TODO add try_ versions of the methods below
 
     fn append_node(&mut self, distance: S) -> Position<S, Self> where Self: SpacedList<S> {

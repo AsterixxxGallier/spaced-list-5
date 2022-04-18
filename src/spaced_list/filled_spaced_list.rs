@@ -2,7 +2,7 @@ use std::mem;
 use num_traits::zero;
 use paste::paste;
 
-use crate::{Position, SpacedList, CrateSpacedList, Spacing};
+use crate::{Position, SpacedList, CrateSpacedList, Spacing, Iter};
 use crate::positions::shallow::ShallowPosition;
 use crate::traversal::*;
 
@@ -63,4 +63,8 @@ impl<S: Spacing, T> FilledSpacedList<S, T> {
     }
 
     element_traversal_methods!();
+
+    pub fn iter(&self) -> Iter<S, Self> {
+        Iter::new(self)
+    }
 }

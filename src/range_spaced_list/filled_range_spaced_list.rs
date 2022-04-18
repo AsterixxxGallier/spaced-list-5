@@ -3,6 +3,7 @@ use num_traits::zero;
 use paste::paste;
 
 use crate::{Position, RangeSpacedList, CrateSpacedList, Spacing, SpacedList};
+use crate::iteration::range::RangeIter;
 use crate::positions::shallow::ShallowPosition;
 use crate::traversal::*;
 
@@ -74,4 +75,8 @@ impl<S: Spacing, T> FilledRangeSpacedList<S, T> {
     }
 
     element_of_range_traversal_methods!();
+
+    pub fn iter(&self) -> RangeIter<S, Self> {
+        RangeIter::new(self)
+    }
 }
