@@ -295,6 +295,7 @@ pub trait CrateSpacedList<S: Spacing>: Default {
         Position::new(vec![], self, link_size, position)
     }
 
+    // TODO double check that the position of the returned position is actually correct and absolute
     fn insert_node<'a>(&'a mut self, position: S) -> Position<'a, S, Self>
         where S: 'a,
               Self: SpacedList<S> {
