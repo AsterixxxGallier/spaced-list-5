@@ -2,7 +2,7 @@ use std::collections::BTreeSet;
 use std::time::Instant;
 use itertools::Itertools;
 use rand::prelude::StdRng;
-use rand::{Rng, SeedableRng};
+use rand::{random, Rng, SeedableRng};
 
 use spaced_list_5::HollowSpacedList;
 
@@ -10,38 +10,60 @@ use spaced_list_5::HollowSpacedList;
 fn randomized() {
     let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
     let mut set: BTreeSet<i32> = BTreeSet::new();
+    let range = -100_000_000..100_000_000;
+
+    let seed = random();
 
     let timestamp = Instant::now();
-    let mut rng = StdRng::seed_from_u64(1);
-    for _n in 0..1_000_000 {
-        // let pos = rng.gen_range(-100_000_000..100_000_000);
-        let pos = _n;
+    let mut rng = StdRng::seed_from_u64(seed);
+    for _n in 0..40_000 {
+        let pos = rng.gen_range(range.clone());
+        // let pos = _n;
 
         // println!("{}", pos);
 
-        list.insert_node(pos);
+        if list.node_at(pos).is_none() {
+            list.insert_node(pos);
+        }
         // set.insert(pos);
     }
-    println!("{:?}", timestamp.elapsed());
+    println!("insert into list: {:?}", timestamp.elapsed());
 
     let timestamp = Instant::now();
-    let mut rng = StdRng::seed_from_u64(1);
-    for _n in 0..1_000_000 {
-        // let pos = rng.gen_range(-100_000_000..100_000_000);
-        let pos = _n;
+    let mut rng = StdRng::seed_from_u64(seed);
+    for _n in 0..40_000 {
+        let pos = rng.gen_range(range.clone());
+        // let pos = _n;
 
         set.insert(pos);
     }
-    println!("{:?}", timestamp.elapsed());
+    println!("insert into set: {:?}", timestamp.elapsed());
 
+    let timestamp = Instant::now();
     let mut list_iter = list.iter();
     let set_iter = set.iter();
-
     for (index, &position) in set_iter.enumerate() {
         let list_next_position = list_iter.next().unwrap().position();
         // println!("{}: {}, {}", index, position, list_next_position);
         assert_eq!(position, list_next_position);
     }
+    println!("iterate over both: {:?}", timestamp.elapsed());
+
+    let timestamp = Instant::now();
+    for _ in 0..1_000 {
+        let pos = rng.gen_range(range.clone());
+        assert_eq!(list.node_before(pos).map(|it| it.position()),
+                   set.iter().take_while(|it| **it < pos).last().copied());
+        assert_eq!(list.node_at_or_before(pos).map(|it| it.position()),
+                   set.iter().take_while(|it| **it <= pos).last().copied());
+        assert_eq!(list.node_at(pos).map(|it| it.position()),
+                   set.get(&pos).copied());
+        assert_eq!(list.node_at_or_after(pos).map(|it| it.position()),
+                   set.iter().rev().take_while(|it| **it >= pos).last().copied());
+        assert_eq!(list.node_after(pos).map(|it| it.position()),
+                   set.iter().rev().take_while(|it| **it > pos).last().copied());
+    }
+    println!("traversal tests: {:?}", timestamp.elapsed());
 }
 
 #[test]
