@@ -303,6 +303,14 @@ macro_rules! spaced_list {
                     deflate_after(&mut self, position: S, amount: S);
                     deflate_before(&mut self, position: S, amount: S);
                 }
+
+                pub fn size(&self) -> usize {
+                    self.node_size_deep()
+                }
+
+                pub fn length(&self) -> S {
+                    self.length
+                }
             }
 
             spaced_list!(@<S: Spacing$(, $T)?> $Self$(; $Range)?);
