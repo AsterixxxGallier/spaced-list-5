@@ -2,7 +2,7 @@ use std::iter;
 use num_traits::zero;
 use paste::paste;
 
-use crate::{Iter, Position, Spacing};
+use crate::{Position, Spacing};
 use crate::positions::shallow::ShallowPosition;
 use crate::traversal::*;
 
