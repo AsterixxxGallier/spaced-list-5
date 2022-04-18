@@ -28,6 +28,7 @@ impl<'list, S: 'list + Spacing, List: SpacedList<S>> Iterator for Iter<'list, S,
             return None
         }
 
+        // TODO avoid the clone here
         let old_position =
             Position::new(self.super_lists.clone(), self.list, self.index, self.position);
 
