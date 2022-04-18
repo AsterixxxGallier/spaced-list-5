@@ -89,37 +89,29 @@ macro_rules! loop_while {
 
 macro_rules! next {
     ($list:ident; $node_index:ident, $position:ident$(; $super_lists:ident)?) => {
-        $(
-        if let Some(sublist) = $list.sublist_at($node_index) {
-            $node_index = 0;
-            $position += sublist.offset();
-            $super_lists.push($list);
-            $list = sublist;
-            Ok(())
-        } else
-        )?
-        {
-            match loop {
-                if $node_index < $list.link_size() {
-                    break Ok(())
-                }
-                $(if let Some(new_index) = $list.index_in_super_list() {
-                    $node_index = new_index;
-                    $position -= $list.last_position();
-                    $list = $super_lists.pop().unwrap();
-                    continue;
-                })?
-                break Err("Tried to move to next node but it's already the end of the list");
-            } {
-                Ok(()) => {
-                    $position += $list.link_length_at_node($node_index);
-                    $node_index += 1;
-
-                    Ok(())
-                }
-                err => {
-                    err
-                }
+        if $node_index == $list.link_size() {
+            $(if !$super_lists.is_empty() {
+                let super_list = $super_lists.pop().unwrap();
+                let index_in_super_list = $list.index_in_super_list().unwrap();
+                $position -= $list.last_position();
+                $list = super_list;
+                $position += $list.link_length_at_node(index_in_super_list);
+                $node_index = index_in_super_list + 1;
+                Ok(())
+            } else )?{
+                Err("Tried to move to next node but it's already the end of the list")
+            }
+        } else {
+            $(if let Some(sublist) = $list.sublist_at($node_index) {
+                $super_lists.push($list);
+                $list = sublist;
+                $node_index = 0;
+                $position += sublist.offset();
+                Ok(())
+            } else )?{
+                $position += $list.link_length_at_node($node_index);
+                $node_index += 1;
+                Ok(())
             }
         }
     };
@@ -420,12 +412,9 @@ pub(crate) use traverse;
 pub(crate) use traverse_unchecked;
 pub(crate) use traverse_unchecked_with_variables;
 pub(crate) use loop_while;
-pub(crate) use maybe_stop;
 pub(crate) use maybe_move_forwards;
 pub(crate) use next;
-pub(crate) use descend;
 pub(crate) use pos;
-pub(crate) use index_is_at_bound;
 pub(crate) use previous;
 pub(crate) use is_at_bound_if_range;
 pub(crate) use handle_before_offset;
