@@ -12,6 +12,7 @@
 // therefore, if we have such a node with the wrong last bit, we need to find the node closest to
 // the target that does have the correct last bit and is on the correct side of the target
 
+#[inline(always)]
 pub(crate) const fn link_index(node_index: usize, degree: usize) -> usize {
     node_index + (1 << degree) - 1
 }
