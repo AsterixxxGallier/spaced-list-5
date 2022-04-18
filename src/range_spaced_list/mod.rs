@@ -50,26 +50,6 @@ pub trait RangeSpacedList<S: Spacing>: CrateSpacedList<S> + SpacedList<S> {
         Position::new(vec![], self, link_size, position)
     }
 
-    /// 4-6 7-8
-    /// insert_range(2, 1)
-    /// 2-3 7-8
-    ///    \1-3
-    ///
-    /// 4-6 7-8
-    /// 2-4 5-6
-    /// 2-6 7-8
-    ///
-    ///
-    ///   ________d-a________
-    ///   _____c-a_____
-    ///   __b-a__
-    /// ( a ) ( b ) ( c ) ( d )
-    /// insert(( e ), (f-e))
-    ///   ________d-e________ = (d-a) + (a-e)
-    ///   _____c-e_____       = (c-a) + (a-e)
-    ///   __f-e__             = (b-a) - (b-a) + (f-e)
-    /// ( e ) ( f ) ( c ) ( d )
-    ///            \(a-f) (b-f)
     fn insert_range<'a>(&'a mut self, position: S, span: S) -> Position<'a, S, Self> where S: 'a {
         if position + span < self.offset() {
             let offset = self.offset();
