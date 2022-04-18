@@ -201,6 +201,7 @@ pub trait CrateSpacedList<S: Spacing>: Default {
         } else {
             let length = self.length();
             let link_capacity = self.link_capacity();
+            // TODO make this more efficient
             self.sublists_mut().extend(iter::repeat_with(|| None).take(link_capacity));
             self.link_lengths_mut().extend(iter::repeat_with(|| S::zero()).take(link_capacity - 1));
             self.link_lengths_mut().push(length);
