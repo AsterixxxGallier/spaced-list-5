@@ -12,7 +12,7 @@ macro_rules! element_traversal_methods {
     (@$pos:ident: $cmp:tt) => {
         paste! {
             pub fn [<element_ $pos>](&self, target: S) -> Option<&T> {
-                Some(self.element(self.[<node_ $pos>](target)?))
+                Some(self.element(&self.[<node_ $pos>](target)?))
             }
         }
     };

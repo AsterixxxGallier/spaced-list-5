@@ -13,7 +13,7 @@ macro_rules! element_of_range_traversal_methods {
     (@$bound:ident $pos:ident: $cmp:tt) => {
         paste! {
             pub fn [<element_of_range_ $bound ing_ $pos>](&self, target: S) -> Option<&T> {
-                Some(self.element(self.[<range_ $bound ing_ $pos>](target)?))
+                Some(self.element(&self.[<range_ $bound ing_ $pos>](target)?))
             }
         }
     };

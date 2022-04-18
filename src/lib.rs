@@ -282,11 +282,11 @@ macro_rules! spaced_list {
                     Self::default()
                 }
 
-                $(pub fn element<'a>(&'a self, position: Position<'a, S, Self>) -> &'a $T {
+                $(pub fn element<'a>(&'a self, position: &Position<'a, S, Self>) -> &'a $T {
                     &position.list().elements[Self::element_index(position.index())]
                 }
 
-                pub fn element_mut<'a>(&'a mut self, position: Position<'a, S, Self>) -> &'a mut $T {
+                pub fn element_mut<'a>(&'a mut self, position: &Position<'a, S, Self>) -> &'a mut $T {
                     let mut list = self;
                     for super_sub_list in position.super_lists().iter().skip(1) {
                         let index = super_sub_list.index_in_super_list().unwrap();
