@@ -403,6 +403,8 @@ pub(crate) mod positions;
 
 pub(crate) mod traversal;
 
+pub(crate) mod skeleton;
+
 #[doc(inline)]
 pub use spaced_list::SpacedList;
 #[doc(inline)]
