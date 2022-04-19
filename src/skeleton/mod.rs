@@ -5,7 +5,6 @@ use std::rc::{Rc, Weak};
 use num_traits::zero;
 
 use crate::Spacing;
-use crate::traversal::link_index;
 
 struct Node;
 
@@ -20,6 +19,11 @@ pub struct Skeleton<Kind, S: Spacing, T> {
     length: S,
     depth: usize,
     _kind: PhantomData<Kind>,
+}
+
+#[inline(always)]
+pub(crate) const fn link_index(index: usize, degree: usize) -> usize {
+    index | ((1 << degree) - 1)
 }
 
 impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
@@ -43,17 +47,45 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
     fn inflate_unchecked(&mut self, index: usize, amount: S) {
         for degree in 0..self.depth {
             if index >> degree & 1 == 0 {
-                let link_index = link_index(index >> degree << degree, degree);
-                self.links[link_index] += amount;
+                self.links[link_index(index, degree)] += amount;
             }
         }
         self.length += amount
     }
 
     fn inflate(&mut self, index: usize, amount: S) {
-        assert!(self.link_index_is_in_bounds(index), "Link index not in bounds");
+        assert!(self.link_index_is_in_bounds(index), "Index not in bounds");
         assert!(amount >= zero(), "Cannot inflate by negative amount, explicitly deflate for that");
         self.inflate_unchecked(index, amount)
+    }
+
+    fn deflate_unchecked(&mut self, index: usize, amount: S) {
+        for degree in 0..self.depth {
+            if index >> degree & 1 == 0 {
+                self.links[link_index(index, degree)] -= amount;
+            }
+        }
+        self.length -= amount
+    }
+
+    fn deflate(&mut self, index: usize, amount: S) {
+        assert!(self.link_index_is_in_bounds(index), "Index not in bounds");
+        assert!(amount >= zero(), "Cannot deflate by negative amount, explicitly inflate for that");
+        for degree in 0..self.depth {
+            if index >> degree & 1 == 0 {
+                assert!(self.link(link_index(index, degree)) >= amount,
+                        "Deflating at this index would deflate a link below zero");
+            }
+        }
+        self.inflate_unchecked(index, amount)
+    }
+
+    fn link(&self, index: usize) -> S {
+        let mut length = self.links[index];
+        for degree in 0..index.trailing_ones() {
+            length -= self.links[index - (1 << degree)];
+        }
+        length
     }
 
     fn push_link(&mut self) -> usize {
