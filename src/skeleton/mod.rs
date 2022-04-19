@@ -1,4 +1,5 @@
 use num_traits::zero;
+
 use crate::Spacing;
 
 pub struct Skeleton<S: Spacing, T> {
@@ -8,7 +9,7 @@ pub struct Skeleton<S: Spacing, T> {
     offset: S,
     length: S,
     link_size: usize,
-    element_size: usize
+    element_size: usize,
 }
 
 impl<S: Spacing, T> Skeleton<S, T> {
@@ -20,7 +21,7 @@ impl<S: Spacing, T> Skeleton<S, T> {
             offset: zero(),
             length: zero(),
             link_size: 0,
-            element_size: 0
+            element_size: 0,
         }
     }
 }
