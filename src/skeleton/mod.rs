@@ -40,9 +40,7 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
         index < self.links.len()
     }
 
-    fn inflate(&mut self, index: usize, amount: S) {
-        assert!(self.link_index_is_in_bounds(index), "Link index not in bounds");
-        assert!(amount >= zero(), "Cannot inflate by negative amount, explicitly deflate for that");
+    fn inflate_unchecked(&mut self, index: usize, amount: S) {
         for degree in 0..self.depth {
             if index >> degree & 1 == 0 {
                 let link_index = link_index(index >> degree << degree, degree);
@@ -50,6 +48,12 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
             }
         }
         self.length += amount
+    }
+
+    fn inflate(&mut self, index: usize, amount: S) {
+        assert!(self.link_index_is_in_bounds(index), "Link index not in bounds");
+        assert!(amount >= zero(), "Cannot inflate by negative amount, explicitly deflate for that");
+        self.inflate_unchecked(index, amount)
     }
 
     fn push_link(&mut self) -> usize {
