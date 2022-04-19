@@ -96,6 +96,10 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
         }
         self.links.len() - 1
     }
+
+    fn last_position(&self) -> S {
+        self.offset + self.length
+    }
 }
 
 mod node;
