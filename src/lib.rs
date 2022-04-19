@@ -16,6 +16,7 @@
 //!    ranges with a start and an end, storing an element value for each range.
 
 #![feature(trait_alias)]
+#![feature(arbitrary_self_types)]
 
 use std::ops::{Add, AddAssign, Sub, SubAssign};
 
