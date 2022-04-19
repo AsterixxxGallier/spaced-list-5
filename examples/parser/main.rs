@@ -99,7 +99,7 @@ enum Paren {
 
 fn main() {
     let mut source = Source::new("(print hello world)".into());
-    let mut parens = FilledRangeSpacedList::<usize, Paren>::new();
+    let mut parens = FilledRangeSpacedList::new();
     for (index, char) in source.content.char_indices() {
         if char == '(' {
             parens.insert_range(index, index + 1, Paren::Opening);
@@ -107,10 +107,18 @@ fn main() {
             parens.insert_range(index, index + 1, Paren::Closing);
         }
     }
-    let mut paren_pairs = FilledSpacedList::<usize, Position<usize, HollowRangeSpacedList<_>>>::new();
-    // let mut opening_paren_stack = vec![];
-    // TODO implement Filled(Range)SpacedList::iter, iterating over tuples (Position<S, Self>, T)
-    // for opening_paren in parens.iter() {
-    //     opening_paren_stack
-    // }
+    let mut paren_pairs = FilledSpacedList::new();
+    let mut opening_paren_stack = vec![];
+    for (start, end) in parens.iter() {
+        match parens.element(&start) {
+            Paren::Opening => {
+                opening_paren_stack.push(start);
+            }
+            Paren::Closing => {
+                paren_pairs.insert_element(start.position(), (Paren::Opening, start.clone(), end.clone()));
+                paren_pairs.insert_element(end.position(), (Paren::Closing, start, end));
+                opening_paren_stack.pop();
+            }
+        }
+    }
 }
