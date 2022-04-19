@@ -39,6 +39,7 @@ fn trailing_ones(n: u32) -> u32 {
     counter
 }
 
+#[inline(always)]
 const fn link_index(node_index: u32, degree: u32) -> u32 {
     node_index + (1 << degree) - 1
 }
@@ -60,6 +61,21 @@ fn node_index_opt(n: u32) -> u32 {
     for degree in 0..16 {
         if n >> degree & 1 == 0 {
             counter += link_index(n >> degree << degree, degree);
+        }
+    }
+    counter
+}
+
+#[inline(always)]
+const fn link_index_2(node_index: u32, degree: u32) -> u32 {
+    node_index | ((1 << degree) - 1)
+}
+
+fn node_index_opt_2(n: u32) -> u32 {
+    let mut counter = 0;
+    for degree in 0..16 {
+        if n >> degree & 1 == 0 {
+            counter += link_index_2(n, degree);
         }
     }
     counter
@@ -95,6 +111,10 @@ fn criterion_benchmark(c: &mut Criterion) {
     }));
     group.bench_function("node_index_opt", |b| b.iter(|| {
         black_box(node_index_opt(black_box(counter as u32)));
+        counter += 1;
+    }));
+    group.bench_function("node_index_opt_2", |b| b.iter(|| {
+        black_box(node_index_opt_2(black_box(counter as u32)));
         counter += 1;
     }));
     group.bench_function("node_index_trailing_ones", |b| b.iter(|| {

@@ -15,7 +15,7 @@ itertools = "0.8.2"
 criterion = "0.3.5"
 
 [[bench]]
-name = "append_insert"
+name = "inflate"
 harness = false
 
 [profile.bench]
