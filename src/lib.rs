@@ -173,6 +173,9 @@ macro_rules! trait_accessors {
     () => {}
 }
 
+// TODO add accessor to iterate over nodes in a certain range
+// TODO add accessor to find the range that contains a certain position
+
 macro_rules! spaced_list {
     (@<S: Spacing$(, $T:ident)?> $Self:ty; Range) => {
         impl<S: Spacing$(, $T)?> RangeSpacedList<S> for $Self {}
