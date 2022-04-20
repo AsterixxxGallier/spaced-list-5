@@ -124,6 +124,53 @@ impl<S: Spacing, T> Skeleton<Node, S, T> {
         }
     }
 
+    fn shallow_at(this: Rc<RefCell<Self>>, target: S) -> Option<Position<S, T>> {
+        if this.borrow().elements.is_empty() || target < this.borrow().offset {
+            None
+        } else if this.borrow().links.is_empty() {
+            if this.borrow().offset <= target {
+                Some(Position::new(this.clone(), 0, this.borrow().offset))
+            } else {
+                None
+            }
+        } else {
+            let mut degree = this.borrow().depth - 1;
+            let mut index = 0;
+            let mut position = this.borrow().offset;
+            loop {
+                let link_index = link_index(index, degree);
+                if !this.borrow().link_index_is_in_bounds(link_index) {
+                    if degree > 0 {
+                        degree -= 1;
+                        continue;
+                    } else {
+                        break;
+                    }
+                }
+
+                let next_position = position + this.borrow().links[link_index];
+                if next_position <= target {
+                    position = next_position;
+                    index += 1 << degree;
+                    if position == target {
+                        break;
+                    }
+                }
+
+                if degree > 0 {
+                    degree -= 1;
+                } else {
+                    break;
+                }
+            }
+            if position == target {
+                Some(Position::new(this, index, position))
+            } else {
+                None
+            }
+        }
+    }
+
     fn before(this: Rc<RefCell<Self>>, target: S) -> Option<Position<S, T>> {
         if this.borrow().elements.is_empty() || target <= this.borrow().offset {
             None
@@ -226,6 +273,64 @@ impl<S: Spacing, T> Skeleton<Node, S, T> {
                 }
             }
             Some(Position::new(skeleton, index, position))
+        }
+    }
+
+    fn at(this: Rc<RefCell<Self>>, target: S) -> Option<Position<S, T>> {
+        if this.borrow().elements.is_empty() || target < this.borrow().offset {
+            None
+        } else if this.borrow().links.is_empty() {
+            if this.borrow().offset <= target {
+                Some(Position::new(this.clone(), 0, this.borrow().offset))
+            } else {
+                None
+            }
+        } else {
+            let mut skeleton = this;
+            let mut degree = skeleton.borrow().depth - 1;
+            let mut index = 0;
+            let mut position = skeleton.borrow().offset;
+            loop {
+                let link_index = link_index(index, degree);
+                if !skeleton.borrow().link_index_is_in_bounds(link_index) {
+                    if degree > 0 {
+                        degree -= 1;
+                        continue;
+                    } else {
+                        break;
+                    }
+                }
+
+                let next_position = position + skeleton.borrow().links[link_index];
+                if next_position <= target {
+                    position = next_position;
+                    index += 1 << degree;
+                    if position == target {
+                        break;
+                    }
+                }
+
+                if degree > 0 {
+                    degree -= 1;
+                } else {
+                    if let Some(sub) = skeleton.clone().borrow().sub(index) {
+                        let next_position = position + sub.borrow().offset;
+                        if next_position <= target {
+                            degree = sub.borrow().depth.saturating_sub(1);
+                            index = 0;
+                            position = next_position;
+                            skeleton = sub;
+                            continue;
+                        }
+                    }
+                    break;
+                }
+            }
+            if position == target {
+                Some(Position::new(skeleton, index, position))
+            } else {
+                None
+            }
         }
     }
 }
