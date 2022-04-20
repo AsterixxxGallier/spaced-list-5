@@ -27,12 +27,12 @@ pub(crate) const fn link_index(index: usize, degree: usize) -> usize {
 }
 
 impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
-    pub(crate) fn new() -> Rc<RefCell<Self>> {
+    pub(crate) fn new(parent: Option<Weak<RefCell<Self>>>) -> Rc<RefCell<Self>> {
         Rc::new(RefCell::new(Self {
             links: vec![],
             elements: vec![],
             subs: vec![],
-            parent: None,
+            parent,
             offset: zero(),
             length: zero(),
             depth: 0,
@@ -103,6 +103,14 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
 
     fn sub(&self, index: usize) -> Option<Rc<RefCell<Self>>> {
         self.subs.get(index).cloned().flatten()
+    }
+
+    fn ensure_sub(this: Rc<RefCell<Self>>, index: usize) -> Rc<RefCell<Self>> {
+        match &mut this.borrow_mut().subs[index] {
+            Some(sub) => sub.clone(),
+            none =>
+                none.insert(Skeleton::new(Some(Rc::downgrade(&this)))).clone()
+        }
     }
 }
 

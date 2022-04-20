@@ -36,7 +36,9 @@ impl<S: Spacing, T> Skeleton<Node, S, T> {
         if position >= this.borrow().last_position() {
             return this.borrow_mut().push(position - this.borrow().last_position(), element);
         }
-        todo!("Traverse this skeleton and insert into sublist")
+        let result = Self::shallow_at_or_before(this.clone(), position).unwrap();
+        let sub = Self::ensure_sub(this, result.index);
+        return Self::insert(sub, position - result.position, element);
     }
 
     fn shallow_before(this: Rc<RefCell<Self>>, target: S) -> Option<Position<S, T>> {
