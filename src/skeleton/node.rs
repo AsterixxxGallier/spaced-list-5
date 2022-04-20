@@ -284,6 +284,14 @@ impl<S: Spacing, T> Skeleton<Node, S, T> {
         traverse!(this; shallow; == target)
     }
 
+    fn shallow_at_or_after(this: Rc<RefCell<Self>>, target: S) -> Option<Position<S, T>> {
+        traverse!(this; shallow; >= target)
+    }
+
+    fn shallow_after(this: Rc<RefCell<Self>>, target: S) -> Option<Position<S, T>> {
+        traverse!(this; shallow; > target)
+    }
+
     fn before(this: Rc<RefCell<Self>>, target: S) -> Option<Position<S, T>> {
         traverse!(this; deep; < target)
     }
@@ -294,6 +302,14 @@ impl<S: Spacing, T> Skeleton<Node, S, T> {
 
     fn at(this: Rc<RefCell<Self>>, target: S) -> Option<Position<S, T>> {
         traverse!(this; deep; == target)
+    }
+
+    fn at_or_after(this: Rc<RefCell<Self>>, target: S) -> Option<Position<S, T>> {
+        traverse!(this; deep; >= target)
+    }
+
+    fn after(this: Rc<RefCell<Self>>, target: S) -> Option<Position<S, T>> {
+        traverse!(this; deep; > target)
     }
 }
 
