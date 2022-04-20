@@ -1,27 +1,8 @@
-use std::cell::{Ref, RefCell};
+use std::cell::{Ref, RefCell, RefMut};
 use std::mem;
 use std::rc::Rc;
 
-use paste::paste;
-
 use crate::skeleton::{link_index, Node, Skeleton, Spacing};
-
-use super::traversal::*;
-
-macro_rules! traversal_methods {
-    (@$pos:ident: $cmp:tt) => {
-        paste! {
-            fn [<$pos>]<'a>(&'a self, target: S) -> Option<Position<'a, S, Self>>
-                where S: 'a,
-                      Self: SpacedList<S> {
-                traverse!(node; deep; self; $cmp target)
-            }
-        }
-    };
-    () => {
-        for_all_traversals!(traversal_methods @);
-    }
-}
 
 impl<S: Spacing, T> Skeleton<Node, S, T> {
     pub(crate) fn push(&mut self, distance: S, element: T) {
@@ -58,216 +39,17 @@ impl<S: Spacing, T> Skeleton<Node, S, T> {
         todo!("Traverse this skeleton and insert into sublist")
     }
 
-    // fn node_before<'a>(&'a self, target: S) -> Option<Position<'a, S, Self>>
-    // where
-    //     S: 'a,
-    //     Self: SpacedList<S>,
-    // {
-    //     if target <= self.offset() {
-    //         None
-    //     } else {
-    //         if self.link_size() == 0 {
-    //             if self.offset() < target {
-    //                 if true {
-    //                     Some(Position::new(
-    //                         ::alloc::vec::Vec::new(),
-    //                         self,
-    //                         0,
-    //                         self.offset(),
-    //                     ))
-    //                 } else {
-    //                     None
-    //                 }
-    //             } else {
-    //                 None
-    //             }
-    //         } else {
-    //             let mut list = self;
-    //             let mut super_lists = ::alloc::vec::Vec::new();
-    //             let mut degree = self.depth() - 1;
-    //             let mut index = 0;
-    //             let mut position = self.offset();
-    //             {
-    //                 loop {
-    //                     let link_index = link_index(index, degree);
-    //                     if !list.link_index_is_in_bounds(link_index) {
-    //                         if degree == 0 {
-    //                             break;
-    //                         }
-    //                         degree -= 1;
-    //                         continue;
-    //                     }
-    //                     let next_position = position + list.link_length_at(link_index);
-    //                     if next_position < target {
-    //                         position = next_position;
-    //                         index += 1 << degree;
-    //                     };
-    //                     if degree == 0 {
-    //                         if let Some(sublist) = list.sublist_at(index) {
-    //                             let next_position = position + sublist.offset();
-    //                             if next_position < target {
-    //                                 degree = sublist.depth().saturating_sub(1);
-    //                                 index = 0;
-    //                                 position = next_position;
-    //                                 super_lists.push(list);
-    //                                 list = sublist;
-    //                                 continue;
-    //                             }
-    //                         }
-    //                         break;
-    //                     } else {
-    //                         degree -= 1;
-    //                     };
-    //                 }
-    //                 Some(Position::new(super_lists, list, index, position))
-    //             }
-    //         }
-    //     }
-    // }
-
-    // CLion falsely warns that the 'a lifetime could be elided, but it can't
-    // noinspection RsNeedlessLifetimes
-    fn before<'a>(self: Ref<'a, Self>, target: S) -> Option<Position<'a, S, T>> {
-        if self.elements.is_empty() || target <= self.offset {
+    fn before(this: Rc<RefCell<Self>>, target: S) -> Option<Position<S, T>> {
+        if this.borrow().elements.is_empty() || target <= this.borrow().offset {
             None
-        } else if self.links.is_empty() {
-            if self.offset < target {
-                Some(Position::new(Ref::clone(&self), 0, self.offset))
+        } else if this.borrow().links.is_empty() {
+            if this.borrow().offset < target {
+                Some(Position::new(this.clone(), 0, this.borrow().offset))
             } else {
                 None
             }
         } else {
-            // let mut list = self;
-            // let mut super_lists = ::alloc::vec::Vec::new();
-            // let mut degree = self.depth() - 1;
-            // let mut index = 0;
-            // let mut position = self.offset();
-            // {
-            //     loop {
-            //         let link_index = link_index(index, degree);
-            //         if !list.link_index_is_in_bounds(link_index) {
-            //             if degree == 0 {
-            //                 break;
-            //             }
-            //             degree -= 1;
-            //             continue;
-            //         }
-            //         let next_position = position + list.link_length_at(link_index);
-            //         if next_position < target {
-            //             position = next_position;
-            //             index += 1 << degree;
-            //         };
-            //         if degree == 0 {
-            //             if let Some(sublist) = list.sublist_at(index) {
-            //                 let next_position = position + sublist.offset();
-            //                 if next_position < target {
-            //                     degree = sublist.depth().saturating_sub(1);
-            //                     index = 0;
-            //                     position = next_position;
-            //                     super_lists.push(list);
-            //                     list = sublist;
-            //                     continue;
-            //                 }
-            //             }
-            //             break;
-            //         } else {
-            //             degree -= 1;
-            //         };
-            //     }
-            //     Some(Position::new(super_lists, list, index, position))
-            // }
-            let mut skeleton: Ref<'a, Skeleton<Node, S, T>> = self;
-            let mut degree = skeleton.depth - 1;
-            let mut index = 0;
-            let mut position = skeleton.offset;
-            loop {
-                let link_index = link_index(index, degree);
-                if !skeleton.link_index_is_in_bounds(link_index) {
-                    if degree == 0 {
-                        break;
-                    }
-                    degree -= 1;
-                    continue;
-                }
-
-                let next_position = position + skeleton.links[link_index];
-                if next_position < target {
-                    position = next_position;
-                    index += 1 << degree;
-                }
-
-                if degree > 0 {
-                    degree -= 1;
-                } else {
-                    if let Some(sub) = skeleton.sub_ref(index) {
-                        let next_position = position + sub.offset;
-                        if next_position < target {
-                            degree = sub.depth.saturating_sub(1);
-                            index = 0;
-                            position = next_position;
-                            skeleton = sub;
-                        }
-                    }
-                    break;
-                }
-            }
-            todo!()
-        }
-    }
-
-    /*// CLion falsely warns that the 'a lifetime could be elided, but it can't
-    // noinspection RsNeedlessLifetimes
-    fn before<'a>(this: Rc<RefCell<Self>>, target: S) -> Option<Position<'a, S, T>> {
-        let borrow = this.borrow();
-        if borrow.elements.is_empty() || target <= borrow.offset {
-            None
-        } else if borrow.links.is_empty() {
-            if borrow.offset < target {
-                Some(Position::new(Ref::clone(&borrow), 0, borrow.offset))
-            } else {
-                None
-            }
-        } else {
-            // let mut list = self;
-            // let mut super_lists = ::alloc::vec::Vec::new();
-            // let mut degree = self.depth() - 1;
-            // let mut index = 0;
-            // let mut position = self.offset();
-            // {
-            //     loop {
-            //         let link_index = link_index(index, degree);
-            //         if !list.link_index_is_in_bounds(link_index) {
-            //             if degree == 0 {
-            //                 break;
-            //             }
-            //             degree -= 1;
-            //             continue;
-            //         }
-            //         let next_position = position + list.link_length_at(link_index);
-            //         if next_position < target {
-            //             position = next_position;
-            //             index += 1 << degree;
-            //         };
-            //         if degree == 0 {
-            //             if let Some(sublist) = list.sublist_at(index) {
-            //                 let next_position = position + sublist.offset();
-            //                 if next_position < target {
-            //                     degree = sublist.depth().saturating_sub(1);
-            //                     index = 0;
-            //                     position = next_position;
-            //                     super_lists.push(list);
-            //                     list = sublist;
-            //                     continue;
-            //                 }
-            //             }
-            //             break;
-            //         } else {
-            //             degree -= 1;
-            //         };
-            //     }
-            //     Some(Position::new(super_lists, list, index, position))
-            // }
-            let mut skeleton: Rc<RefCell<Skeleton<Node, S, T>>> = this;
+            let mut skeleton = this;
             let mut degree = skeleton.borrow().depth - 1;
             let mut index = 0;
             let mut position = skeleton.borrow().offset;
@@ -290,41 +72,42 @@ impl<S: Spacing, T> Skeleton<Node, S, T> {
                 if degree > 0 {
                     degree -= 1;
                 } else {
-                    if let Some(sub) = skeleton.borrow().sub(index) {
+                    if let Some(sub) = skeleton.clone().borrow().sub(index) {
                         let next_position = position + sub.borrow().offset;
                         if next_position < target {
                             degree = sub.borrow().depth.saturating_sub(1);
                             index = 0;
                             position = next_position;
                             skeleton = sub;
+                            continue;
                         }
                     }
                     break;
                 }
             }
-            todo!()
+            Some(Position::new(skeleton, index, position))
         }
-    }*/
+    }
 }
 
-pub struct Position<'a, S: Spacing, T> {
-    skeleton: Ref<'a, Skeleton<Node, S, T>>,
+pub struct Position<S: Spacing, T> {
+    skeleton: Rc<RefCell<Skeleton<Node, S, T>>>,
     index: usize,
     position: S,
 }
 
-impl<'a, S: Spacing, T> Clone for Position<'a, S, T> {
+impl<S: Spacing, T> Clone for Position<S, T> {
     fn clone(&self) -> Self {
         Self {
-            skeleton: Ref::clone(&self.skeleton),
+            skeleton: self.skeleton.clone(),
             index: self.index,
             position: self.position,
         }
     }
 }
 
-impl<'a, S: Spacing, T> Position<'a, S, T> {
-    pub(crate) fn new(skeleton: Ref<'a, Skeleton<Node, S, T>>, index: usize, position: S) -> Self {
+impl<S: Spacing, T> Position<S, T> {
+    pub(crate) fn new(skeleton: Rc<RefCell<Skeleton<Node, S, T>>>, index: usize, position: S) -> Self {
         Self {
             skeleton,
             index,
@@ -336,7 +119,13 @@ impl<'a, S: Spacing, T> Position<'a, S, T> {
         self.position
     }
 
-    pub fn element(&self) -> &T {
-        &self.skeleton.elements[self.index]
+    pub fn element(&self) -> Ref<T> {
+        Ref::map(RefCell::borrow(&self.skeleton),
+                 |skeleton| &skeleton.elements[self.index])
+    }
+
+    pub fn element_mut(&self) -> RefMut<T> {
+        RefMut::map(RefCell::borrow_mut(&self.skeleton),
+                    |skeleton| &mut skeleton.elements[self.index])
     }
 }

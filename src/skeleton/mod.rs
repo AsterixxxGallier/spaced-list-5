@@ -1,5 +1,4 @@
-use std::borrow::Borrow;
-use std::cell::{Ref, RefCell};
+use std::cell::{RefCell};
 use std::marker::PhantomData;
 use std::rc::{Rc, Weak};
 
@@ -104,22 +103,6 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
 
     fn sub(&self, index: usize) -> Option<Rc<RefCell<Self>>> {
         self.subs.get(index).cloned().flatten()
-    }
-
-    //noinspection RsNeedlessLifetimes
-    fn sub_ref<'a>(self: Ref<'a, Self>, index: usize) -> Option<Ref<'a, Self>> {
-        match self.subs.get(index) {
-            None => None,
-            Some(option) => {
-                match option {
-                    &None => None,
-                    Some(rc) => {
-                        let borrow = RefCell::borrow(rc);
-                        Some(borrow)
-                    }
-                }
-            }
-        }
     }
 }
 
