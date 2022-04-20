@@ -10,11 +10,16 @@ pub(crate) struct Node;
 
 pub(crate) struct Range;
 
+pub(crate) struct ParentData<Parent> {
+    pub(crate) parent: Weak<RefCell<Parent>>,
+    pub(crate) index_in_parent: usize
+}
+
 pub struct Skeleton<Kind, S: Spacing, T> {
     links: Vec<S>,
     elements: Vec<T>,
     subs: Vec<Option<Rc<RefCell<Self>>>>,
-    parent: Option<Weak<RefCell<Self>>>,
+    parent_data: Option<ParentData<Self>>,
     offset: S,
     length: S,
     depth: usize,
@@ -27,12 +32,12 @@ pub(crate) const fn link_index(index: usize, degree: usize) -> usize {
 }
 
 impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
-    pub(crate) fn new(parent: Option<Weak<RefCell<Self>>>) -> Rc<RefCell<Self>> {
+    pub(crate) fn new(parent_data: Option<ParentData<Self>>) -> Rc<RefCell<Self>> {
         Rc::new(RefCell::new(Self {
             links: vec![],
             elements: vec![],
             subs: vec![],
-            parent,
+            parent_data,
             offset: zero(),
             length: zero(),
             depth: 0,
@@ -109,7 +114,11 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
         match &mut this.borrow_mut().subs[index] {
             Some(sub) => sub.clone(),
             none =>
-                none.insert(Skeleton::new(Some(Rc::downgrade(&this)))).clone()
+                none.insert(Skeleton::new(Some(
+                    ParentData {
+                        parent: Rc::downgrade(&this),
+                        index_in_parent: index
+                    }))).clone()
         }
     }
 }
