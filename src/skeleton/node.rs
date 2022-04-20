@@ -39,6 +39,47 @@ impl<S: Spacing, T> Skeleton<Node, S, T> {
         todo!("Traverse this skeleton and insert into sublist")
     }
 
+    fn shallow_before(this: Rc<RefCell<Self>>, target: S) -> Option<Position<S, T>> {
+        if this.borrow().elements.is_empty() || target <= this.borrow().offset {
+            None
+        } else if this.borrow().links.is_empty() {
+            if this.borrow().offset < target {
+                Some(Position::new(this.clone(), 0, this.borrow().offset))
+            } else {
+                None
+            }
+        } else {
+            let skeleton = this;
+            let mut degree = skeleton.borrow().depth - 1;
+            let mut index = 0;
+            let mut position = skeleton.borrow().offset;
+            loop {
+                let link_index = link_index(index, degree);
+                if !skeleton.borrow().link_index_is_in_bounds(link_index) {
+                    if degree > 0 {
+                        degree -= 1;
+                        continue;
+                    } else {
+                        break;
+                    }
+                }
+
+                let next_position = position + skeleton.borrow().links[link_index];
+                if next_position < target {
+                    position = next_position;
+                    index += 1 << degree;
+                }
+
+                if degree > 0 {
+                    degree -= 1;
+                } else {
+                    break;
+                }
+            }
+            Some(Position::new(skeleton, index, position))
+        }
+    }
+
     fn before(this: Rc<RefCell<Self>>, target: S) -> Option<Position<S, T>> {
         if this.borrow().elements.is_empty() || target <= this.borrow().offset {
             None
@@ -56,11 +97,12 @@ impl<S: Spacing, T> Skeleton<Node, S, T> {
             loop {
                 let link_index = link_index(index, degree);
                 if !skeleton.borrow().link_index_is_in_bounds(link_index) {
-                    if degree == 0 {
+                    if degree > 0 {
+                        degree -= 1;
+                        continue;
+                    } else {
                         break;
                     }
-                    degree -= 1;
-                    continue;
                 }
 
                 let next_position = position + skeleton.borrow().links[link_index];
