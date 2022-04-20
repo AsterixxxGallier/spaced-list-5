@@ -1,7 +1,9 @@
 use std::cell::{Ref, RefCell, RefMut};
 use std::rc::Rc;
 
-use crate::skeleton::{link_index, Skeleton, Spacing, ParentData};
+use paste::paste;
+
+use crate::skeleton::{link_index, ParentData, Skeleton, Spacing};
 
 macro_rules! traverse {
     // region loop
@@ -234,46 +236,39 @@ macro_rules! traverse {
     // endregion
 }
 
+macro_rules! for_all_traversals {
+    ($macro:ident $($prefixes:tt)*) => {
+        $macro!($($prefixes)*before: <);
+        $macro!($($prefixes)*at_or_before: <=);
+        $macro!($($prefixes)*at: ==);
+        $macro!($($prefixes)*at_or_after: >=);
+        $macro!($($prefixes)*after: >);
+    };
+}
+
+macro_rules! traversal_methods {
+    (@shallow $pos:ident: $cmp:tt) => {
+        paste! {
+            pub fn [<shallow_ $pos>](this: Rc<RefCell<Self>>, target: S)
+                -> Option<Position<Kind, S, T>> {
+                traverse!(this; shallow; $cmp target)
+            }
+        }
+    };
+    (@deep $pos:ident: $cmp:tt) => {
+        pub fn $pos(this: Rc<RefCell<Self>>, target: S)
+            -> Option<Position<Kind, S, T>> {
+            traverse!(this; deep; $cmp target)
+        }
+    };
+    () => {
+        for_all_traversals!(traversal_methods @shallow);
+        for_all_traversals!(traversal_methods @deep);
+    };
+}
+
 impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
-    pub(super) fn shallow_before(this: Rc<RefCell<Self>>, target: S) -> Option<Position<Kind, S, T>> {
-        traverse!(this; shallow; < target)
-    }
-
-    pub(super) fn shallow_at_or_before(this: Rc<RefCell<Self>>, target: S) -> Option<Position<Kind, S, T>> {
-        traverse!(this; shallow; <= target)
-    }
-
-    pub(super) fn shallow_at(this: Rc<RefCell<Self>>, target: S) -> Option<Position<Kind, S, T>> {
-        traverse!(this; shallow; == target)
-    }
-
-    pub(super) fn shallow_at_or_after(this: Rc<RefCell<Self>>, target: S) -> Option<Position<Kind, S, T>> {
-        traverse!(this; shallow; >= target)
-    }
-
-    pub(super) fn shallow_after(this: Rc<RefCell<Self>>, target: S) -> Option<Position<Kind, S, T>> {
-        traverse!(this; shallow; > target)
-    }
-
-    pub(super) fn before(this: Rc<RefCell<Self>>, target: S) -> Option<Position<Kind, S, T>> {
-        traverse!(this; deep; < target)
-    }
-
-    pub(super) fn at_or_before(this: Rc<RefCell<Self>>, target: S) -> Option<Position<Kind, S, T>> {
-        traverse!(this; deep; <= target)
-    }
-
-    pub(super) fn at(this: Rc<RefCell<Self>>, target: S) -> Option<Position<Kind, S, T>> {
-        traverse!(this; deep; == target)
-    }
-
-    pub(super) fn at_or_after(this: Rc<RefCell<Self>>, target: S) -> Option<Position<Kind, S, T>> {
-        traverse!(this; deep; >= target)
-    }
-
-    pub(super) fn after(this: Rc<RefCell<Self>>, target: S) -> Option<Position<Kind, S, T>> {
-        traverse!(this; deep; > target)
-    }
+    traversal_methods!();
 }
 
 pub struct Position<Kind, S: Spacing, T> {
