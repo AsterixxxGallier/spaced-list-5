@@ -97,4 +97,4 @@ mod range;
 
 mod traversal;
 
-mod position;
+pub mod position;

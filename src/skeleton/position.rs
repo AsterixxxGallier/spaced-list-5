@@ -54,6 +54,44 @@ impl<Kind, S: Spacing, T> Position<Kind, S, T> {
     }
 }
 
+pub struct HollowPosition<Kind, S: Spacing> {
+    skeleton: Rc<RefCell<Skeleton<Kind, S, ()>>>,
+    index: usize,
+    position: S,
+}
+
+impl<Kind, S: Spacing> Clone for HollowPosition<Kind, S> {
+    fn clone(&self) -> Self {
+        Self {
+            skeleton: self.skeleton.clone(),
+            index: self.index,
+            position: self.position,
+        }
+    }
+}
+
+impl<Kind, S: Spacing> HollowPosition<Kind, S> {
+    pub(crate) fn new(skeleton: Rc<RefCell<Skeleton<Kind, S, ()>>>, index: usize, position: S) -> Self {
+        Self {
+            skeleton,
+            index,
+            position,
+        }
+    }
+
+    pub(crate) fn skeleton(&self) -> &Rc<RefCell<Skeleton<Kind, S, ()>>> {
+        &self.skeleton
+    }
+
+    pub(crate) fn index(&self) -> usize {
+        self.index
+    }
+
+    pub fn position(&self) -> S {
+        self.position
+    }
+}
+
 #[derive(Debug, Ord, PartialOrd, Eq, PartialEq)]
 pub enum BoundType {
     Start,
@@ -70,7 +108,7 @@ impl BoundType {
     }
 }
 
-impl<S: Spacing, T> Position<Range, S, T> {
+impl<S: Spacing> HollowPosition<Range, S, T> {
     pub fn bound_type(&self) -> BoundType {
         BoundType::of(self.index)
     }
@@ -82,14 +120,14 @@ impl<S: Spacing, T> Position<Range, S, T> {
     pub fn into_range(self) -> (Self, Self) {
         match self.bound_type() {
             BoundType::Start => {
-                let end = Position::new(
+                let end = HollowPosition::new(
                     self.skeleton.clone(),
                     self.index + 1,
                     self.position + self.span());
                 (self, end)
             }
             BoundType::End => {
-                let start = Position::new(
+                let start = HollowPosition::new(
                     self.skeleton.clone(),
                     self.index - 1,
                     self.position - self.span());
@@ -101,14 +139,14 @@ impl<S: Spacing, T> Position<Range, S, T> {
     pub fn range(&self) -> (MaybeOwned<Self>, MaybeOwned<Self>) {
         match self.bound_type() {
             BoundType::Start => {
-                let end = Position::new(
+                let end = HollowPosition::new(
                     self.skeleton.clone(),
                     self.index + 1,
                     self.position + self.span());
                 (self.into(), end.into())
             }
             BoundType::End => {
-                let start = Position::new(
+                let start = HollowPosition::new(
                     self.skeleton.clone(),
                     self.index - 1,
                     self.position - self.span());
