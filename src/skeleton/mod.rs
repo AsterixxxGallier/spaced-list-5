@@ -6,8 +6,10 @@ use num_traits::zero;
 
 use crate::Spacing;
 
+#[allow(dead_code)]
 pub(crate) struct Node;
 
+#[allow(dead_code)]
 pub(crate) struct Range;
 
 pub(crate) struct ParentData<Parent> {
