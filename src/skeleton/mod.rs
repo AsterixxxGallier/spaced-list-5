@@ -85,6 +85,15 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
         self.inflate_unchecked(index, amount)
     }
 
+    fn inflate_after_offset(&mut self, amount: S) {
+        if !self.links.is_empty() {
+            self.inflate(0, amount);
+            if let Some(sub) = self.sub(0) {
+                sub.borrow_mut().offset += amount;
+            }
+        }
+    }
+
     fn link(&self, index: usize) -> S {
         let mut length = self.links[index];
         for degree in 0..index.trailing_ones() {
@@ -119,15 +128,6 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
                         parent: Rc::downgrade(&this),
                         index_in_parent: index
                     }))).clone()
-        }
-    }
-
-    fn inflate_after_offset(&mut self, amount: S) {
-        if !self.links.is_empty() {
-            self.inflate(0, amount);
-            if let Some(sub) = self.sub(0) {
-                sub.borrow_mut().offset += amount;
-            }
         }
     }
 }
