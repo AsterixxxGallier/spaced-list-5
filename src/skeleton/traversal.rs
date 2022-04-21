@@ -3,7 +3,7 @@ use std::rc::Rc;
 
 use paste::paste;
 
-use crate::skeleton::{link_index, ParentData, Skeleton, Spacing};
+use crate::skeleton::{link_index, ParentData, Range, Skeleton, Spacing};
 
 macro_rules! traverse {
     // region loop
@@ -111,7 +111,43 @@ macro_rules! traverse {
     };
     // endregion
 
+    // region previous
+    (@previous(shallow; $skeleton:ident, $index:ident, $position:ident)) => {
+        if $index == 0 {
+            Err("Tried to move to previous element but it's already the start of the skeleton")
+        } else {
+            $index -= 1;
+            $position -= $skeleton.borrow().link($index);
+            Ok(())
+        }
+    };
+    (@previous(deep; $skeleton:ident, $index:ident, $position:ident)) => {
+        if $index == 0 {
+            if let Some(ParentData { parent, index_in_parent }) =
+                &$skeleton.clone().borrow().parent_data {
+                $index = *index_in_parent;
+                $position -= $skeleton.borrow().offset;
+                $skeleton = parent.upgrade().unwrap();
+                Ok(())
+            } else {
+                Err("Tried to move to previous element but it's already the start of the skeleton")
+            }
+        } else if let Some(sub) = $skeleton.clone().borrow().sub($index - 1) {
+            $position -= $skeleton.borrow().link($index - 1);
+            $skeleton = sub;
+            $position += $skeleton.borrow().last_position();
+            $index = $skeleton.borrow().links.len();
+            Ok(())
+        } else {
+            $index -= 1;
+            $position -= $skeleton.borrow().link($index);
+            Ok(())
+        }
+    };
+    // endregion
+
     // region after loop
+    // region any
     (@after loop($depth:ident, <, $target:ident, any;
         $skeleton:ident, $degree:ident, $index:ident, $position:ident)) => {
         Some(Position::new($skeleton, $index, $position))
@@ -130,10 +166,10 @@ macro_rules! traverse {
     };
     (@after loop($depth:ident, >=, $target:ident, any;
         $skeleton:ident, $degree:ident, $index:ident, $position:ident)) => {
-        if $position == $target {
-            Some(Position::new($skeleton, $index, $position))
-        } else {
-            traverse!(@next($depth; $skeleton, $index, $position)).unwrap();
+        {
+            if $position < $target {
+                traverse!(@next($depth; $skeleton, $index, $position)).unwrap();
+            }
             Some(Position::new($skeleton, $index, $position))
         }
     };
@@ -144,7 +180,67 @@ macro_rules! traverse {
             Some(Position::new($skeleton, $index, $position))
         }
     };
-    // TODO after loop for start and end
+    // endregion
+
+    // region start/end
+    // region index is at bound
+    (@index is at bound(start; $index:expr)) => {
+        $index & 1 == 0
+    };
+    (@index is at bound(end; $index:expr)) => {
+        $index & 1 == 1
+    };
+    // endregion
+
+    (@after loop($depth:ident, <, $target:ident, $bound:ident;
+        $skeleton:ident, $degree:ident, $index:ident, $position:ident)) => {
+        {
+            if !traverse!(@index is at bound($bound; $index)) {
+                traverse!(@previous($depth; $skeleton, $index, $position)).ok()?;
+            }
+            Some(Position::new($skeleton, $index, $position))
+        }
+    };
+    (@after loop($depth:ident, <=, $target:ident, $bound:ident;
+        $skeleton:ident, $degree:ident, $index:ident, $position:ident)) => {
+        {
+            if !traverse!(@index is at bound($bound; $index)) {
+                traverse!(@previous($depth; $skeleton, $index, $position)).ok()?;
+            }
+            Some(Position::new($skeleton, $index, $position))
+        }
+    };
+    (@after loop($depth:ident, ==, $target:ident, $bound:ident;
+        $skeleton:ident, $degree:ident, $index:ident, $position:ident)) => {
+        if $position == $target && traverse!(@index is at bound($bound; $index)) {
+            Some(Position::new($skeleton, $index, $position))
+        } else {
+            None
+        }
+    };
+    (@after loop($depth:ident, >=, $target:ident, $bound:ident;
+        $skeleton:ident, $degree:ident, $index:ident, $position:ident)) => {
+        {
+            if $position < $target {
+                traverse!(@next($depth; $skeleton, $index, $position)).unwrap();
+            }
+            if !traverse!(@index is at bound($bound; $index)) {
+                traverse!(@next($depth; $skeleton, $index, $position)).ok()?;
+            }
+            Some(Position::new($skeleton, $index, $position))
+        }
+    };
+    (@after loop($depth:ident, >, $target:ident, $bound:ident;
+        $skeleton:ident, $degree:ident, $index:ident, $position:ident)) => {
+        {
+            traverse!(@next($depth; $skeleton, $index, $position)).unwrap();
+            if !traverse!(@index is at bound($bound; $index)) {
+                traverse!(@next($depth; $skeleton, $index, $position)).ok()?;
+            }
+            Some(Position::new($skeleton, $index, $position))
+        }
+    };
+    // endregion
     // endregion
 
     // region checked
@@ -265,10 +361,38 @@ macro_rules! traversal_methods {
         for_all_traversals!(traversal_methods @shallow);
         for_all_traversals!(traversal_methods @deep);
     };
+    (@shallow $bound:ident $pos:ident: $cmp:tt) => {
+        paste! {
+            pub fn [<shallow_ $bound ing_ $pos>](this: Rc<RefCell<Self>>, target: S)
+                -> Option<Position<Range, S, T>> {
+                traverse!(this; shallow; $cmp target at $bound)
+            }
+        }
+    };
+    (@deep $bound:ident $pos:ident: $cmp:tt) => {
+        paste! {
+            pub fn [<$bound ing_ $pos>](this: Rc<RefCell<Self>>, target: S)
+                -> Option<Position<Range, S, T>> {
+                traverse!(this; deep; $cmp target at $bound)
+            }
+        }
+    };
+    (range) => {
+        for_all_traversals!(traversal_methods @shallow start);
+        for_all_traversals!(traversal_methods @shallow end);
+        for_all_traversals!(traversal_methods @deep start);
+        for_all_traversals!(traversal_methods @deep end);
+    };
 }
 
+#[allow(unused)]
 impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
     traversal_methods!();
+}
+
+#[allow(unused)]
+impl<S: Spacing, T> Skeleton<Range, S, T> {
+    traversal_methods!(range);
 }
 
 pub struct Position<Kind, S: Spacing, T> {
