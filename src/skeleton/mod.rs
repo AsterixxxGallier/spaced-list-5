@@ -121,6 +121,15 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
                     }))).clone()
         }
     }
+
+    fn inflate_after_offset(&mut self, amount: S) {
+        if !self.links.is_empty() {
+            self.inflate(0, amount);
+            if let Some(sub) = self.sub(0) {
+                sub.borrow_mut().offset += amount;
+            }
+        }
+    }
 }
 
 mod node;

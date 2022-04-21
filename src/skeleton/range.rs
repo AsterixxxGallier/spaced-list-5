@@ -30,13 +30,7 @@ impl<S: Spacing, T> Skeleton<Range, S, T> {
             let previous_first_span = this.borrow().links[0];
             let previous_first_element =
                 mem::replace(&mut this.borrow_mut().elements[0], element);
-            let inflation_amount = previous_first_position - position;
-            if !this.borrow().links.is_empty() {
-                this.borrow_mut().inflate(0, inflation_amount);
-                if let Some(sub) = this.borrow().sub(0) {
-                    sub.borrow_mut().offset += inflation_amount;
-                }
-            }
+            this.borrow_mut().inflate_after_offset(previous_first_position - position);
             this.borrow_mut().offset = position;
             this.borrow_mut().links[0] = span;
             return Self::insert(

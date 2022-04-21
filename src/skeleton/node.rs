@@ -24,13 +24,7 @@ impl<S: Spacing, T> Skeleton<Node, S, T> {
             let previous_first_position = this.borrow().offset;
             let previous_first_element =
                 mem::replace(&mut this.borrow_mut().elements[0], element);
-            let inflation_amount = previous_first_position - position;
-            if !this.borrow().links.is_empty() {
-                this.borrow_mut().inflate(0, inflation_amount);
-                if let Some(sub) = this.borrow().sub(0) {
-                    sub.borrow_mut().offset += inflation_amount;
-                }
-            }
+            this.borrow_mut().inflate_after_offset(previous_first_position - position);
             this.borrow_mut().offset = position;
             return Self::insert(
                 this,
