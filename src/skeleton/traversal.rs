@@ -5,6 +5,8 @@ use paste::paste;
 
 use crate::skeleton::{link_index, ParentData, Range, Skeleton, Spacing, position::Position};
 
+// TODO add try_ versions of all traversal methods
+
 macro_rules! traverse {
     // region loop
     // region break if ==
