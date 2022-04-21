@@ -1,5 +1,6 @@
 use std::cell::{Ref, RefCell, RefMut};
 use std::rc::Rc;
+use maybe_owned::MaybeOwned;
 
 use paste::paste;
 
@@ -440,5 +441,68 @@ impl<Kind, S: Spacing, T> Position<Kind, S, T> {
     pub fn element_mut(&self) -> RefMut<T> {
         RefMut::map(RefCell::borrow_mut(&self.skeleton),
                     |skeleton| &mut skeleton.elements[self.index])
+    }
+}
+
+pub enum BoundType {
+    Start,
+    End,
+}
+
+impl BoundType {
+    pub(crate) fn of(index: usize) -> Self {
+        match index & 1 {
+            0 => Self::Start,
+            1 => Self::End,
+            _ => unreachable!()
+        }
+    }
+}
+
+impl<S: Spacing, T> Position<Range, S, T> {
+    pub fn bound_type(&self) -> BoundType {
+        BoundType::of(self.index)
+    }
+
+    pub fn span(&self) -> S {
+        self.skeleton.borrow().links[self.index & !1]
+    }
+
+    pub fn into_range(self) -> (Self, Self) {
+        match self.bound_type() {
+            BoundType::Start => {
+                let end = Position::new(
+                    self.skeleton.clone(),
+                    self.index + 1,
+                    self.position + self.span());
+                (self, end)
+            }
+            BoundType::End => {
+                let start = Position::new(
+                    self.skeleton.clone(),
+                    self.index - 1,
+                    self.position - self.span());
+                (start, self)
+            }
+        }
+    }
+
+    pub fn range(&self) -> (MaybeOwned<Self>, MaybeOwned<Self>) {
+        match self.bound_type() {
+            BoundType::Start => {
+                let end = Position::new(
+                    self.skeleton.clone(),
+                    self.index + 1,
+                    self.position + self.span());
+                (self.into(), end.into())
+            }
+            BoundType::End => {
+                let start = Position::new(
+                    self.skeleton.clone(),
+                    self.index - 1,
+                    self.position - self.span());
+                (start.into(), self.into())
+            }
+        }
     }
 }
