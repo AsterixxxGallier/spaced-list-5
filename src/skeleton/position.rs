@@ -54,6 +54,7 @@ impl<Kind, S: Spacing, T> Position<Kind, S, T> {
     }
 }
 
+#[derive(Debug, Ord, PartialOrd, Eq, PartialEq)]
 pub enum BoundType {
     Start,
     End,
