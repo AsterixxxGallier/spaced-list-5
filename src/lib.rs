@@ -44,8 +44,11 @@ pub use skeleton::position::HollowPosition;
 #[doc(inline)]
 pub use skeleton::position::BoundType;
 
+#[doc(inline)]
+pub use skeleton::Node;
+#[doc(inline)]
+pub use skeleton::Range;
+
 pub(crate) use skeleton::Skeleton;
-pub(crate) use skeleton::Node;
-pub(crate) use skeleton::Range;
 pub(crate) use skeleton::ParentData;
 pub(crate) use skeleton::traversal::iteration::Iter;

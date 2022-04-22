@@ -6,11 +6,9 @@ use num_traits::zero;
 
 use crate::Spacing;
 
-#[allow(dead_code)]
-pub(crate) struct Node;
+pub struct Node;
 
-#[allow(dead_code)]
-pub(crate) struct Range;
+pub struct Range;
 
 pub(crate) struct ParentData<Parent> {
     pub(crate) parent: Weak<RefCell<Parent>>,
