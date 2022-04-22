@@ -80,8 +80,22 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
     }
 
     pub fn inflate_unchecked(&mut self, index: usize, amount: S) {
-        for degree in 0..self.depth {
+        // ╭───────────────────────────────╮
+        // ├───────────────╮               ├───────────────╮
+        // ├───────╮       ├───────╮       ├───────╮       │
+        // ├───╮   ├───╮   ├───╮   ├───╮   ├───╮   ├───╮   ├───╮
+        // ╵ 0 ╵ 1 ╵ 0 ╵ 2 ╵ 0 ╵ 1 ╵ 0 ╵ 3 ╵ 0 ╵ 1 ╵ 0 ╵ 2 ╵ 0 ╵
+        // 00000   00010   00100   00110   01000   01010   01100   01110   10000
+        //     00001   00011   00101   00111   01001   01011   01101   01111
+        //
+        // for degree in 0..self.depth {
+        // TODO invent a metric that measures the "relative depth" above a link, i. e. how many
+        //  links there *could* be above it, and use it in deflate_unchecked too
+        for degree in 0.. {
             if index >> degree & 1 == 0 {
+                if !self.link_index_is_in_bounds(link_index(index, degree)) {
+                    break;
+                }
                 self.links[link_index(index, degree)] += amount;
             }
         }
@@ -95,8 +109,11 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
     }
 
     pub fn deflate_unchecked(&mut self, index: usize, amount: S) {
-        for degree in 0..self.depth {
+        for degree in 0.. {
             if index >> degree & 1 == 0 {
+                if !self.link_index_is_in_bounds(link_index(index, degree)) {
+                    break;
+                }
                 self.links[link_index(index, degree)] -= amount;
             }
         }
