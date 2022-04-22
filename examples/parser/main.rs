@@ -1,6 +1,6 @@
 use std::ops::Range;
 
-use spaced_list_5::{FilledRangeSpacedList, FilledSpacedList, HollowRangeSpacedList, Position};
+use spaced_list_5::{RangeSpacedList, SpacedList, HollowRangeSpacedList, Position};
 
 struct Source {
     content: String,
@@ -99,24 +99,24 @@ enum Paren {
 
 fn main() {
     let mut source = Source::new("(print hello world)".into());
-    let mut parens = FilledRangeSpacedList::new();
+    let mut parens = RangeSpacedList::new();
     for (index, char) in source.content.char_indices() {
         if char == '(' {
-            parens.insert_range(index, index + 1, Paren::Opening);
+            parens.insert_with_span(index, 1, Paren::Opening);
         } else if char == ')' {
-            parens.insert_range(index, index + 1, Paren::Closing);
+            parens.insert_with_span(index, 1, Paren::Closing);
         }
     }
-    let mut paren_pairs = FilledSpacedList::new();
+    let mut paren_pairs = SpacedList::new();
     let mut opening_paren_stack = vec![];
-    for (start, end) in parens.iter() {
-        match parens.element(&start) {
+    for (start, end) in parens.iter_ranges() {
+        match *start.element() {
             Paren::Opening => {
-                opening_paren_stack.push(start);
+                opening_paren_stack.push(start.clone());
             }
             Paren::Closing => {
-                paren_pairs.insert_element(start.position(), (Paren::Opening, start.clone(), end.clone()));
-                paren_pairs.insert_element(end.position(), (Paren::Closing, start, end));
+                paren_pairs.insert(start.position(), (Paren::Opening, start.clone(), end.clone()));
+                paren_pairs.insert(end.position(), (Paren::Closing, start.clone(), end.clone()));
                 opening_paren_stack.pop();
             }
         }
