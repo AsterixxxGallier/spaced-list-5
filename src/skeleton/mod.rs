@@ -60,6 +60,7 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
     fn push_link(&mut self) -> usize {
         if (self.links.len() + 1).is_power_of_two() {
             self.links.push(self.length);
+            self.depth += 1;
         } else {
             self.links.push(zero());
         }
