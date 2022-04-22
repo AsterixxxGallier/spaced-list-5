@@ -69,10 +69,7 @@ impl<S: Spacing, T> Default for SpacedList<S, T> {
 }
 impl<S: Spacing, T> SpacedList<S, T> {
     pub fn new() -> Self {
-        Self {
-            skeleton: Skeleton::new(None),
-            size: 0,
-        }
+        Self::default()
     }
 
     pub fn push(&mut self, spacing: S, value: T) -> Position<Node, S, T> {
@@ -154,10 +151,7 @@ impl<S: Spacing, T> Default for RangeSpacedList<S, T> {
 }
 impl<S: Spacing, T> RangeSpacedList<S, T> {
     pub fn new() -> Self {
-        Self {
-            skeleton: Skeleton::new(None),
-            size: 0,
-        }
+        Self::default()
     }
 
     pub fn push(&mut self, spacing: S, span: S, value: T) -> Position<Range, S, T> {
@@ -293,10 +287,7 @@ impl<S: Spacing> Default for HollowSpacedList<S> {
 }
 impl<S: Spacing> HollowSpacedList<S> {
     pub fn new() -> Self {
-        Self {
-            skeleton: Skeleton::new(None),
-            size: 0,
-        }
+        Self::default()
     }
 
     pub fn push(&mut self, spacing: S) -> HollowPosition<Node, S> {
@@ -383,10 +374,7 @@ impl<S: Spacing> Default for HollowRangeSpacedList<S> {
 }
 impl<S: Spacing> HollowRangeSpacedList<S> {
     pub fn new() -> Self {
-        Self {
-            skeleton: Skeleton::new(None),
-            size: 0,
-        }
+        Self::default()
     }
 
     pub fn push(&mut self, spacing: S, span: S) -> HollowPosition<Range, S> {
