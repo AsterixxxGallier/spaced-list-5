@@ -38,18 +38,28 @@ pub struct SpacedList<S: Spacing, T> {
 }
 
 impl<S: Spacing, T> SpacedList<S, T> {
-    pub fn push(&mut self, spacing: S, value: T) -> Position<Node, S, T> { todo!() }
+    pub fn push(&mut self, spacing: S, value: T) -> Position<Node, S, T> {
+        todo!()
+    }
 
     pub fn insert(&mut self, position: S, value: T) -> Position<Node, S, T> { todo!() }
 
 
-    pub fn increase_spacing_after(&mut self, position: S, spacing: S) { todo!() }
+    pub fn increase_spacing_after(&mut self, position: S, spacing: S) {
+        Skeleton::inflate_after(self.skeleton.clone(), position, spacing)
+    }
 
-    pub fn increase_spacing_before(&mut self, position: S, spacing: S) { todo!() }
+    pub fn increase_spacing_before(&mut self, position: S, spacing: S) {
+        Skeleton::inflate_before(self.skeleton.clone(), position, spacing)
+    }
 
-    pub fn decrease_spacing_after(&mut self, position: S, spacing: S) { todo!() }
+    pub fn decrease_spacing_after(&mut self, position: S, spacing: S) {
+        Skeleton::deflate_after(self.skeleton.clone(), position, spacing)
+    }
 
-    pub fn decrease_spacing_before(&mut self, position: S, spacing: S) { todo!() }
+    pub fn decrease_spacing_before(&mut self, position: S, spacing: S) {
+        Skeleton::deflate_before(self.skeleton.clone(), position, spacing)
+    }
 
 
     pub fn first(&self) -> Option<Position<Node, S, T>> {
@@ -105,13 +115,21 @@ impl<S: Spacing, T> RangeSpacedList<S, T> {
     pub fn insert_with_span(&mut self, start: S, span: S, value: T) -> Position<Range, S, T> { todo!() }
 
 
-    pub fn increase_spacing_after(&mut self, position: S, spacing: S) { todo!() }
+    pub fn increase_spacing_after(&mut self, position: S, spacing: S) {
+        Skeleton::inflate_after(self.skeleton.clone(), position, spacing)
+    }
 
-    pub fn increase_spacing_before(&mut self, position: S, spacing: S) { todo!() }
+    pub fn increase_spacing_before(&mut self, position: S, spacing: S) {
+        Skeleton::inflate_before(self.skeleton.clone(), position, spacing)
+    }
 
-    pub fn decrease_spacing_after(&mut self, position: S, spacing: S) { todo!() }
+    pub fn decrease_spacing_after(&mut self, position: S, spacing: S) {
+        Skeleton::deflate_after(self.skeleton.clone(), position, spacing)
+    }
 
-    pub fn decrease_spacing_before(&mut self, position: S, spacing: S) { todo!() }
+    pub fn decrease_spacing_before(&mut self, position: S, spacing: S) {
+        Skeleton::deflate_before(self.skeleton.clone(), position, spacing)
+    }
 
 
     pub fn first(&self) -> Option<Position<Range, S, T>> {
@@ -195,13 +213,21 @@ impl<S: Spacing> HollowSpacedList<S> {
     pub fn insert(&mut self, position: S) -> HollowPosition<Node, S> { todo!() }
 
 
-    pub fn increase_spacing_after(&mut self, position: S, spacing: S) { todo!() }
+    pub fn increase_spacing_after(&mut self, position: S, spacing: S) {
+        Skeleton::inflate_after(self.skeleton.clone(), position, spacing)
+    }
 
-    pub fn increase_spacing_before(&mut self, position: S, spacing: S) { todo!() }
+    pub fn increase_spacing_before(&mut self, position: S, spacing: S) {
+        Skeleton::inflate_before(self.skeleton.clone(), position, spacing)
+    }
 
-    pub fn decrease_spacing_after(&mut self, position: S, spacing: S) { todo!() }
+    pub fn decrease_spacing_after(&mut self, position: S, spacing: S) {
+        Skeleton::deflate_after(self.skeleton.clone(), position, spacing)
+    }
 
-    pub fn decrease_spacing_before(&mut self, position: S, spacing: S) { todo!() }
+    pub fn decrease_spacing_before(&mut self, position: S, spacing: S) {
+        Skeleton::deflate_before(self.skeleton.clone(), position, spacing)
+    }
 
 
     pub fn first(&self) -> Option<HollowPosition<Node, S>> {
@@ -257,13 +283,21 @@ impl<S: Spacing> HollowRangeSpacedList<S> {
     pub fn insert_with_span(&mut self, start: S, span: S) -> HollowPosition<Range, S> { todo!() }
 
 
-    pub fn increase_spacing_after(&mut self, position: S, spacing: S) { todo!() }
+    pub fn increase_spacing_after(&mut self, position: S, spacing: S) {
+        Skeleton::inflate_after(self.skeleton.clone(), position, spacing)
+    }
 
-    pub fn increase_spacing_before(&mut self, position: S, spacing: S) { todo!() }
+    pub fn increase_spacing_before(&mut self, position: S, spacing: S) {
+        Skeleton::inflate_before(self.skeleton.clone(), position, spacing)
+    }
 
-    pub fn decrease_spacing_after(&mut self, position: S, spacing: S) { todo!() }
+    pub fn decrease_spacing_after(&mut self, position: S, spacing: S) {
+        Skeleton::deflate_after(self.skeleton.clone(), position, spacing)
+    }
 
-    pub fn decrease_spacing_before(&mut self, position: S, spacing: S) { todo!() }
+    pub fn decrease_spacing_before(&mut self, position: S, spacing: S) {
+        Skeleton::deflate_before(self.skeleton.clone(), position, spacing)
+    }
 
 
     pub fn first(&self) -> Option<HollowPosition<Range, S>> {
