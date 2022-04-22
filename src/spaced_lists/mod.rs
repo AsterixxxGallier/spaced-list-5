@@ -7,6 +7,7 @@ use crate::skeleton::position::{HollowPosition, Position};
 use crate::{Iter, Spacing};
 
 // TODO implement try_ versions of all public methods that can fail
+// TODO add good error handling to all public methods that can fail
 
 macro_rules! spacing_methods {
     () => {
@@ -58,9 +59,15 @@ pub struct SpacedList<S: Spacing, T> {
 }
 
 impl<S: Spacing, T> SpacedList<S, T> {
-    pub fn push(&mut self, spacing: S, value: T) -> Position<Node, S, T> { todo!() }
+    pub fn push(&mut self, spacing: S, value: T) -> Position<Node, S, T> {
+        self.size += 1;
+        Skeleton::<Node, _, _>::push(self.skeleton.clone(), spacing, value)
+    }
 
-    pub fn insert(&mut self, position: S, value: T) -> Position<Node, S, T> { todo!() }
+    pub fn insert(&mut self, position: S, value: T) -> Position<Node, S, T> {
+        self.size += 1;
+        Skeleton::<Node, _, _>::insert(self.skeleton.clone(), position, value)
+    }
 
 
     spacing_methods!();
@@ -112,11 +119,19 @@ pub struct RangeSpacedList<S: Spacing, T> {
 }
 
 impl<S: Spacing, T> RangeSpacedList<S, T> {
-    pub fn push(&mut self, spacing: S, span: S, value: T) -> Position<Range, S, T> { todo!() }
+    pub fn push(&mut self, spacing: S, span: S, value: T) -> Position<Range, S, T> {
+        self.size += 1;
+        Skeleton::<Range, _, _>::push(self.skeleton.clone(), spacing, span, value)
+    }
 
-    pub fn insert(&mut self, start: S, end: S, value: T) -> Position<Range, S, T> { todo!() }
+    pub fn insert(&mut self, start: S, end: S, value: T) -> Position<Range, S, T> {
+        self.insert_with_span(start, end - start, value)
+    }
 
-    pub fn insert_with_span(&mut self, start: S, span: S, value: T) -> Position<Range, S, T> { todo!() }
+    pub fn insert_with_span(&mut self, start: S, span: S, value: T) -> Position<Range, S, T> {
+        self.size += 1;
+        Skeleton::<Range, _, _>::insert(self.skeleton.clone(), start, span, value)
+    }
 
 
     spacing_methods!();
@@ -198,9 +213,15 @@ pub struct HollowSpacedList<S: Spacing> {
 }
 
 impl<S: Spacing> HollowSpacedList<S> {
-    pub fn push(&mut self, spacing: S) -> HollowPosition<Node, S> { todo!() }
+    pub fn push(&mut self, spacing: S) -> HollowPosition<Node, S> {
+        self.size += 1;
+        Skeleton::<Node, _, _>::push(self.skeleton.clone(), spacing, ()).into()
+    }
 
-    pub fn insert(&mut self, position: S) -> HollowPosition<Node, S> { todo!() }
+    pub fn insert(&mut self, position: S) -> HollowPosition<Node, S> {
+        self.size += 1;
+        Skeleton::<Node, _, _>::insert(self.skeleton.clone(), position, ()).into()
+    }
 
 
     spacing_methods!();
@@ -252,11 +273,19 @@ pub struct HollowRangeSpacedList<S: Spacing> {
 }
 
 impl<S: Spacing> HollowRangeSpacedList<S> {
-    pub fn push(&mut self, spacing: S, span: S) -> HollowPosition<Range, S> { todo!() }
+    pub fn push(&mut self, spacing: S, span: S) -> HollowPosition<Range, S> {
+        self.size += 1;
+        Skeleton::<Range, _, _>::push(self.skeleton.clone(), spacing, span, ()).into()
+    }
 
-    pub fn insert(&mut self, start: S, end: S) -> HollowPosition<Range, S> { todo!() }
+    pub fn insert(&mut self, start: S, end: S) -> HollowPosition<Range, S> {
+        self.insert_with_span(start, end - start)
+    }
 
-    pub fn insert_with_span(&mut self, start: S, span: S) -> HollowPosition<Range, S> { todo!() }
+    pub fn insert_with_span(&mut self, start: S, span: S) -> HollowPosition<Range, S> {
+        self.size += 1;
+        Skeleton::<Range, _, _>::insert(self.skeleton.clone(), start, span, ()).into()
+    }
 
 
     spacing_methods!();
