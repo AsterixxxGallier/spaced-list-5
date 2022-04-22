@@ -27,6 +27,11 @@ impl<S: Spacing, T> SpacedList<S, T> {
     pub fn decrease_spacing_before(&mut self, position: S, spacing: S) { todo!() }
 
 
+    pub fn first(&self) -> Option<Position<Node, S, T>> { todo!() }
+
+    pub fn last(&self) -> Option<Position<Node, S, T>> { todo!() }
+
+
     pub fn before(&self, position: S) -> Option<Position<Node, S, T>> { todo!() }
 
     pub fn at_or_before(&self, position: S) -> Option<Position<Node, S, T>> { todo!() }
@@ -75,6 +80,11 @@ impl<S: Spacing, T> RangeSpacedList<S, T> {
     pub fn decrease_spacing_after(&mut self, position: S, spacing: S) { todo!() }
 
     pub fn decrease_spacing_before(&mut self, position: S, spacing: S) { todo!() }
+
+
+    pub fn first(&self) -> Option<Position<Node, S, T>> { todo!() }
+
+    pub fn last(&self) -> Option<Position<Node, S, T>> { todo!() }
 
 
     pub fn starting_or_ending_before(&self, position: S) -> Option<Position<Node, S, T>> { todo!() }
@@ -151,6 +161,11 @@ impl<S: Spacing> HollowSpacedList<S> {
     pub fn decrease_spacing_before(&mut self, position: S, spacing: S) { todo!() }
 
 
+    pub fn first(&self) -> Option<HollowPosition<Node, S>> { todo!() }
+
+    pub fn last(&self) -> Option<HollowPosition<Node, S>> { todo!() }
+
+
     pub fn before(&self, position: S) -> Option<HollowPosition<Node, S>> { todo!() }
 
     pub fn at_or_before(&self, position: S) -> Option<HollowPosition<Node, S>> { todo!() }
@@ -199,6 +214,11 @@ impl<S: Spacing> HollowRangeSpacedList<S> {
     pub fn decrease_spacing_after(&mut self, position: S, spacing: S) { todo!() }
 
     pub fn decrease_spacing_before(&mut self, position: S, spacing: S) { todo!() }
+
+
+    pub fn first(&self) -> Option<HollowPosition<Node, S>> { todo!() }
+
+    pub fn last(&self) -> Option<HollowPosition<Node, S>> { todo!() }
 
 
     pub fn starting_or_ending_before(&self, position: S) -> Option<HollowPosition<Node, S>> { todo!() }
