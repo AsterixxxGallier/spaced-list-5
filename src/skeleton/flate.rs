@@ -112,7 +112,7 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
                         "Deflating at this index would deflate a link below zero");
             }
         }
-        self.inflate_unchecked(index, amount)
+        self.deflate_unchecked(index, amount)
     }
 
     pub fn inflate_after_offset(&mut self, amount: S) {
