@@ -29,34 +29,6 @@ impl<Kind, S: Spacing, T> Iterator for Iter<Kind, S, T> {
 
         let last_position = self.position.clone();
 
-        // if self.index == self.list.link_size() {
-        //     match self.super_lists.pop() {
-        //         Some(super_list) => {
-        //             let index = self.list.index_in_super_list().unwrap();
-        //             self.position -= self.list.last_position();
-        //             self.list = super_list;
-        //             self.position += self.list.link_length_at_node(index);
-        //             self.index = index + 1;
-        //         }
-        //         None => {
-        //             self.finished = true;
-        //         }
-        //     }
-        // } else {
-        //     match self.list.sublist_at(self.index) {
-        //         Some(sublist) => {
-        //             self.super_lists.push(self.list);
-        //             self.list = sublist;
-        //             self.index = 0;
-        //             self.position += sublist.offset();
-        //         }
-        //         None => {
-        //             self.position += self.list.link_length_at_node(self.index);
-        //             self.index += 1;
-        //         }
-        //     }
-        // }
-
         if self.position.index == self.position.skeleton.borrow().links.len() {
             if let Some(ParentData { parent, index_in_parent }) =
                 &self.position.skeleton.clone().borrow().parent_data {
