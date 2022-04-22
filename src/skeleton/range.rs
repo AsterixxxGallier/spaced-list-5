@@ -2,28 +2,31 @@ use std::cell::RefCell;
 use std::mem;
 use std::rc::Rc;
 
+use crate::Position;
 use crate::skeleton::{Range, Skeleton, Spacing};
 use crate::skeleton::position::BoundType;
 
 impl<S: Spacing, T> Skeleton<Range, S, T> {
-    pub(crate) fn push(&mut self, distance: S, span: S, element: T) {
-        if self.elements.is_empty() {
-            self.offset = distance;
-            self.push_link();
-            self.inflate(0, span);
-            self.elements.push(element);
-            return;
+    pub(crate) fn push(this: Rc<RefCell<Self>>, distance: S, span: S, element: T) -> Position<Range, S, T> {
+        if this.borrow_mut().elements.is_empty() {
+            this.borrow_mut().offset = distance;
+            this.borrow_mut().push_link();
+            this.borrow_mut().inflate(0, span);
+            this.borrow_mut().elements.push(element);
+            return Position::new(this, 0, distance);
         }
-        let index = self.push_link();
-        self.inflate(index, distance);
-        let index = self.push_link();
-        self.inflate(index, span);
-        self.elements.push(element);
+        let start_index = this.borrow_mut().push_link();
+        this.borrow_mut().inflate(start_index, distance);
+        let start_position = this.borrow().last_position();
+        let span_index = this.borrow_mut().push_link();
+        this.borrow_mut().inflate(span_index, span);
+        this.borrow_mut().elements.push(element);
+        Position::new(this, start_index, start_position)
     }
 
-    pub(crate) fn insert(this: Rc<RefCell<Self>>, position: S, span: S, element: T) {
+    pub(crate) fn insert(this: Rc<RefCell<Self>>, position: S, span: S, element: T) -> Position<Range, S, T> {
         if this.borrow().elements.is_empty() {
-            return this.borrow_mut().push(position, span, element);
+            return Self::push(this, position, span, element);
         }
         if position < this.borrow().offset {
             let previous_first_position = this.borrow().offset;
@@ -41,11 +44,8 @@ impl<S: Spacing, T> Skeleton<Range, S, T> {
             );
         }
         if position >= this.borrow().last_position() {
-            return this.borrow_mut().push(
-                position - this.borrow().last_position(),
-                span,
-                element,
-            );
+            let distance = position - this.borrow().last_position();
+            return Self::push(this, distance, span, element);
         }
         let result =
             Self::shallow_at_or_before(this.clone(), position).unwrap();
@@ -55,6 +55,9 @@ impl<S: Spacing, T> Skeleton<Range, S, T> {
         let sub = Self::ensure_sub(this, result.index);
         assert!(position - result.position + span < space_between,
                 "Cannot insert range that intersects another range");
-        return Self::insert(sub, position - result.position, span, element);
+        Position {
+            position,
+            ..Self::insert(sub, position - result.position, span, element)
+        }
     }
 }

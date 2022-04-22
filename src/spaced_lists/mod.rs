@@ -58,9 +58,7 @@ pub struct SpacedList<S: Spacing, T> {
 }
 
 impl<S: Spacing, T> SpacedList<S, T> {
-    pub fn push(&mut self, spacing: S, value: T) -> Position<Node, S, T> {
-        todo!()
-    }
+    pub fn push(&mut self, spacing: S, value: T) -> Position<Node, S, T> { todo!() }
 
     pub fn insert(&mut self, position: S, value: T) -> Position<Node, S, T> { todo!() }
 
