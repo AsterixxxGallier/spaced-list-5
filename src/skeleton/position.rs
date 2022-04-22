@@ -32,18 +32,21 @@ impl<Kind, S: Spacing, T> Position<Kind, S, T> {
     }
 
     pub(crate) fn at_start(skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>) -> Self {
+        let position = skeleton.borrow().offset;
         Self {
             skeleton,
             index: 0,
-            position: skeleton.borrow().offset,
+            position,
         }
     }
 
     pub(crate) fn at_end(skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>) -> Self {
+        let index = skeleton.borrow().elements.len() - 1;
+        let position = skeleton.borrow().last_position();
         Self {
             skeleton,
-            index: skeleton.borrow().elements.len() - 1,
-            position: skeleton.borrow().last_position(),
+            index,
+            position,
         }
     }
 
