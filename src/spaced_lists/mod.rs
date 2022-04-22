@@ -40,6 +40,8 @@ impl<S: Spacing, T> SpacedList<S, T> {
 
     fn iter(&self) -> impl Iterator<Item=Position<Node, S, T>> { todo!() }
 
+    fn into_iter(self) -> impl Iterator<Item=Position<Node, S, T>> { todo!() }
+
 
     fn size(&self) -> usize { todo!() }
 
@@ -103,7 +105,11 @@ impl<S: Spacing, T> RangeSpacedList<S, T> {
 
     fn iter(&self) -> impl Iterator<Item=Position<Node, S, T>> { todo!() }
 
+    fn into_iter(self) -> impl Iterator<Item=Position<Node, S, T>> { todo!() }
+
     fn iter_ranges(&self) -> impl Iterator<Item=(Position<Node, S, T>, Position<Node, S, T>)> { todo!() }
+
+    fn into_iter_ranges(self) -> impl Iterator<Item=(Position<Node, S, T>, Position<Node, S, T>)> { todo!() }
 
 
     fn size(&self) -> usize { todo!() }
@@ -143,6 +149,8 @@ impl<S: Spacing> HollowSpacedList<S> {
 
 
     fn iter(&self) -> impl Iterator<Item=HollowPosition<Node, S>> { todo!() }
+
+    fn into_iter(self) -> impl Iterator<Item=HollowPosition<Node, S>> { todo!() }
 
 
     fn size(&self) -> usize { todo!() }
@@ -207,7 +215,11 @@ impl<S: Spacing> HollowRangeSpacedList<S> {
 
     fn iter(&self) -> impl Iterator<Item=HollowPosition<Node, S>> { todo!() }
 
+    fn into_iter(self) -> impl Iterator<Item=HollowPosition<Node, S>> { todo!() }
+
     fn iter_ranges(&self) -> impl Iterator<Item=(HollowPosition<Node, S>, HollowPosition<Node, S>)> { todo!() }
+
+    fn into_iter_ranges(self) -> impl Iterator<Item=(HollowPosition<Node, S>, HollowPosition<Node, S>)> { todo!() }
 
 
     fn size(&self) -> usize { todo!() }
