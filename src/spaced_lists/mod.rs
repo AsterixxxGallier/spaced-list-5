@@ -90,15 +90,25 @@ impl<S: Spacing, T> SpacedList<S, T> {
     }
 
 
-    pub fn before(&self, position: S) -> Option<Position<Node, S, T>> { todo!() }
+    pub fn before(&self, position: S) -> Option<Position<Node, S, T>> {
+        Skeleton::<Node, _, _>::before(self.skeleton.clone(), position)
+    }
 
-    pub fn at_or_before(&self, position: S) -> Option<Position<Node, S, T>> { todo!() }
+    pub fn at_or_before(&self, position: S) -> Option<Position<Node, S, T>> {
+        Skeleton::<Node, _, _>::at_or_before(self.skeleton.clone(), position)
+    }
 
-    pub fn at(&self, position: S) -> Option<Position<Node, S, T>> { todo!() }
+    pub fn at(&self, position: S) -> Option<Position<Node, S, T>> {
+        Skeleton::<Node, _, _>::at(self.skeleton.clone(), position)
+    }
 
-    pub fn at_or_after(&self, position: S) -> Option<Position<Node, S, T>> { todo!() }
+    pub fn at_or_after(&self, position: S) -> Option<Position<Node, S, T>> {
+        Skeleton::<Node, _, _>::at_or_after(self.skeleton.clone(), position)
+    }
 
-    pub fn after(&self, position: S) -> Option<Position<Node, S, T>> { todo!() }
+    pub fn after(&self, position: S) -> Option<Position<Node, S, T>> {
+        Skeleton::<Node, _, _>::after(self.skeleton.clone(), position)
+    }
 
 
     pub fn iter(&self) -> impl Iterator<Item=Position<Node, S, T>> {
@@ -244,15 +254,30 @@ impl<S: Spacing> HollowSpacedList<S> {
     }
 
 
-    pub fn before(&self, position: S) -> Option<HollowPosition<Node, S>> { todo!() }
+    pub fn before(&self, position: S) -> Option<HollowPosition<Node, S>> {
+        Skeleton::<Node, _, _>::before(self.skeleton.clone(), position)
+            .map(|position| position.into())
+    }
 
-    pub fn at_or_before(&self, position: S) -> Option<HollowPosition<Node, S>> { todo!() }
+    pub fn at_or_before(&self, position: S) -> Option<HollowPosition<Node, S>> {
+        Skeleton::<Node, _, _>::at_or_before(self.skeleton.clone(), position)
+            .map(|position| position.into())
+    }
 
-    pub fn at(&self, position: S) -> Option<HollowPosition<Node, S>> { todo!() }
+    pub fn at(&self, position: S) -> Option<HollowPosition<Node, S>> {
+        Skeleton::<Node, _, _>::at(self.skeleton.clone(), position)
+            .map(|position| position.into())
+    }
 
-    pub fn at_or_after(&self, position: S) -> Option<HollowPosition<Node, S>> { todo!() }
+    pub fn at_or_after(&self, position: S) -> Option<HollowPosition<Node, S>> {
+        Skeleton::<Node, _, _>::at_or_after(self.skeleton.clone(), position)
+            .map(|position| position.into())
+    }
 
-    pub fn after(&self, position: S) -> Option<HollowPosition<Node, S>> { todo!() }
+    pub fn after(&self, position: S) -> Option<HollowPosition<Node, S>> {
+        Skeleton::<Node, _, _>::after(self.skeleton.clone(), position)
+            .map(|position| position.into())
+    }
 
 
     pub fn iter(&self) -> impl Iterator<Item=HollowPosition<Node, S>> {
