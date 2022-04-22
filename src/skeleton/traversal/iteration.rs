@@ -3,7 +3,7 @@ use std::rc::Rc;
 
 use crate::{ParentData, Position, Skeleton, Spacing};
 
-// TODO implement DoubleEndedIterator too for all structs implementing Iterator in this module
+// TODO impl DoubleEndedIterator for Iter
 
 pub(crate) struct Iter<Kind, S: Spacing, T> {
     position: Position<Kind, S, T>,
