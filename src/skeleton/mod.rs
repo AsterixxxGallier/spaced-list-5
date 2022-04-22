@@ -58,13 +58,23 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
     }
 
     fn push_link(&mut self) -> usize {
-        if (self.links.len() + 1).is_power_of_two() {
-            self.links.push(self.length);
-            self.depth += 1;
-        } else {
-            self.links.push(zero());
+        // ╭───────────────────────────────╮
+        // ├───────────────╮               ├───────────────╮
+        // ├───────╮       ├───────╮       ├───────╮       │
+        // ├───╮   ├───╮   ├───╮   ├───╮   ├───╮   ├───╮   ├───╮
+        // ╵ 0 ╵ 1 ╵ 0 ╵ 2 ╵ 0 ╵ 1 ╵ 0 ╵ 3 ╵ 0 ╵ 1 ╵ 0 ╵ 2 ╵ 0 ╵
+        // 00000   00010   00100   00110   01000   01010   01100   01110   10000
+        //     00001   00011   00101   00111   01001   01011   01101   01111
+        let mut length = S::zero();
+        let index = self.links.len();
+        for degree in 0..index.trailing_ones() {
+            length += self.links[index - (1 << degree)];
         }
-        self.links.len() - 1
+        self.links.push(length);
+        if self.links.len().is_power_of_two() {
+            self.depth += 1;
+        }
+        index
     }
 
     pub fn offset(&self) -> S {
