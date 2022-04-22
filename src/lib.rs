@@ -48,3 +48,4 @@ pub(crate) use skeleton::Skeleton;
 pub(crate) use skeleton::Node;
 pub(crate) use skeleton::Range;
 pub(crate) use skeleton::ParentData;
+pub(crate) use skeleton::traversal::iteration::Iter;

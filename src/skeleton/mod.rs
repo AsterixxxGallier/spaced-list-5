@@ -95,6 +95,6 @@ mod node;
 
 mod range;
 
-mod traversal;
+pub mod traversal;
 
 pub mod position;

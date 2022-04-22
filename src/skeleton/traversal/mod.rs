@@ -397,4 +397,4 @@ impl<S: Spacing, T> Skeleton<Range, S, T> {
     traversal_methods!(range);
 }
 
-mod iteration;
+pub mod iteration;
