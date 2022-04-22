@@ -3,7 +3,7 @@ use std::rc::Rc;
 
 use num_traits::zero;
 
-use crate::skeleton::{link_index, Skeleton};
+use crate::skeleton::{link_index, relative_depth, Skeleton};
 use crate::Spacing;
 
 impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
@@ -80,22 +80,8 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
     }
 
     pub fn inflate_unchecked(&mut self, index: usize, amount: S) {
-        // ╭───────────────────────────────╮
-        // ├───────────────╮               ├───────────────╮
-        // ├───────╮       ├───────╮       ├───────╮       │
-        // ├───╮   ├───╮   ├───╮   ├───╮   ├───╮   ├───╮   ├───╮
-        // ╵ 0 ╵ 1 ╵ 0 ╵ 2 ╵ 0 ╵ 1 ╵ 0 ╵ 3 ╵ 0 ╵ 1 ╵ 0 ╵ 2 ╵ 0 ╵
-        // 00000   00010   00100   00110   01000   01010   01100   01110   10000
-        //     00001   00011   00101   00111   01001   01011   01101   01111
-        //
-        // for degree in 0..self.depth {
-        // TODO invent a metric that measures the "relative depth" above a link, i. e. how many
-        //  links there *could* be above it, and use it in deflate_unchecked too
-        for degree in 0.. {
+        for degree in 0..relative_depth(index, self.links.len()) {
             if index >> degree & 1 == 0 {
-                if !self.link_index_is_in_bounds(link_index(index, degree)) {
-                    break;
-                }
                 self.links[link_index(index, degree)] += amount;
             }
         }
@@ -109,11 +95,8 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
     }
 
     pub fn deflate_unchecked(&mut self, index: usize, amount: S) {
-        for degree in 0.. {
+        for degree in 0..relative_depth(index, self.links.len()) {
             if index >> degree & 1 == 0 {
-                if !self.link_index_is_in_bounds(link_index(index, degree)) {
-                    break;
-                }
                 self.links[link_index(index, degree)] -= amount;
             }
         }
@@ -139,5 +122,39 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
                 sub.borrow_mut().offset += amount;
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    // use std::collections::HashMap;
+
+    use crate::skeleton::{link_index, relative_depth};
+
+    #[test]
+    fn test() {
+        // let mut approaches = HashMap::new();
+        // approaches.insert("xor size", |size: usize, index: usize|
+        //     (usize::BITS - (size ^ index).leading_zeros()) as usize);
+        for size in 0usize..16 {
+            for index in 0usize..size {
+                let depth =
+                    (0..)
+                        .take_while(|&degree| link_index(index, degree) < size)
+                        .count();
+                assert_eq!(relative_depth(index, size), depth);
+                // println!("{:04b}/{:04b}=>{}", index, size, depth);
+                // let mut to_remove = vec![];
+                // for (&key, &value) in &approaches {
+                //     if value(size, index) != depth {
+                //         to_remove.push(key);
+                //     }
+                // }
+                // for key in to_remove {
+                //     approaches.remove(key);
+                // }
+            }
+        }
+        // println!("{:?}", approaches.keys());
     }
 }

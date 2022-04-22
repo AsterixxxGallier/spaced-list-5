@@ -31,6 +31,11 @@ pub(crate) const fn link_index(index: usize, degree: usize) -> usize {
     index | ((1 << degree) - 1)
 }
 
+#[inline(always)]
+pub(crate) const fn relative_depth(index: usize, size: usize) -> usize {
+    (usize::BITS - (size ^ index).leading_zeros()) as usize
+}
+
 impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
     pub(crate) fn new(parent_data: Option<ParentData<Self>>) -> Rc<RefCell<Self>> {
         Rc::new(RefCell::new(Self {
