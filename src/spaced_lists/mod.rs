@@ -9,6 +9,8 @@ use crate::skeleton::position::{HollowPosition, Position};
 
 // TODO implement try_ versions of all public methods that can fail
 // TODO add good error handling to all public methods that can fail
+// TODO add conditional traversal methods (ones that will only return positions where the elements
+//  match a custom condition)
 
 macro_rules! spacing_methods {
     () => {
