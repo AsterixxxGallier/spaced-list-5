@@ -6,13 +6,14 @@
 //! 3. want a list where changing the position of one element should change the position of all
 //!    elements after it.
 //!
+// TODO update this list
 //! There are several different types of lists in this crate:
 //! 1. HollowSpacedList: A spaced list that does not store element values, only the distances
 //!    between conceptual nodes.
-//! 2. FilledSpacedList: A spaced list that does store element values and the distance between them.
+//! 2. SpacedList: A spaced list that does store element values and the distance between them.
 //! 3. HollowRangeSpacedList: A hollow spaced list whose nodes are semantically interpreted as
 //!    ranges with a start and an end.
-//! 4. FilledRangeSpacedList: A filled spaced list whose nodes are semantically interpreted as
+//! 4. RangeSpacedList: A filled spaced list whose nodes are semantically interpreted as
 //!    ranges with a start and an end, storing an element value for each range.
 
 #![feature(trait_alias)]
