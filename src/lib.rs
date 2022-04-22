@@ -13,7 +13,6 @@
 //! 4. HollowRangeSpacedList: A spaced list that stores empty nodes as non-overlapping ranges.
 
 #![feature(trait_alias)]
-#![feature(arbitrary_self_types)]
 
 use std::ops::{Add, AddAssign, Sub, SubAssign};
 
