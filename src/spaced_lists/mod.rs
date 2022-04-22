@@ -1,10 +1,11 @@
 use std::cell::RefCell;
 use std::rc::Rc;
+
 use itertools::Itertools;
 
+use crate::{Iter, Spacing};
 use crate::skeleton::{Node, Range, Skeleton};
 use crate::skeleton::position::{HollowPosition, Position};
-use crate::{Iter, Spacing};
 
 // TODO implement try_ versions of all public methods that can fail
 // TODO add good error handling to all public methods that can fail
@@ -58,7 +59,22 @@ pub struct SpacedList<S: Spacing, T> {
     size: usize,
 }
 
+impl<S: Spacing, T> Default for SpacedList<S, T> {
+    fn default() -> Self {
+        Self {
+            skeleton: Skeleton::new(None),
+            size: 0,
+        }
+    }
+}
 impl<S: Spacing, T> SpacedList<S, T> {
+    pub fn new() -> Self {
+        Self {
+            skeleton: Skeleton::new(None),
+            size: 0,
+        }
+    }
+
     pub fn push(&mut self, spacing: S, value: T) -> Position<Node, S, T> {
         self.size += 1;
         Skeleton::<Node, _, _>::push(self.skeleton.clone(), spacing, value)
@@ -128,7 +144,22 @@ pub struct RangeSpacedList<S: Spacing, T> {
     size: usize,
 }
 
+impl<S: Spacing, T> Default for RangeSpacedList<S, T> {
+    fn default() -> Self {
+        Self {
+            skeleton: Skeleton::new(None),
+            size: 0,
+        }
+    }
+}
 impl<S: Spacing, T> RangeSpacedList<S, T> {
+    pub fn new() -> Self {
+        Self {
+            skeleton: Skeleton::new(None),
+            size: 0,
+        }
+    }
+
     pub fn push(&mut self, spacing: S, span: S, value: T) -> Position<Range, S, T> {
         self.size += 1;
         Skeleton::<Range, _, _>::push(self.skeleton.clone(), spacing, span, value)
@@ -252,7 +283,22 @@ pub struct HollowSpacedList<S: Spacing> {
     size: usize,
 }
 
+impl<S: Spacing> Default for HollowSpacedList<S> {
+    fn default() -> Self {
+        Self {
+            skeleton: Skeleton::new(None),
+            size: 0,
+        }
+    }
+}
 impl<S: Spacing> HollowSpacedList<S> {
+    pub fn new() -> Self {
+        Self {
+            skeleton: Skeleton::new(None),
+            size: 0,
+        }
+    }
+
     pub fn push(&mut self, spacing: S) -> HollowPosition<Node, S> {
         self.size += 1;
         Skeleton::<Node, _, _>::push(self.skeleton.clone(), spacing, ()).into()
@@ -327,7 +373,22 @@ pub struct HollowRangeSpacedList<S: Spacing> {
     size: usize,
 }
 
+impl<S: Spacing> Default for HollowRangeSpacedList<S> {
+    fn default() -> Self {
+        Self {
+            skeleton: Skeleton::new(None),
+            size: 0,
+        }
+    }
+}
 impl<S: Spacing> HollowRangeSpacedList<S> {
+    pub fn new() -> Self {
+        Self {
+            skeleton: Skeleton::new(None),
+            size: 0,
+        }
+    }
+
     pub fn push(&mut self, spacing: S, span: S) -> HollowPosition<Range, S> {
         self.size += 1;
         Skeleton::<Range, _, _>::push(self.skeleton.clone(), spacing, span, ()).into()
