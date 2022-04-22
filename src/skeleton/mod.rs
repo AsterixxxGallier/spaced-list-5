@@ -74,6 +74,7 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
         if self.links.len().is_power_of_two() {
             self.depth += 1;
         }
+        self.subs.push(None);
         index
     }
 
