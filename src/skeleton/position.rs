@@ -7,9 +7,9 @@ use crate::skeleton::{Range, Skeleton};
 use crate::Spacing;
 
 pub struct Position<Kind, S: Spacing, T> {
-    skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>,
-    index: usize,
-    position: S,
+    pub(crate) skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>,
+    pub(crate) index: usize,
+    pub(crate) position: S,
 }
 
 impl<Kind, S: Spacing, T> Clone for Position<Kind, S, T> {
@@ -31,12 +31,20 @@ impl<Kind, S: Spacing, T> Position<Kind, S, T> {
         }
     }
 
-    pub(crate) fn skeleton(&self) -> &Rc<RefCell<Skeleton<Kind, S, T>>> {
-        &self.skeleton
+    pub(crate) fn at_start(skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>) -> Self {
+        Self {
+            skeleton,
+            index: 0,
+            position: skeleton.borrow().offset,
+        }
     }
 
-    pub(crate) fn index(&self) -> usize {
-        self.index
+    pub(crate) fn at_end(skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>) -> Self {
+        Self {
+            skeleton,
+            index: skeleton.borrow().elements.len() - 1,
+            position: skeleton.borrow().last_position(),
+        }
     }
 
     pub fn position(&self) -> S {
@@ -55,9 +63,9 @@ impl<Kind, S: Spacing, T> Position<Kind, S, T> {
 }
 
 pub struct HollowPosition<Kind, S: Spacing> {
-    skeleton: Rc<RefCell<Skeleton<Kind, S, ()>>>,
-    index: usize,
-    position: S,
+    pub(crate) skeleton: Rc<RefCell<Skeleton<Kind, S, ()>>>,
+    pub(crate) index: usize,
+    pub(crate) position: S,
 }
 
 impl<Kind, S: Spacing> Clone for HollowPosition<Kind, S> {
@@ -77,14 +85,6 @@ impl<Kind, S: Spacing> HollowPosition<Kind, S> {
             index,
             position,
         }
-    }
-
-    pub(crate) fn skeleton(&self) -> &Rc<RefCell<Skeleton<Kind, S, ()>>> {
-        &self.skeleton
-    }
-
-    pub(crate) fn index(&self) -> usize {
-        self.index
     }
 
     pub fn position(&self) -> S {
@@ -108,7 +108,7 @@ impl BoundType {
     }
 }
 
-impl<S: Spacing> HollowPosition<Range, S, T> {
+impl<S: Spacing> HollowPosition<Range, S> {
     pub fn bound_type(&self) -> BoundType {
         BoundType::of(self.index)
     }
@@ -153,5 +153,11 @@ impl<S: Spacing> HollowPosition<Range, S, T> {
                 (start.into(), self.into())
             }
         }
+    }
+}
+
+impl<Kind, S: Spacing> From<Position<Kind, S, ()>> for HollowPosition<Kind, S> {
+    fn from(position: Position<Kind, S, ()>) -> Self {
+        Self::new(position.skeleton, position.index, position.position)
     }
 }

@@ -40,7 +40,7 @@ impl<S: Spacing, T> Skeleton<Node, S, T> {
         }
         let result =
             Self::shallow_at_or_before(this.clone(), position).unwrap();
-        let sub = Self::ensure_sub(this, result.index());
-        return Self::insert(sub, position - result.position(), element);
+        let sub = Self::ensure_sub(this, result.index);
+        return Self::insert(sub, position - result.position, element);
     }
 }

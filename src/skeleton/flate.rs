@@ -16,9 +16,9 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
                 "Cannot inflate after the given position, as that position is at or after this list");
         let result =
             Self::shallow_at_or_before(this.clone(), position).unwrap();
-        this.borrow_mut().inflate(result.index(), amount);
-        if let Some(sub) = this.borrow_mut().sub(result.index()) {
-            let position_in_sub = position - result.position();
+        this.borrow_mut().inflate(result.index, amount);
+        if let Some(sub) = this.borrow_mut().sub(result.index) {
+            let position_in_sub = position - result.position;
             if position_in_sub < sub.borrow().last_position() {
                 Self::inflate_after(sub, position_in_sub, amount);
             }
@@ -34,9 +34,9 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
                 "Cannot inflate before the given position, as that position is after this list");
         let result =
             Self::shallow_before(this.clone(), position).unwrap();
-        this.borrow_mut().inflate(result.index(), amount);
-        if let Some(sub) = this.borrow_mut().sub(result.index()) {
-            let position_in_sub = position - result.position();
+        this.borrow_mut().inflate(result.index, amount);
+        if let Some(sub) = this.borrow_mut().sub(result.index) {
+            let position_in_sub = position - result.position;
             if position_in_sub <= sub.borrow().last_position() {
                 Self::inflate_before(sub, position_in_sub, amount);
             }
@@ -52,9 +52,9 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
                 "Cannot deflate after the given position, as that position is at or after this list");
         let result =
             Self::shallow_at_or_before(this.clone(), position).unwrap();
-        this.borrow_mut().deflate(result.index(), amount);
-        if let Some(sub) = this.borrow_mut().sub(result.index()) {
-            let position_in_sub = position - result.position();
+        this.borrow_mut().deflate(result.index, amount);
+        if let Some(sub) = this.borrow_mut().sub(result.index) {
+            let position_in_sub = position - result.position;
             if position_in_sub < sub.borrow().last_position() {
                 Self::deflate_after(sub, position_in_sub, amount);
             }
@@ -70,9 +70,9 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
                 "Cannot deflate before the given position, as that position is after this list");
         let result =
             Self::shallow_before(this.clone(), position).unwrap();
-        this.borrow_mut().deflate(result.index(), amount);
-        if let Some(sub) = this.borrow_mut().sub(result.index()) {
-            let position_in_sub = position - result.position();
+        this.borrow_mut().deflate(result.index, amount);
+        if let Some(sub) = this.borrow_mut().sub(result.index) {
+            let position_in_sub = position - result.position;
             if position_in_sub <= sub.borrow().last_position() {
                 Self::deflate_before(sub, position_in_sub, amount);
             }

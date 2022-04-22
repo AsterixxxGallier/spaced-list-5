@@ -49,12 +49,12 @@ impl<S: Spacing, T> Skeleton<Range, S, T> {
         }
         let result =
             Self::shallow_at_or_before(this.clone(), position).unwrap();
-        assert_eq!(BoundType::of(result.index()), BoundType::End,
+        assert_eq!(BoundType::of(result.index), BoundType::End,
                    "Cannot insert range inside of another range");
-        let space_between = this.borrow().link(result.index());
-        let sub = Self::ensure_sub(this, result.index());
-        assert!(position - result.position() + span < space_between,
+        let space_between = this.borrow().link(result.index);
+        let sub = Self::ensure_sub(this, result.index);
+        assert!(position - result.position + span < space_between,
                 "Cannot insert range that intersects another range");
-        return Self::insert(sub, position - result.position(), span, element);
+        return Self::insert(sub, position - result.position, span, element);
     }
 }

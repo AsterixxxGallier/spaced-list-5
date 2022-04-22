@@ -24,13 +24,27 @@ use num_traits::Zero;
 
 pub trait Spacing = Add<Output=Self> + AddAssign + Sub<Output=Self> + SubAssign + Zero + Ord + Copy;
 
-mod iteration;
-
 mod skeleton;
 
 mod spaced_lists;
 
 #[doc(inline)]
-pub use iteration::node::Iter;
+pub use spaced_lists::SpacedList;
 #[doc(inline)]
-pub use iteration::range::RangeIter;
+pub use spaced_lists::RangeSpacedList;
+#[doc(inline)]
+pub use spaced_lists::HollowSpacedList;
+#[doc(inline)]
+pub use spaced_lists::HollowRangeSpacedList;
+
+#[doc(inline)]
+pub use skeleton::position::Position;
+#[doc(inline)]
+pub use skeleton::position::HollowPosition;
+#[doc(inline)]
+pub use skeleton::position::BoundType;
+
+pub(crate) use skeleton::Skeleton;
+pub(crate) use skeleton::Node;
+pub(crate) use skeleton::Range;
+pub(crate) use skeleton::ParentData;
