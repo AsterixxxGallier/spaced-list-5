@@ -90,6 +90,25 @@ impl<Kind, S: Spacing> HollowPosition<Kind, S> {
         }
     }
 
+    pub(crate) fn at_start(skeleton: Rc<RefCell<Skeleton<Kind, S, ()>>>) -> Self {
+        let position = skeleton.borrow().offset;
+        Self {
+            skeleton,
+            index: 0,
+            position,
+        }
+    }
+
+    pub(crate) fn at_end(skeleton: Rc<RefCell<Skeleton<Kind, S, ()>>>) -> Self {
+        let index = skeleton.borrow().elements.len() - 1;
+        let position = skeleton.borrow().last_position();
+        Self {
+            skeleton,
+            index,
+            position,
+        }
+    }
+
     pub fn position(&self) -> S {
         self.position
     }

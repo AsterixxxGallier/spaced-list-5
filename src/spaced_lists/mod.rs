@@ -52,9 +52,21 @@ impl<S: Spacing, T> SpacedList<S, T> {
     pub fn decrease_spacing_before(&mut self, position: S, spacing: S) { todo!() }
 
 
-    pub fn first(&self) -> Option<Position<Node, S, T>> { todo!() }
+    pub fn first(&self) -> Option<Position<Node, S, T>> {
+        if self.is_empty() {
+            None
+        } else {
+            Some(Position::at_start(self.skeleton.clone()))
+        }
+    }
 
-    pub fn last(&self) -> Option<Position<Node, S, T>> { todo!() }
+    pub fn last(&self) -> Option<Position<Node, S, T>> {
+        if self.is_empty() {
+            None
+        } else {
+            Some(Position::at_end(self.skeleton.clone()))
+        }
+    }
 
 
     pub fn before(&self, position: S) -> Option<Position<Node, S, T>> { todo!() }
@@ -102,9 +114,21 @@ impl<S: Spacing, T> RangeSpacedList<S, T> {
     pub fn decrease_spacing_before(&mut self, position: S, spacing: S) { todo!() }
 
 
-    pub fn first(&self) -> Option<Position<Range, S, T>> { todo!() }
+    pub fn first(&self) -> Option<Position<Range, S, T>> {
+        if self.is_empty() {
+            None
+        } else {
+            Some(Position::at_start(self.skeleton.clone()))
+        }
+    }
 
-    pub fn last(&self) -> Option<Position<Range, S, T>> { todo!() }
+    pub fn last(&self) -> Option<Position<Range, S, T>> {
+        if self.is_empty() {
+            None
+        } else {
+            Some(Position::at_end(self.skeleton.clone()))
+        }
+    }
 
 
     pub fn starting_or_ending_before(&self, position: S) -> Option<Position<Range, S, T>> { todo!() }
@@ -180,9 +204,21 @@ impl<S: Spacing> HollowSpacedList<S> {
     pub fn decrease_spacing_before(&mut self, position: S, spacing: S) { todo!() }
 
 
-    pub fn first(&self) -> Option<HollowPosition<Node, S>> { todo!() }
+    pub fn first(&self) -> Option<HollowPosition<Node, S>> {
+        if self.is_empty() {
+            None
+        } else {
+            Some(HollowPosition::at_start(self.skeleton.clone()))
+        }
+    }
 
-    pub fn last(&self) -> Option<HollowPosition<Node, S>> { todo!() }
+    pub fn last(&self) -> Option<HollowPosition<Node, S>> {
+        if self.is_empty() {
+            None
+        } else {
+            Some(HollowPosition::at_end(self.skeleton.clone()))
+        }
+    }
 
 
     pub fn before(&self, position: S) -> Option<HollowPosition<Node, S>> { todo!() }
@@ -230,9 +266,21 @@ impl<S: Spacing> HollowRangeSpacedList<S> {
     pub fn decrease_spacing_before(&mut self, position: S, spacing: S) { todo!() }
 
 
-    pub fn first(&self) -> Option<HollowPosition<Range, S>> { todo!() }
+    pub fn first(&self) -> Option<HollowPosition<Range, S>> {
+        if self.is_empty() {
+            None
+        } else {
+            Some(HollowPosition::at_start(self.skeleton.clone()))
+        }
+    }
 
-    pub fn last(&self) -> Option<HollowPosition<Range, S>> { todo!() }
+    pub fn last(&self) -> Option<HollowPosition<Range, S>> {
+        if self.is_empty() {
+            None
+        } else {
+            Some(HollowPosition::at_end(self.skeleton.clone()))
+        }
+    }
 
 
     pub fn starting_or_ending_before(&self, position: S) -> Option<HollowPosition<Range, S>> { todo!() }
