@@ -301,6 +301,63 @@ macro_rules! traverse {
     };
     // endregion
 
+    // region if one is at bound
+    (@if one is at bound(any) { $($then:tt)* } else { $($else:tt)* }) => {
+        $($then)*
+    };
+    (@if one is at bound(start) { $($then:tt)* } else { $($else:tt)* }) => {
+        $($else)*
+    };
+    (@if one is at bound(end) { $($then:tt)* } else { $($else:tt)* }) => {
+        $($then)*
+    };
+    // endregion
+
+    // region trivial edge cases
+    (@trivial edge cases(<, $target:ident, $bound:ident; $skeleton:ident)) => {
+        traverse!(@if one is at bound($bound) {
+            if $target > $skeleton.borrow().last_position() {
+                return Some(Position::at_end($skeleton));
+            }
+        } else {});
+    };
+    (@trivial edge cases(<=, $target:ident, $bound:ident; $skeleton:ident)) => {
+        traverse!(@if one is at bound($bound) {
+            if $target >= $skeleton.borrow().last_position() {
+                return Some(Position::at_end($skeleton));
+            }
+        } else {});
+    };
+    (@trivial edge cases(==, $target:ident, $bound:ident; $skeleton:ident)) => {
+        {
+            traverse!(@if zero is at bound($bound) {
+                if $target == $skeleton.borrow().offset() {
+                    return Some(Position::at_start($skeleton));
+                }
+            } else {});
+            traverse!(@if one is at bound($bound) {
+                if $target == $skeleton.borrow().last_position() {
+                    return Some(Position::at_end($skeleton));
+                }
+            } else {});
+        }
+    };
+    (@trivial edge cases(>=, $target:ident, $bound:ident; $skeleton:ident)) => {
+        traverse!(@if zero is at bound($bound) {
+            if $target <= $skeleton.borrow().offset() {
+                return Some(Position::at_start($skeleton));
+            }
+        } else {});
+    };
+    (@trivial edge cases(>, $target:ident, $bound:ident; $skeleton:ident)) => {
+        traverse!(@if zero is at bound($bound) {
+            if $target < $skeleton.borrow().offset() {
+                return Some(Position::at_start($skeleton));
+            }
+        } else {});
+    };
+    // endregion
+
     (@($depth:ident, $cmp:tt, $target:ident, $bound:ident; $skeleton:ident)) => {
         if $skeleton.borrow().elements.is_empty() {
             None
@@ -317,6 +374,7 @@ macro_rules! traverse {
                 None
             })
         } else {
+            traverse!(@trivial edge cases($cmp, $target, $bound; $skeleton));
             traverse!(@checked($depth, $cmp, $target, $bound; $skeleton))
         }
     };
