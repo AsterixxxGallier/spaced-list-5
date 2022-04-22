@@ -53,16 +53,26 @@ impl<S: Spacing, T> SpacedList<S, T> {
     }
 
 
-    pub fn size(&self) -> usize { todo!() }
+    pub fn size(&self) -> usize {
+        self.size
+    }
 
-    pub fn is_empty(&self) -> bool { todo!() }
+    pub fn is_empty(&self) -> bool {
+        self.size == 0
+    }
 
 
-    pub fn length(&self) -> S { todo!() }
+    pub fn length(&self) -> S {
+        self.skeleton.borrow().length()
+    }
 
-    pub fn start(&self) -> S { todo!() }
+    pub fn start(&self) -> S {
+        self.skeleton.borrow().offset()
+    }
 
-    pub fn end(&self) -> S { todo!() }
+    pub fn end(&self) -> S {
+        self.skeleton.borrow().last_position()
+    }
 }
 
 pub struct RangeSpacedList<S: Spacing, T> {
@@ -142,16 +152,26 @@ impl<S: Spacing, T> RangeSpacedList<S, T> {
     }
 
 
-    pub fn size(&self) -> usize { todo!() }
+    pub fn size(&self) -> usize {
+        self.size
+    }
 
-    pub fn is_empty(&self) -> bool { todo!() }
+    pub fn is_empty(&self) -> bool {
+        self.size == 0
+    }
 
 
-    pub fn length(&self) -> S { todo!() }
+    pub fn length(&self) -> S {
+        self.skeleton.borrow().length()
+    }
 
-    pub fn start(&self) -> S { todo!() }
+    pub fn start(&self) -> S {
+        self.skeleton.borrow().offset()
+    }
 
-    pub fn end(&self) -> S { todo!() }
+    pub fn end(&self) -> S {
+        self.skeleton.borrow().last_position()
+    }
 }
 
 pub struct HollowSpacedList<S: Spacing> {
@@ -199,16 +219,26 @@ impl<S: Spacing> HollowSpacedList<S> {
     }
 
 
-    pub fn size(&self) -> usize { todo!() }
+    pub fn size(&self) -> usize {
+        self.size
+    }
 
-    pub fn is_empty(&self) -> bool { todo!() }
+    pub fn is_empty(&self) -> bool {
+        self.size == 0
+    }
 
 
-    pub fn length(&self) -> S { todo!() }
+    pub fn length(&self) -> S {
+        self.skeleton.borrow().length()
+    }
 
-    pub fn start(&self) -> S { todo!() }
+    pub fn start(&self) -> S {
+        self.skeleton.borrow().offset()
+    }
 
-    pub fn end(&self) -> S { todo!() }
+    pub fn end(&self) -> S {
+        self.skeleton.borrow().last_position()
+    }
 }
 
 pub struct HollowRangeSpacedList<S: Spacing> {
@@ -288,14 +318,24 @@ impl<S: Spacing> HollowRangeSpacedList<S> {
     }
 
 
-    pub fn size(&self) -> usize { todo!() }
+    pub fn size(&self) -> usize {
+        self.size
+    }
 
-    pub fn is_empty(&self) -> bool { todo!() }
+    pub fn is_empty(&self) -> bool {
+        self.size == 0
+    }
 
 
-    pub fn length(&self) -> S { todo!() }
+    pub fn length(&self) -> S {
+        self.skeleton.borrow().length()
+    }
 
-    pub fn start(&self) -> S { todo!() }
+    pub fn start(&self) -> S {
+        self.skeleton.borrow().offset()
+    }
 
-    pub fn end(&self) -> S { todo!() }
+    pub fn end(&self) -> S {
+        self.skeleton.borrow().last_position()
+    }
 }
