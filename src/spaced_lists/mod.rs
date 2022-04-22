@@ -46,6 +46,13 @@ impl<S: Spacing, T> SpacedList<S, T> {
     pub fn size(&self) -> usize { todo!() }
 
     pub fn is_empty(&self) -> bool { todo!() }
+
+
+    pub fn length(&self) -> S { todo!() }
+
+    pub fn start(&self) -> S { todo!() }
+
+    pub fn end(&self) -> S { todo!() }
 }
 
 pub struct RangeSpacedList<S: Spacing, T> {
@@ -115,6 +122,13 @@ impl<S: Spacing, T> RangeSpacedList<S, T> {
     pub fn size(&self) -> usize { todo!() }
 
     pub fn is_empty(&self) -> bool { todo!() }
+
+
+    pub fn length(&self) -> S { todo!() }
+
+    pub fn start(&self) -> S { todo!() }
+
+    pub fn end(&self) -> S { todo!() }
 }
 
 pub struct HollowSpacedList<S: Spacing> {
@@ -156,6 +170,13 @@ impl<S: Spacing> HollowSpacedList<S> {
     pub fn size(&self) -> usize { todo!() }
 
     pub fn is_empty(&self) -> bool { todo!() }
+
+
+    pub fn length(&self) -> S { todo!() }
+
+    pub fn start(&self) -> S { todo!() }
+
+    pub fn end(&self) -> S { todo!() }
 }
 
 pub struct HollowRangeSpacedList<S: Spacing> {
@@ -225,4 +246,11 @@ impl<S: Spacing> HollowRangeSpacedList<S> {
     pub fn size(&self) -> usize { todo!() }
 
     pub fn is_empty(&self) -> bool { todo!() }
+
+
+    pub fn length(&self) -> S { todo!() }
+
+    pub fn start(&self) -> S { todo!() }
+
+    pub fn end(&self) -> S { todo!() }
 }
