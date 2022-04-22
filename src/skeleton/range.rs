@@ -36,6 +36,9 @@ impl<S: Spacing, T> Skeleton<Range, S, T> {
             this.borrow_mut().inflate_after_offset(previous_first_position - position);
             this.borrow_mut().offset = position;
             this.borrow_mut().links[0] = span;
+            if this.borrow().links.len() == 1 {
+                this.borrow_mut().length = span;
+            }
             return Self::insert(
                 this,
                 previous_first_position,
