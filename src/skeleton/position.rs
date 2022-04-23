@@ -1,9 +1,10 @@
 use std::cell::{Ref, RefCell, RefMut};
 use std::rc::Rc;
 
+use itertools::Itertools;
 use maybe_owned::MaybeOwned;
 
-use crate::{ParentData, Spacing};
+use crate::{ForwardsIter, BackwardsIter, ParentData, Spacing};
 use crate::skeleton::{Range, Skeleton};
 
 macro_rules! position {
@@ -54,6 +55,22 @@ macro_rules! position {
 
             pub fn position(&self) -> S {
                 self.position
+            }
+
+            pub fn iter_next(&self) -> impl Iterator<Item = Self> {
+                ForwardsIter::from(self.clone().into()).map_into()
+            }
+
+            pub fn into_iter_next(self) -> impl Iterator<Item = Self> {
+                ForwardsIter::from(self.into()).map_into()
+            }
+
+            pub fn iter_previous(&self) -> impl Iterator<Item = Self> {
+                BackwardsIter::from(self.clone().into()).map_into()
+            }
+
+            pub fn into_iter_previous(&self) -> impl Iterator<Item = Self> {
+                BackwardsIter::from(self.clone().into()).map_into()
             }
 
             pub fn into_next(self) -> Option<Self> {
