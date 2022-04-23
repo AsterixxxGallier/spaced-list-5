@@ -69,8 +69,8 @@ macro_rules! position {
                 BackwardsIter::from(self.clone().into()).map_into()
             }
 
-            pub fn into_iter_previous(&self) -> impl Iterator<Item = Self> {
-                BackwardsIter::from(self.clone().into()).map_into()
+            pub fn into_iter_previous(self) -> impl Iterator<Item = Self> {
+                BackwardsIter::from(self.into()).map_into()
             }
 
             pub fn into_next(self) -> Option<Self> {
