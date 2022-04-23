@@ -5,11 +5,11 @@ use crate::{Position, Skeleton, Spacing};
 
 // TODO implement parallel iteration
 
-pub(crate) struct Iter<Kind, S: Spacing, T> {
+pub(crate) struct ForwardsIter<Kind, S: Spacing, T> {
     position: Option<Position<Kind, S, T>>,
 }
 
-impl<Kind, S: Spacing, T> Iter<Kind, S, T> {
+impl<Kind, S: Spacing, T> ForwardsIter<Kind, S, T> {
     pub(crate) fn from(position: Position<Kind, S, T>) -> Self {
         Self {
             position: Some(position),
@@ -23,7 +23,7 @@ impl<Kind, S: Spacing, T> Iter<Kind, S, T> {
     }
 }
 
-impl<Kind, S: Spacing, T> Iterator for Iter<Kind, S, T> {
+impl<Kind, S: Spacing, T> Iterator for ForwardsIter<Kind, S, T> {
     type Item = Position<Kind, S, T>;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -31,6 +31,38 @@ impl<Kind, S: Spacing, T> Iterator for Iter<Kind, S, T> {
             None => None,
             Some(pos) => {
                 self.position = self.position.take().unwrap().into_next();
+                Some(pos)
+            }
+        }
+    }
+}
+
+pub(crate) struct BackwardsIter<Kind, S: Spacing, T> {
+    position: Option<Position<Kind, S, T>>,
+}
+
+impl<Kind, S: Spacing, T> BackwardsIter<Kind, S, T> {
+    pub(crate) fn from(position: Position<Kind, S, T>) -> Self {
+        Self {
+            position: Some(position),
+        }
+    }
+
+    pub(crate) fn from_end(skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>) -> Self {
+        Self {
+            position: Some(Position::at_end(skeleton)),
+        }
+    }
+}
+
+impl<Kind, S: Spacing, T> Iterator for BackwardsIter<Kind, S, T> {
+    type Item = Position<Kind, S, T>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.position.clone() {
+            None => None,
+            Some(pos) => {
+                self.position = self.position.take().unwrap().into_previous();
                 Some(pos)
             }
         }
