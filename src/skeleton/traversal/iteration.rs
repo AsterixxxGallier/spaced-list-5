@@ -3,7 +3,7 @@ use std::rc::Rc;
 
 use crate::{Position, Skeleton, Spacing};
 
-// TODO impl DoubleEndedIterator for Iter
+// TODO implement parallel iteration
 
 pub(crate) struct Iter<Kind, S: Spacing, T> {
     position: Option<Position<Kind, S, T>>,
