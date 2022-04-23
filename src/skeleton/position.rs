@@ -3,8 +3,8 @@ use std::rc::Rc;
 
 use maybe_owned::MaybeOwned;
 
+use crate::{ParentData, Spacing};
 use crate::skeleton::{Range, Skeleton};
-use crate::Spacing;
 
 pub struct Position<Kind, S: Spacing, T> {
     pub(crate) skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>,
@@ -52,6 +52,59 @@ impl<Kind, S: Spacing, T> Position<Kind, S, T> {
 
     pub fn position(&self) -> S {
         self.position
+    }
+
+    pub fn into_next(self) -> Option<Self> {
+        // if self.position.index == self.position.skeleton.borrow().links.len() {
+        //     if let Some(ParentData { parent, index_in_parent }) =
+        //     &self.position.skeleton.clone().borrow().parent_data {
+        //         self.position.position -= self.position.skeleton.borrow().last_position();
+        //         self.position.skeleton = parent.upgrade().unwrap();
+        //         self.position.position += self.position.skeleton.borrow().link(*index_in_parent);
+        //         self.position.index = index_in_parent + 1;
+        //     } else {
+        //         self.finished = true;
+        //     }
+        // } else if let Some(sub) =
+        // self.position.skeleton.clone().borrow().sub(self.position.index) {
+        //     self.position.skeleton = sub;
+        //     self.position.index = 0;
+        //     self.position.position += self.position.skeleton.borrow().offset;
+        // } else {
+        //     self.position.position += self.position.skeleton.borrow().link(self.position.index);
+        //     self.position.index += 1;
+        // }
+        if self.index == self.skeleton.borrow().links.len() {
+            if let Some(ParentData { parent, index_in_parent }) =
+            &self.skeleton.clone().borrow().parent_data {
+                let parent = parent.upgrade().unwrap();
+                let position = self.position
+                    - self.skeleton.borrow().last_position()
+                    + parent.borrow().link(*index_in_parent);
+                Some(Position {
+                    skeleton: parent,
+                    index: index_in_parent + 1,
+                    position,
+                })
+            } else {
+                None
+            }
+        } else if let Some(sub) =
+        self.skeleton.clone().borrow().sub(self.index) {
+            let position = self.position + sub.borrow().offset;
+            Some(Position {
+                skeleton: sub,
+                index: 0,
+                position,
+            })
+        } else {
+            let position = self.position + self.skeleton.borrow().link(self.index);
+            Some(Position {
+                skeleton: self.skeleton,
+                index: self.index + 1,
+                position,
+            })
+        }
     }
 
     pub fn element(&self) -> Ref<T> {
