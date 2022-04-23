@@ -127,11 +127,11 @@ impl<S: Spacing, T> SpacedList<S, T> {
 
 
     pub fn iter(&self) -> impl Iterator<Item=Position<Node, S, T>> {
-        Iter::new(self.skeleton.clone())
+        Iter::from_start(self.skeleton.clone())
     }
 
     pub fn into_iter(self) -> impl Iterator<Item=Position<Node, S, T>> {
-        Iter::new(self.skeleton)
+        Iter::from_start(self.skeleton)
     }
 
 
@@ -255,11 +255,11 @@ impl<S: Spacing, T> RangeSpacedList<S, T> {
 
 
     pub fn iter(&self) -> impl Iterator<Item=Position<Range, S, T>> {
-        Iter::new(self.skeleton.clone())
+        Iter::from_start(self.skeleton.clone())
     }
 
     pub fn into_iter(self) -> impl Iterator<Item=Position<Range, S, T>> {
-        Iter::new(self.skeleton)
+        Iter::from_start(self.skeleton)
     }
 
     pub fn iter_ranges(&self) -> impl Iterator<Item=(Position<Range, S, T>, Position<Range, S, T>)> {
@@ -350,11 +350,11 @@ impl<S: Spacing> HollowSpacedList<S> {
 
 
     pub fn iter(&self) -> impl Iterator<Item=HollowPosition<Node, S>> {
-        Iter::new(self.skeleton.clone()).map_into()
+        Iter::from_start(self.skeleton.clone()).map_into()
     }
 
     pub fn into_iter(self) -> impl Iterator<Item=HollowPosition<Node, S>> {
-        Iter::new(self.skeleton).map_into()
+        Iter::from_start(self.skeleton).map_into()
     }
 
 
@@ -493,11 +493,11 @@ impl<S: Spacing> HollowRangeSpacedList<S> {
 
 
     pub fn iter(&self) -> impl Iterator<Item=HollowPosition<Range, S>> {
-        Iter::new(self.skeleton.clone()).map_into()
+        Iter::from_start(self.skeleton.clone()).map_into()
     }
 
     pub fn into_iter(self) -> impl Iterator<Item=HollowPosition<Range, S>> {
-        Iter::new(self.skeleton).map_into()
+        Iter::from_start(self.skeleton).map_into()
     }
 
     pub fn iter_ranges(&self) -> impl Iterator<Item=(HollowPosition<Range, S>, HollowPosition<Range, S>)> {

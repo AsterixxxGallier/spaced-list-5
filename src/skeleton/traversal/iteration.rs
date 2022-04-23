@@ -11,7 +11,14 @@ pub(crate) struct Iter<Kind, S: Spacing, T> {
 }
 
 impl<Kind, S: Spacing, T> Iter<Kind, S, T> {
-    pub(crate) fn new(skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>) -> Self {
+    pub(crate) fn from(position: Position<Kind, S, T>) -> Self {
+        Self {
+            position,
+            finished: false,
+        }
+    }
+
+    pub(crate) fn from_start(skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>) -> Self {
         Self {
             position: Position::at_start(skeleton),
             finished: false,
