@@ -53,6 +53,16 @@ fn randomized() {
     println!("iterate over both: {:?}", timestamp.elapsed());
 
     let timestamp = Instant::now();
+    let mut list_iter = list.iter_backwards();
+    let set_iter = set.iter().rev();
+    for (index, &position) in set_iter.enumerate() {
+        let list_next_position = list_iter.next().unwrap().position();
+        // println!("{}: expected: {}, actual: {}", index, position, list_next_position);
+        assert_eq!(position, list_next_position);
+    }
+    println!("iterate over both in reverse: {:?}", timestamp.elapsed());
+
+    let timestamp = Instant::now();
     for _ in 0..1_000 {
         let pos = rng.gen_range(range.clone());
         assert_eq!(list.before(pos).map(|it| it.position()),
@@ -85,6 +95,13 @@ fn iterate() {
     assert_eq!(iter.next().unwrap().position(), 15);
     assert_eq!(iter.next().unwrap().position(), 16);
     assert_eq!(iter.next().unwrap().position(), 20);
+    let mut iter = list.iter_backwards();
+    assert_eq!(iter.next().unwrap().position(), 20);
+    assert_eq!(iter.next().unwrap().position(), 16);
+    assert_eq!(iter.next().unwrap().position(), 15);
+    assert_eq!(iter.next().unwrap().position(), 13);
+    assert_eq!(iter.next().unwrap().position(), 8);
+    assert_eq!(iter.next().unwrap().position(), 7);
 }
 
 #[test]
