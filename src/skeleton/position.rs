@@ -128,9 +128,10 @@ impl<Kind, S: Spacing, T> Position<Kind, S, T> {
             let position = self.position
                 - self.skeleton.borrow().link(self.index - 1)
                 + sub.borrow().last_position();
+            let index = sub.borrow().links.len();
             Some(Position {
                 skeleton: sub,
-                index: 0,
+                index,
                 position,
             })
         } else {
