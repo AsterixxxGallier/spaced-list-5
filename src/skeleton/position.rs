@@ -89,27 +89,6 @@ impl<Kind, S: Spacing, T> Position<Kind, S, T> {
     }
 
     pub fn into_previous(self) -> Option<Self> {
-        // if $index == 0 {
-        //     if let Some(ParentData { parent, index_in_parent }) =
-        //         &$skeleton.clone().borrow().parent_data {
-        //         $index = *index_in_parent;
-        //         $position -= $skeleton.borrow().offset;
-        //         $skeleton = parent.upgrade().unwrap();
-        //         Ok(())
-        //     } else {
-        //         Err("Tried to move to previous element but it's already the start of the skeleton")
-        //     }
-        // } else if let Some(sub) = $skeleton.clone().borrow().sub($index - 1) {
-        //     $position -= $skeleton.borrow().link($index - 1);
-        //     $skeleton = sub;
-        //     $position += $skeleton.borrow().last_position();
-        //     $index = $skeleton.borrow().links.len();
-        //     Ok(())
-        // } else {
-        //     $index -= 1;
-        //     $position -= $skeleton.borrow().link($index);
-        //     Ok(())
-        // }
         if self.index == 0 {
             if let Some(ParentData { parent, index_in_parent }) =
             &self.skeleton.clone().borrow().parent_data {
