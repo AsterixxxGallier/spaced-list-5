@@ -252,3 +252,9 @@ impl<Kind, S: Spacing> From<Position<Kind, S, ()>> for HollowPosition<Kind, S> {
         Self::new(position.skeleton, position.index, position.position)
     }
 }
+
+impl<Kind, S: Spacing> From<HollowPosition<Kind, S>> for Position<Kind, S, ()> {
+    fn from(position: HollowPosition<Kind, S>) -> Self {
+        Self::new(position.skeleton, position.index, position.position)
+    }
+}
