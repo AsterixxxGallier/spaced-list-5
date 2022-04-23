@@ -6,6 +6,7 @@ use itertools::Itertools;
 use crate::{ForwardsIter, Spacing};
 use crate::skeleton::{Node, Range, Skeleton};
 use crate::skeleton::position::{HollowPosition, Position};
+use crate::skeleton::traversal::iteration::BackwardsIter;
 
 // TODO implement try_ versions of all public methods that can fail
 // TODO add good error handling to all public methods that can fail
@@ -134,6 +135,13 @@ impl<S: Spacing, T> SpacedList<S, T> {
         ForwardsIter::from_start(self.skeleton)
     }
 
+    pub fn iter_backwards(&self) -> impl Iterator<Item=Position<Node, S, T>> {
+        BackwardsIter::from_end(self.skeleton.clone())
+    }
+
+    pub fn into_iter_backwards(self) -> impl Iterator<Item=Position<Node, S, T>> {
+        BackwardsIter::from_end(self.skeleton)
+    }
 
     trivial_accessors!();
 }
@@ -270,6 +278,22 @@ impl<S: Spacing, T> RangeSpacedList<S, T> {
         self.into_iter().tuples()
     }
 
+    pub fn iter_backwards(&self) -> impl Iterator<Item=Position<Range, S, T>> {
+        BackwardsIter::from_end(self.skeleton.clone())
+    }
+
+    pub fn into_iter_backwards(self) -> impl Iterator<Item=Position<Range, S, T>> {
+        BackwardsIter::from_end(self.skeleton)
+    }
+
+    pub fn iter_ranges_backwards(&self) -> impl Iterator<Item=(Position<Range, S, T>, Position<Range, S, T>)> {
+        self.iter_backwards().tuples()
+    }
+
+    pub fn into_iter_ranges_backwards(self) -> impl Iterator<Item=(Position<Range, S, T>, Position<Range, S, T>)> {
+        self.into_iter_backwards().tuples()
+    }
+
 
     trivial_accessors!();
 }
@@ -357,6 +381,13 @@ impl<S: Spacing> HollowSpacedList<S> {
         ForwardsIter::from_start(self.skeleton).map_into()
     }
 
+    pub fn iter_backwards(&self) -> impl Iterator<Item=HollowPosition<Node, S>> {
+        BackwardsIter::from_end(self.skeleton.clone()).map_into()
+    }
+
+    pub fn into_iter_backwards(self) -> impl Iterator<Item=HollowPosition<Node, S>> {
+        BackwardsIter::from_end(self.skeleton).map_into()
+    }
 
     trivial_accessors!();
 }
@@ -506,6 +537,22 @@ impl<S: Spacing> HollowRangeSpacedList<S> {
 
     pub fn into_iter_ranges(self) -> impl Iterator<Item=(HollowPosition<Range, S>, HollowPosition<Range, S>)> {
         self.into_iter().tuples()
+    }
+
+    pub fn iter_backwards(&self) -> impl Iterator<Item=HollowPosition<Range, S>> {
+        BackwardsIter::from_end(self.skeleton.clone()).map_into()
+    }
+
+    pub fn into_iter_backwards(self) -> impl Iterator<Item=HollowPosition<Range, S>> {
+        BackwardsIter::from_end(self.skeleton).map_into()
+    }
+
+    pub fn iter_ranges_backwards(&self) -> impl Iterator<Item=(HollowPosition<Range, S>, HollowPosition<Range, S>)> {
+        self.iter_backwards().tuples()
+    }
+
+    pub fn into_iter_ranges_backwards(self) -> impl Iterator<Item=(HollowPosition<Range, S>, HollowPosition<Range, S>)> {
+        self.into_iter_backwards().tuples()
     }
 
 
