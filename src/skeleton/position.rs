@@ -55,25 +55,6 @@ impl<Kind, S: Spacing, T> Position<Kind, S, T> {
     }
 
     pub fn into_next(self) -> Option<Self> {
-        // if self.position.index == self.position.skeleton.borrow().links.len() {
-        //     if let Some(ParentData { parent, index_in_parent }) =
-        //     &self.position.skeleton.clone().borrow().parent_data {
-        //         self.position.position -= self.position.skeleton.borrow().last_position();
-        //         self.position.skeleton = parent.upgrade().unwrap();
-        //         self.position.position += self.position.skeleton.borrow().link(*index_in_parent);
-        //         self.position.index = index_in_parent + 1;
-        //     } else {
-        //         self.finished = true;
-        //     }
-        // } else if let Some(sub) =
-        // self.position.skeleton.clone().borrow().sub(self.position.index) {
-        //     self.position.skeleton = sub;
-        //     self.position.index = 0;
-        //     self.position.position += self.position.skeleton.borrow().offset;
-        // } else {
-        //     self.position.position += self.position.skeleton.borrow().link(self.position.index);
-        //     self.position.index += 1;
-        // }
         if self.index == self.skeleton.borrow().links.len() {
             if let Some(ParentData { parent, index_in_parent }) =
             &self.skeleton.clone().borrow().parent_data {
