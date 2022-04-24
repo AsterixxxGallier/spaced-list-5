@@ -24,6 +24,8 @@ mod skeleton;
 
 mod spaced_lists;
 
+mod manager;
+
 #[doc(inline)]
 pub use spaced_lists::SpacedList;
 #[doc(inline)]
