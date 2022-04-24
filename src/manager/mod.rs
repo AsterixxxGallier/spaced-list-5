@@ -1,10 +1,12 @@
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
+
 use crate::{Node, Position, SpacedList, Spacing};
 use crate::manager::callbacks::Callbacks;
 
 // TODO make this entire module work for all SpacedLists and also work in the first place
 
+#[derive(Default)]
 struct Locks {
     // -1: indices might change
     // > 0: indices may not change (structure must be preserved)
@@ -36,5 +38,7 @@ pub struct Manager<S: Spacing, T> {
 }
 
 mod locks;
+
+mod callback_locks;
 
 mod handles;

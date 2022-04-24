@@ -1,4 +1,5 @@
-use std::cell::Cell;
+use std::cell::{Cell, RefCell};
+use slab::Slab;
 use crate::{Spacing, Position, Node};
 
 pub enum SpacingChange<S: Spacing> {
@@ -33,7 +34,17 @@ pub enum IndexChange<S: Spacing, T> {
 }
 
 pub(super) struct Callbacks<S: Spacing, T> {
-    pub(super) indices: Cell<Vec<Box<dyn Fn(IndexChange<S, T>)>>>,
-    pub(super) positions: Cell<Vec<Box<dyn Fn(SpacingChange<S>)>>>,
-    pub(super) insertions: Cell<Vec<Box<dyn Fn(Insertion<S, T>)>>>,
+    pub(super) indices: RefCell<Slab<&dyn Fn(IndexChange<S, T>)>>,
+    pub(super) positions: RefCell<Slab<&dyn Fn(SpacingChange<S>)>>,
+    pub(super) insertions: RefCell<Slab<&dyn Fn(Insertion<S, T>)>>,
+}
+
+impl<S: Spacing, T> Default for Callbacks<S, T> {
+    fn default() -> Self {
+        Self {
+            indices: RefCell::new(Slab::new()),
+            positions: RefCell::new(Slab::new()),
+            insertions: RefCell::new(Slab::new()),
+        }
+    }
 }
