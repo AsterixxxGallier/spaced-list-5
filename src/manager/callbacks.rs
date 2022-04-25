@@ -33,13 +33,13 @@ pub enum IndexChange<S: Spacing, T> {
     }
 }
 
-pub(super) struct Callbacks<S: Spacing, T> {
-    pub(super) indices: RefCell<Slab<&dyn Fn(IndexChange<S, T>)>>,
-    pub(super) positions: RefCell<Slab<&dyn Fn(SpacingChange<S>)>>,
-    pub(super) insertions: RefCell<Slab<&dyn Fn(Insertion<S, T>)>>,
+pub(super) struct Callbacks<'callbacks, S: Spacing, T> {
+    pub(super) indices: RefCell<Slab<&'callbacks dyn Fn(IndexChange<S, T>)>>,
+    pub(super) positions: RefCell<Slab<&'callbacks dyn Fn(SpacingChange<S>)>>,
+    pub(super) insertions: RefCell<Slab<&'callbacks dyn Fn(Insertion<S, T>)>>,
 }
 
-impl<S: Spacing, T> Default for Callbacks<S, T> {
+impl<'callbacks, S: Spacing, T> Default for Callbacks<'callbacks, S, T> {
     fn default() -> Self {
         Self {
             indices: RefCell::new(Slab::new()),

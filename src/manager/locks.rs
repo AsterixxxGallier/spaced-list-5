@@ -5,12 +5,12 @@ use crate::Spacing;
 
 macro_rules! lock {
     ($name:ident, $lock_name:ident) => {
-        struct $name<S: Spacing, T> {
-            manager: Rc<RefCell<Manager<S, T>>>
+        pub struct $name<'manager, S: Spacing, T> {
+            manager: Rc<RefCell<Manager<'manager, S, T>>>
         }
 
-        impl<S: Spacing, T> $name<S, T> {
-            pub fn new(manager: Rc<RefCell<Manager<S, T>>>) -> Self {
+        impl<'manager, S: Spacing, T> $name<'manager, S, T> {
+            pub fn new(manager: Rc<RefCell<Manager<'manager, S, T>>>) -> Self {
                 assert_ne!(manager.borrow().locks.$lock_name.get(), -1);
                 manager.borrow().locks.$lock_name.set(manager.borrow().locks.$lock_name.get() + 1);
                 Self {
@@ -19,7 +19,7 @@ macro_rules! lock {
             }
         }
 
-        impl<S: Spacing, T> Drop for $name<S, T> {
+        impl<'manager, S: Spacing, T> Drop for $name<'manager, S, T> {
             fn drop(&mut self) {
                 self.manager.borrow().locks.$lock_name.set(
                     self.manager.borrow().locks.$lock_name.get() - 1);

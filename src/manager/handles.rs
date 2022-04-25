@@ -5,12 +5,12 @@ use crate::{Node, Position, Spacing};
 
 macro_rules! handle {
     ($name:ident, $lock_name:ident) => {
-        pub struct $name<S: Spacing, T> {
-            manager: Rc<RefCell<Manager<S, T>>>
+        pub struct $name<'manager, S: Spacing, T> {
+            manager: Rc<RefCell<Manager<'manager, S, T>>>
         }
 
-        impl<S: Spacing, T> $name<S, T> {
-            pub fn new(manager: Rc<RefCell<Manager<S, T>>>) -> Self {
+        impl<'manager, S: Spacing, T> $name<'manager, S, T> {
+            pub fn new(manager: Rc<RefCell<Manager<'manager, S, T>>>) -> Self {
                 assert_eq!(manager.borrow().locks.$lock_name.get(), 0);
                 manager.borrow().locks.$lock_name.set(-1);
                 Self {
@@ -19,7 +19,7 @@ macro_rules! handle {
             }
         }
 
-        impl<S: Spacing, T> Drop for $name<S, T> {
+        impl<'manager, S: Spacing, T> Drop for $name<'manager, S, T> {
             fn drop(&mut self) {
                 assert_eq!(self.manager.borrow().locks.$lock_name.get(), -1);
                 self.manager.borrow().locks.$lock_name.set(0);
@@ -34,7 +34,7 @@ handle!(InsertionsHandle, insertions);
 // handle!(DeletionsHandle, deletions);
 handle!(ValuesHandle, values);
 
-impl<S: Spacing, T> PositionsHandle<S, T> {
+impl<'manager, S: Spacing, T> PositionsHandle<'manager, S, T> {
     pub fn increase_spacing_after(&mut self, position: S, spacing: S) {
         self.manager.borrow_mut().list.increase_spacing_after(position, spacing)
     }
@@ -52,7 +52,7 @@ impl<S: Spacing, T> PositionsHandle<S, T> {
     }
 }
 
-impl<S: Spacing, T> InsertionsHandle<S, T> {
+impl<'manager, S: Spacing, T> InsertionsHandle<'manager, S, T> {
     pub fn push(&self, spacing: S, value: T) -> Position<Node, S, T> {
         self.manager.borrow_mut().list.push(spacing, value)
     }
