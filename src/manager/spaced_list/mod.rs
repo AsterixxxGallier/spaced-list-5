@@ -2,7 +2,7 @@ use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use crate::{SpacedList, Spacing};
-use self::callback_locks::{IndicesCallbackLock, InsertionsCallbackLock, PositionsCallbackLock};
+// use self::callback_locks::{IndicesCallbackLock, InsertionsCallbackLock, PositionsCallbackLock};
 use self::callbacks::{Callbacks, IndexChange, Insertion, SpacingChange};
 use self::handles::{IndicesHandle, InsertionsHandle, PositionsHandle, ValuesHandle};
 use self::locks::{IndicesLock, InsertionsLock, PositionsLock, ValuesLock};
@@ -67,7 +67,7 @@ impl<'callbacks, S: Spacing, T> Manager<'callbacks, S, T> {
         ValuesLock::new(this)
     }
 
-    fn indices_callback<F>(this: Rc<RefCell<Self>>, callback: F)
+    /*fn indices_callback<F>(this: Rc<RefCell<Self>>, callback: F)
         -> IndicesCallbackLock<'callbacks, S, T, F>
         where F: Fn(IndexChange<S, T>) {
         IndicesCallbackLock::new(this, callback)
@@ -83,7 +83,7 @@ impl<'callbacks, S: Spacing, T> Manager<'callbacks, S, T> {
         -> InsertionsCallbackLock<'callbacks, S, T, F>
         where F: Fn(Insertion<S, T>) {
         InsertionsCallbackLock::new(this, callback)
-    }
+    }*/
 
     fn indices_handle(this: Rc<RefCell<Self>>) -> IndicesHandle<'callbacks, S, T> {
         IndicesHandle::new(this)
@@ -108,6 +108,6 @@ impl<'callbacks, S: Spacing, T> Manager<'callbacks, S, T> {
 
 mod locks;
 
-mod callback_locks;
+// mod callback_locks;
 
 mod handles;

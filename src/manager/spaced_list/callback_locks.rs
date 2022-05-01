@@ -1,4 +1,4 @@
-use std::cell::RefCell;
+/*use std::cell::RefCell;
 use std::rc::Rc;
 
 use super::callbacks::IndexChange;
@@ -39,4 +39,4 @@ macro_rules! callback_lock {
 
 callback_lock!(IndicesCallbackLock, indices, IndexChange<S, T>);
 callback_lock!(PositionsCallbackLock, positions, SpacingChange<S>);
-callback_lock!(InsertionsCallbackLock, insertions, Insertion<S, T>);
+callback_lock!(InsertionsCallbackLock, insertions, Insertion<S, T>);*/
