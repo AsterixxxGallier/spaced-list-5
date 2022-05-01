@@ -1,29 +1,31 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::manager::callbacks::IndexChange;
-use crate::manager::callbacks::SpacingChange;
-use crate::manager::callbacks::Insertion;
-use crate::manager::Manager;
+use super::callbacks::IndexChange;
+use super::callbacks::SpacingChange;
+use super::callbacks::Insertion;
+use super::Manager;
 use crate::Spacing;
 
 macro_rules! callback_lock {
     ($name:ident, $lock_name:ident, $param:ty) => {
         pub struct $name<'manager, S: Spacing, T, F: Fn($param)> {
             manager: Rc<RefCell<Manager<'manager, S, T>>>,
-            callback: dyn Fn($param),
+            callback: F,
             key: usize,
         }
 
         impl<'manager, S: Spacing, T, F: Fn($param)> $name<'manager, S, T, F> {
             pub fn new(manager: Rc<RefCell<Manager<'manager, S, T>>>, callback: F) -> Self {
-                let key = manager.borrow().callbacks.$lock_name
-                    .borrow_mut().insert(&callback);
-                Self {
+                let mut this = Self {
                     manager,
                     callback,
-                    key,
-                }
+                    key: 0,
+                };
+                let key = this.manager.borrow().callbacks.$lock_name
+                    .borrow_mut().insert(&this.callback);
+                this.key = key;
+                this
             }
         }
 

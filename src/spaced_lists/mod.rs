@@ -69,6 +69,7 @@ impl<S: Spacing, T> Default for SpacedList<S, T> {
         }
     }
 }
+
 impl<S: Spacing, T> SpacedList<S, T> {
     pub fn new() -> Self {
         Self::default()
@@ -158,6 +159,7 @@ impl<S: Spacing, T> Default for RangeSpacedList<S, T> {
         }
     }
 }
+
 impl<S: Spacing, T> RangeSpacedList<S, T> {
     pub fn new() -> Self {
         Self::default()
@@ -310,6 +312,7 @@ impl<S: Spacing> Default for HollowSpacedList<S> {
         }
     }
 }
+
 impl<S: Spacing> HollowSpacedList<S> {
     pub fn new() -> Self {
         Self::default()
@@ -404,6 +407,7 @@ impl<S: Spacing> Default for HollowRangeSpacedList<S> {
         }
     }
 }
+
 impl<S: Spacing> HollowRangeSpacedList<S> {
     pub fn new() -> Self {
         Self::default()

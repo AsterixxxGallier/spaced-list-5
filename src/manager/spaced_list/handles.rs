@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use std::rc::Rc;
-use crate::manager::Manager;
+use super::Manager;
 use crate::{Node, Position, Spacing};
 
 macro_rules! handle {
