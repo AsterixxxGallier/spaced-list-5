@@ -4,7 +4,7 @@ mod handles;
 
 mod spaced_list;
 
-// mod range_spaced_list;
+mod range_spaced_list;
 
 // mod hollow_spaced_list;
 
