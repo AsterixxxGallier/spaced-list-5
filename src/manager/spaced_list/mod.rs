@@ -2,8 +2,6 @@ use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use crate::{SpacedList, Spacing};
-// use self::callback_locks::{IndicesCallbackLock, InsertionsCallbackLock, PositionsCallbackLock};
-use self::callbacks::{Callbacks, IndexChange, Insertion, SpacingChange};
 use self::handles::{IndicesHandle, InsertionsHandle, PositionsHandle, ValuesHandle};
 use self::locks::{IndicesLock, InsertionsLock, PositionsLock, ValuesLock};
 
@@ -30,84 +28,60 @@ struct Locks {
     values: Cell<isize>,
 }
 
-mod callbacks;
-
-pub struct Manager<'callbacks, S: Spacing, T> {
+pub struct Manager<S: Spacing, T> {
     list: SpacedList<S, T>,
     locks: Locks,
-    callbacks: Callbacks<'callbacks, S, T>,
 }
 
-impl<'callbacks, S: Spacing, T> Manager<'callbacks, S, T> {
+impl<S: Spacing, T> Manager<S, T> {
     fn new(list: SpacedList<S, T>) -> Rc<RefCell<Self>> {
         Rc::new(RefCell::new(Self {
             list,
             locks: Locks::default(),
-            callbacks: Callbacks::default(),
         }))
     }
 
-    fn indices_lock(this: Rc<RefCell<Self>>) -> IndicesLock<'callbacks, S, T> {
+    fn indices_lock(this: Rc<RefCell<Self>>) -> IndicesLock<S, T> {
         IndicesLock::new(this)
     }
 
-    fn positions_lock(this: Rc<RefCell<Self>>) -> PositionsLock<'callbacks, S, T> {
+    fn positions_lock(this: Rc<RefCell<Self>>) -> PositionsLock<S, T> {
         PositionsLock::new(this)
     }
 
-    fn insertions_lock(this: Rc<RefCell<Self>>) -> InsertionsLock<'callbacks, S, T> {
+    fn insertions_lock(this: Rc<RefCell<Self>>) -> InsertionsLock<S, T> {
         InsertionsLock::new(this)
     }
 
-    /*fn deletions_lock(this: Rc<RefCell<Self>>) -> DeletionsLock<'callbacks, S, T> {
+    /*fn deletions_lock(this: Rc<RefCell<Self>>) -> DeletionsLock<S, T> {
         DeletionsLock::new(this)
     }*/
 
-    fn values_lock(this: Rc<RefCell<Self>>) -> ValuesLock<'callbacks, S, T> {
+    fn values_lock(this: Rc<RefCell<Self>>) -> ValuesLock<S, T> {
         ValuesLock::new(this)
     }
 
-    /*fn indices_callback<F>(this: Rc<RefCell<Self>>, callback: F)
-        -> IndicesCallbackLock<'callbacks, S, T, F>
-        where F: Fn(IndexChange<S, T>) {
-        IndicesCallbackLock::new(this, callback)
-    }
-
-    fn positions_callback<F>(this: Rc<RefCell<Self>>, callback: F)
-        -> PositionsCallbackLock<'callbacks, S, T, F>
-        where F: Fn(SpacingChange<S>) {
-        PositionsCallbackLock::new(this, callback)
-    }
-
-    fn insertions_callback<F>(this: Rc<RefCell<Self>>, callback: F)
-        -> InsertionsCallbackLock<'callbacks, S, T, F>
-        where F: Fn(Insertion<S, T>) {
-        InsertionsCallbackLock::new(this, callback)
-    }*/
-
-    fn indices_handle(this: Rc<RefCell<Self>>) -> IndicesHandle<'callbacks, S, T> {
+    fn indices_handle(this: Rc<RefCell<Self>>) -> IndicesHandle<S, T> {
         IndicesHandle::new(this)
     }
 
-    fn positions_handle(this: Rc<RefCell<Self>>) -> PositionsHandle<'callbacks, S, T> {
+    fn positions_handle(this: Rc<RefCell<Self>>) -> PositionsHandle<S, T> {
         PositionsHandle::new(this)
     }
 
-    fn insertions_handle(this: Rc<RefCell<Self>>) -> InsertionsHandle<'callbacks, S, T> {
+    fn insertions_handle(this: Rc<RefCell<Self>>) -> InsertionsHandle<S, T> {
         InsertionsHandle::new(this)
     }
 
-    /*fn lock_deletions(this: Rc<RefCell<Self>>) -> DeletionsHandle<'callbacks, S, T> {
+    /*fn lock_deletions(this: Rc<RefCell<Self>>) -> DeletionsHandle<S, T> {
         DeletionsHandle::new(this)
     }*/
 
-    fn lock_values(this: Rc<RefCell<Self>>) -> ValuesHandle<'callbacks, S, T> {
+    fn lock_values(this: Rc<RefCell<Self>>) -> ValuesHandle<S, T> {
         ValuesHandle::new(this)
     }
 }
 
 mod locks;
-
-// mod callback_locks;
 
 mod handles;
