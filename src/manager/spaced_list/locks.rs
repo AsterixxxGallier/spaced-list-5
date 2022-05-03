@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use std::rc::Rc;
-use super::Manager;
+use super::SpacedListManager;
 use crate::Spacing;
 
 macro_rules! lock {

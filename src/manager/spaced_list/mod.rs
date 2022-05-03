@@ -6,7 +6,7 @@ use self::handles::{IndicesHandle, InsertionsHandle, PositionsHandle, ValuesHand
 use self::locks::{IndicesLock, InsertionsLock, PositionsLock, ValuesLock};
 
 #[derive(Default)]
-struct Locks {
+struct SpacedListLocks {
     // -1: indices might change
     // > 0: indices may not change (structure must be preserved)
     indices: Cell<isize>,
@@ -28,16 +28,16 @@ struct Locks {
     values: Cell<isize>,
 }
 
-pub struct Manager<S: Spacing, T> {
+pub struct SpacedListManager<S: Spacing, T> {
     list: SpacedList<S, T>,
-    locks: Locks,
+    locks: SpacedListLocks,
 }
 
-impl<S: Spacing, T> Manager<S, T> {
+impl<S: Spacing, T> SpacedListManager<S, T> {
     fn new(list: SpacedList<S, T>) -> Rc<RefCell<Self>> {
         Rc::new(RefCell::new(Self {
             list,
-            locks: Locks::default(),
+            locks: SpacedListLocks::default(),
         }))
     }
 
