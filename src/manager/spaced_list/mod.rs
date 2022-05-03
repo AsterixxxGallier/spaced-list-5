@@ -73,11 +73,11 @@ impl<S: Spacing, T> Manager<S, T> {
         InsertionsHandle::new(this)
     }
 
-    /*fn lock_deletions(this: Rc<RefCell<Self>>) -> DeletionsHandle<S, T> {
+    /*fn deletions_handle(this: Rc<RefCell<Self>>) -> DeletionsHandle<S, T> {
         DeletionsHandle::new(this)
     }*/
 
-    fn lock_values(this: Rc<RefCell<Self>>) -> ValuesHandle<S, T> {
+    fn values_handle(this: Rc<RefCell<Self>>) -> ValuesHandle<S, T> {
         ValuesHandle::new(this)
     }
 }
