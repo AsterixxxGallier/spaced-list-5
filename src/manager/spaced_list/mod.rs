@@ -2,8 +2,8 @@ use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use crate::{SpacedList, Spacing};
-use self::handles::{IndicesHandle, InsertionsHandle, PositionsHandle, ValuesHandle};
-use self::locks::{IndicesLock, InsertionsLock, PositionsLock, ValuesLock};
+use crate::manager::handles::{IndicesHandle, InsertionsHandle, PositionsHandle, ValuesHandle};
+use crate::manager::locks::{IndicesLock, InsertionsLock, PositionsLock, ValuesLock};
 
 #[derive(Default)]
 struct SpacedListLocks {
@@ -82,6 +82,3 @@ impl<S: Spacing, T> SpacedListManager<S, T> {
     }
 }
 
-mod locks;
-
-mod handles;
