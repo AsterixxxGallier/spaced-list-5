@@ -9,7 +9,7 @@ pub mod locks;
 pub mod handles;
 
 #[derive(Default)]
-struct SpacedListLocks {
+struct Locks {
     // -1: indices might change
     // > 0: indices may not change (structure must be preserved)
     indices: Cell<isize>,
@@ -31,16 +31,16 @@ struct SpacedListLocks {
     values: Cell<isize>,
 }
 
-pub struct SpacedListManager<S: Spacing, T> {
+pub struct Manager<S: Spacing, T> {
     list: SpacedList<S, T>,
-    locks: SpacedListLocks,
+    locks: Locks,
 }
 
-impl<S: Spacing, T> SpacedListManager<S, T> {
+impl<S: Spacing, T> Manager<S, T> {
     fn new(list: SpacedList<S, T>) -> Rc<RefCell<Self>> {
         Rc::new(RefCell::new(Self {
             list,
-            locks: SpacedListLocks::default(),
+            locks: Locks::default(),
         }))
     }
 
