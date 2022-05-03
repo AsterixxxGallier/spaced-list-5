@@ -81,4 +81,3 @@ impl<S: Spacing, T> SpacedListManager<S, T> {
         ValuesHandle::new(this)
     }
 }
-
