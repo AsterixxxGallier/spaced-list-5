@@ -25,10 +25,6 @@ struct HollowRangeLocks {
     // -1: elements might be removed
     // > 0: elements may not be removed TODO implement the ability to remove elements
     // deletions: Cell<isize>,
-
-    // -1: elements might be mutated
-    // > 0: elements may not be mutated (values must be preserved)
-    values: Cell<isize>,
 }
 
 pub struct HollowRangeManager<S: Spacing> {
