@@ -11,6 +11,7 @@ macro_rules! position {
     ($name:ident; <Kind, S: Spacing$(, $T:ident)?>; $type:ty; $skeleton:ty) => {
         pub struct $name<Kind, S: Spacing$(, $T)?> {
             pub(crate) skeleton: Rc<RefCell<$skeleton>>,
+            // TODO implement consistent indices or something
             pub(crate) index: usize,
             pub(crate) position: S,
         }

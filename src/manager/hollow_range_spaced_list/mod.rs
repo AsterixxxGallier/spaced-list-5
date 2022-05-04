@@ -2,18 +2,14 @@ use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use crate::{HollowRangeSpacedList, Spacing};
-use self::handles::{HollowRangeIndicesHandle, HollowRangeInsertionsHandle, HollowRangePositionsHandle};
-use self::locks::{HollowRangeIndicesLock, HollowRangeInsertionsLock, HollowRangePositionsLock};
+use self::handles::{HollowRangeInsertionsHandle, HollowRangePositionsHandle};
+use self::locks::{HollowRangeInsertionsLock, HollowRangePositionsLock};
 
 pub mod locks;
 pub mod handles;
 
 #[derive(Default)]
 struct HollowRangeLocks {
-    // -1: indices might change
-    // > 0: indices may not change (structure must be preserved)
-    indices: Cell<isize>,
-
     // -1: elements might be moved
     // > 0: elements may not be moved (spacing must be preserved)
     positions: Cell<isize>,
@@ -40,10 +36,6 @@ impl<S: Spacing> HollowRangeManager<S> {
         }))
     }
 
-    pub fn indices_lock(this: Rc<RefCell<Self>>) -> HollowRangeIndicesLock<S> {
-        HollowRangeIndicesLock::new(this)
-    }
-
     pub fn positions_lock(this: Rc<RefCell<Self>>) -> HollowRangePositionsLock<S> {
         HollowRangePositionsLock::new(this)
     }
@@ -55,10 +47,6 @@ impl<S: Spacing> HollowRangeManager<S> {
     /*fn deletions_lock(this: Rc<RefCell<Self>>) -> HollowRangeDeletionsLock<S> {
         HollowRangeDeletionsLock::new(this)
     }*/
-
-    pub fn indices_handle(this: Rc<RefCell<Self>>) -> HollowRangeIndicesHandle<S> {
-        HollowRangeIndicesHandle::new(this)
-    }
 
     pub fn positions_handle(this: Rc<RefCell<Self>>) -> HollowRangePositionsHandle<S> {
         HollowRangePositionsHandle::new(this)

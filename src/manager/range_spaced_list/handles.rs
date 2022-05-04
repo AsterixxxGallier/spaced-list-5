@@ -28,7 +28,6 @@ macro_rules! handle {
     };
 }
 
-handle!(RangeIndicesHandle, indices);
 handle!(RangePositionsHandle, positions);
 handle!(RangeInsertionsHandle, insertions);
 // handle!(RangeDeletionsHandle, deletions);
@@ -57,23 +56,11 @@ impl<S: Spacing, T> RangeInsertionsHandle<S, T> {
         self.manager.borrow_mut().list.push(spacing, span, value)
     }
 
-    pub fn insert_after_start(&self, start: S, end: S, value: T) -> Position<Range, S, T> {
-        assert!(start >= self.manager.borrow().list.start());
+    pub fn insert(&self, start: S, end: S, value: T) -> Position<Range, S, T> {
         self.manager.borrow_mut().list.insert(start, end, value)
     }
 
-    pub fn insert(&self, start: S, end: S, value: T, _indices_handle: &RangeIndicesHandle<S, T>)
-                  -> Position<Range, S, T> {
-        self.manager.borrow_mut().list.insert(start, end, value)
-    }
-
-    pub fn insert_with_span_after_start(&self, start: S, span: S, value: T) -> Position<Range, S, T> {
-        assert!(start >= self.manager.borrow().list.start());
-        self.manager.borrow_mut().list.insert_with_span(start, span, value)
-    }
-
-    pub fn insert_with_span(&self, start: S, span: S, value: T, _indices_handle: &RangeIndicesHandle<S, T>)
-                  -> Position<Range, S, T> {
+    pub fn insert_with_span(&self, start: S, span: S, value: T) -> Position<Range, S, T> {
         self.manager.borrow_mut().list.insert_with_span(start, span, value)
     }
 }

@@ -28,7 +28,6 @@ macro_rules! lock {
     };
 }
 
-lock!(HollowRangeIndicesLock, indices);
 lock!(HollowRangePositionsLock, positions);
 lock!(HollowRangeInsertionsLock, insertions);
 // lock!(HollowRangeDeletionsLock, deletions);

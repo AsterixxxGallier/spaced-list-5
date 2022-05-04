@@ -28,7 +28,6 @@ macro_rules! handle {
     };
 }
 
-handle!(IndicesHandle, indices);
 handle!(PositionsHandle, positions);
 handle!(InsertionsHandle, insertions);
 // handle!(DeletionsHandle, deletions);
@@ -57,13 +56,7 @@ impl<S: Spacing, T> InsertionsHandle<S, T> {
         self.manager.borrow_mut().list.push(spacing, value)
     }
 
-    pub fn insert_after_start(&self, position: S, value: T) -> Position<Node, S, T> {
-        assert!(position >= self.manager.borrow().list.start());
-        self.manager.borrow_mut().list.insert(position, value)
-    }
-
-    pub fn insert(&self, position: S, value: T, _indices_handle: &IndicesHandle<S, T>)
-                  -> Position<Node, S, T> {
+    pub fn insert(&self, position: S, value: T) -> Position<Node, S, T> {
         self.manager.borrow_mut().list.insert(position, value)
     }
 }

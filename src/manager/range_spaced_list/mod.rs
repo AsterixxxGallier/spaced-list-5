@@ -2,18 +2,14 @@ use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use crate::{RangeSpacedList, Spacing};
-use self::handles::{RangeIndicesHandle, RangeInsertionsHandle, RangePositionsHandle, RangeValuesHandle};
-use self::locks::{RangeIndicesLock, RangeInsertionsLock, RangePositionsLock, RangeValuesLock};
+use self::handles::{RangeInsertionsHandle, RangePositionsHandle, RangeValuesHandle};
+use self::locks::{RangeInsertionsLock, RangePositionsLock, RangeValuesLock};
 
 pub mod locks;
 pub mod handles;
 
 #[derive(Default)]
 struct RangeLocks {
-    // -1: indices might change
-    // > 0: indices may not change (structure must be preserved)
-    indices: Cell<isize>,
-
     // -1: elements might be moved
     // > 0: elements may not be moved (spacing must be preserved)
     positions: Cell<isize>,
@@ -44,10 +40,6 @@ impl<S: Spacing, T> RangeManager<S, T> {
         }))
     }
 
-    pub fn indices_lock(this: Rc<RefCell<Self>>) -> RangeIndicesLock<S, T> {
-        RangeIndicesLock::new(this)
-    }
-
     pub fn positions_lock(this: Rc<RefCell<Self>>) -> RangePositionsLock<S, T> {
         RangePositionsLock::new(this)
     }
@@ -62,10 +54,6 @@ impl<S: Spacing, T> RangeManager<S, T> {
 
     pub fn values_lock(this: Rc<RefCell<Self>>) -> RangeValuesLock<S, T> {
         RangeValuesLock::new(this)
-    }
-
-    pub fn indices_handle(this: Rc<RefCell<Self>>) -> RangeIndicesHandle<S, T> {
-        RangeIndicesHandle::new(this)
     }
 
     pub fn positions_handle(this: Rc<RefCell<Self>>) -> RangePositionsHandle<S, T> {

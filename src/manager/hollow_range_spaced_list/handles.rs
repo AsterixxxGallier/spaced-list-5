@@ -28,7 +28,6 @@ macro_rules! handle {
     };
 }
 
-handle!(HollowRangeIndicesHandle, indices);
 handle!(HollowRangePositionsHandle, positions);
 handle!(HollowRangeInsertionsHandle, insertions);
 // handle!(HollowRangeDeletionsHandle, deletions);
@@ -56,23 +55,11 @@ impl<S: Spacing> HollowRangeInsertionsHandle<S> {
         self.manager.borrow_mut().list.push(spacing, span)
     }
 
-    pub fn insert_after_start(&self, start: S, end: S) -> HollowPosition<Range, S> {
-        assert!(start >= self.manager.borrow().list.start());
+    pub fn insert(&self, start: S, end: S) -> HollowPosition<Range, S> {
         self.manager.borrow_mut().list.insert(start, end)
     }
 
-    pub fn insert(&self, start: S, end: S, _indices_handle: &HollowRangeIndicesHandle<S>)
-                  -> HollowPosition<Range, S> {
-        self.manager.borrow_mut().list.insert(start, end)
-    }
-
-    pub fn insert_with_span_after_start(&self, start: S, span: S) -> HollowPosition<Range, S> {
-        assert!(start >= self.manager.borrow().list.start());
-        self.manager.borrow_mut().list.insert_with_span(start, span)
-    }
-
-    pub fn insert_with_span(&self, start: S, span: S, _indices_handle: &HollowRangeIndicesHandle<S>)
-                  -> HollowPosition<Range, S> {
+    pub fn insert_with_span(&self, start: S, span: S) -> HollowPosition<Range, S> {
         self.manager.borrow_mut().list.insert_with_span(start, span)
     }
 }

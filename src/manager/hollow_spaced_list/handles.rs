@@ -28,7 +28,6 @@ macro_rules! handle {
     };
 }
 
-handle!(HollowIndicesHandle, indices);
 handle!(HollowPositionsHandle, positions);
 handle!(HollowInsertionsHandle, insertions);
 // handle!(HollowDeletionsHandle, deletions);
@@ -56,13 +55,7 @@ impl<S: Spacing> HollowInsertionsHandle<S> {
         self.manager.borrow_mut().list.push(spacing)
     }
 
-    pub fn insert_after_start(&self, position: S) -> HollowPosition<Node, S> {
-        assert!(position >= self.manager.borrow().list.start());
-        self.manager.borrow_mut().list.insert(position)
-    }
-
-    pub fn insert(&self, position: S, _indices_handle: &HollowIndicesHandle<S>)
-        -> HollowPosition<Node, S> {
+    pub fn insert(&self, position: S) -> HollowPosition<Node, S> {
         self.manager.borrow_mut().list.insert(position)
     }
 }

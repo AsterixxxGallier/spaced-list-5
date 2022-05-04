@@ -28,7 +28,6 @@ macro_rules! lock {
     };
 }
 
-lock!(IndicesLock, indices);
 lock!(PositionsLock, positions);
 lock!(InsertionsLock, insertions);
 // lock!(DeletionsLock, deletions);
