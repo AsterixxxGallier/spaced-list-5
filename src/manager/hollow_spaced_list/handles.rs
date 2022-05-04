@@ -1,16 +1,16 @@
 use std::cell::RefCell;
 use std::rc::Rc;
-use super::Manager;
-use crate::{Node, Position, Spacing};
+use super::HollowManager;
+use crate::{HollowPosition, Node, Position, Spacing};
 
 macro_rules! handle {
     ($name:ident, $lock_name:ident) => {
-        pub struct $name<S: Spacing, T> {
-            manager: Rc<RefCell<Manager<S, T>>>
+        pub struct $name<S: Spacing> {
+            manager: Rc<RefCell<HollowManager<S>>>
         }
 
-        impl<S: Spacing, T> $name<S, T> {
-            pub fn new(manager: Rc<RefCell<Manager<S, T>>>) -> Self {
+        impl<S: Spacing> $name<S> {
+            pub fn new(manager: Rc<RefCell<HollowManager<S>>>) -> Self {
                 assert_eq!(manager.borrow().locks.$lock_name.get(), 0);
                 manager.borrow().locks.$lock_name.set(-1);
                 Self {
@@ -19,7 +19,7 @@ macro_rules! handle {
             }
         }
 
-        impl<S: Spacing, T> Drop for $name<S, T> {
+        impl<S: Spacing> Drop for $name<S> {
             fn drop(&mut self) {
                 assert_eq!(self.manager.borrow().locks.$lock_name.get(), -1);
                 self.manager.borrow().locks.$lock_name.set(0);
@@ -28,13 +28,12 @@ macro_rules! handle {
     };
 }
 
-handle!(IndicesHandle, indices);
-handle!(PositionsHandle, positions);
-handle!(InsertionsHandle, insertions);
-// handle!(DeletionsHandle, deletions);
-handle!(ValuesHandle, values);
+handle!(HollowIndicesHandle, indices);
+handle!(HollowPositionsHandle, positions);
+handle!(HollowInsertionsHandle, insertions);
+// handle!(HollowDeletionsHandle, deletions);
 
-impl<S: Spacing, T> PositionsHandle<S, T> {
+impl<S: Spacing> HollowPositionsHandle<S> {
     pub fn increase_spacing_after(&mut self, position: S, spacing: S) {
         self.manager.borrow_mut().list.increase_spacing_after(position, spacing)
     }
@@ -52,18 +51,18 @@ impl<S: Spacing, T> PositionsHandle<S, T> {
     }
 }
 
-impl<S: Spacing, T> InsertionsHandle<S, T> {
-    pub fn push(&self, spacing: S, value: T) -> Position<Node, S, T> {
-        self.manager.borrow_mut().list.push(spacing, value)
+impl<S: Spacing> HollowInsertionsHandle<S> {
+    pub fn push(&self, spacing: S) -> HollowPosition<Node, S> {
+        self.manager.borrow_mut().list.push(spacing)
     }
 
-    pub fn insert_after_start(&self, position: S, value: T) -> Position<Node, S, T> {
+    pub fn insert_after_start(&self, position: S) -> HollowPosition<Node, S> {
         assert!(position >= self.manager.borrow().list.start());
-        self.manager.borrow_mut().list.insert(position, value)
+        self.manager.borrow_mut().list.insert(position)
     }
 
-    pub fn insert(&self, position: S, value: T, _indices_handle: &IndicesHandle<S, T>)
-                  -> Position<Node, S, T> {
-        self.manager.borrow_mut().list.insert(position, value)
+    pub fn insert(&self, position: S, _indices_handle: &HollowIndicesHandle<S>)
+        -> HollowPosition<Node, S> {
+        self.manager.borrow_mut().list.insert(position)
     }
 }

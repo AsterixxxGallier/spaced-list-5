@@ -1,16 +1,16 @@
 use std::cell::RefCell;
 use std::rc::Rc;
-use super::Manager;
+use super::HollowManager;
 use crate::Spacing;
 
 macro_rules! lock {
     ($name:ident, $lock_name:ident) => {
-        pub struct $name<S: Spacing, T> {
-            manager: Rc<RefCell<Manager<S, T>>>
+        pub struct $name<S: Spacing> {
+            manager: Rc<RefCell<HollowManager<S>>>
         }
 
-        impl<S: Spacing, T> $name<S, T> {
-            pub fn new(manager: Rc<RefCell<Manager<S, T>>>) -> Self {
+        impl<S: Spacing> $name<S> {
+            pub fn new(manager: Rc<RefCell<HollowManager<S>>>) -> Self {
                 assert_ne!(manager.borrow().locks.$lock_name.get(), -1);
                 manager.borrow().locks.$lock_name.set(manager.borrow().locks.$lock_name.get() + 1);
                 Self {
@@ -19,7 +19,7 @@ macro_rules! lock {
             }
         }
 
-        impl<S: Spacing, T> Drop for $name<S, T> {
+        impl<S: Spacing> Drop for $name<S> {
             fn drop(&mut self) {
                 self.manager.borrow().locks.$lock_name.set(
                     self.manager.borrow().locks.$lock_name.get() - 1);
@@ -28,8 +28,7 @@ macro_rules! lock {
     };
 }
 
-lock!(IndicesLock, indices);
-lock!(PositionsLock, positions);
-lock!(InsertionsLock, insertions);
-// lock!(DeletionsLock, deletions);
-lock!(ValuesLock, values);
+lock!(HollowIndicesLock, indices);
+lock!(HollowPositionsLock, positions);
+lock!(HollowInsertionsLock, insertions);
+// lock!(HollowDeletionsLock, deletions);
