@@ -2,8 +2,8 @@ use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use crate::{HollowRangeSpacedList, Spacing};
-use self::handles::{HollowRangeIndicesHandle, HollowRangeInsertionsHandle, HollowRangePositionsHandle, HollowRangeValuesHandle};
-use self::locks::{HollowRangeIndicesLock, HollowRangeInsertionsLock, HollowRangePositionsLock, HollowRangeValuesLock};
+use self::handles::{HollowRangeIndicesHandle, HollowRangeInsertionsHandle, HollowRangePositionsHandle};
+use self::locks::{HollowRangeIndicesLock, HollowRangeInsertionsLock, HollowRangePositionsLock};
 
 pub mod locks;
 pub mod handles;
