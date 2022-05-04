@@ -37,22 +37,22 @@ pub struct Manager<S: Spacing, T> {
 }
 
 impl<S: Spacing, T> Manager<S, T> {
-    fn new(list: SpacedList<S, T>) -> Rc<RefCell<Self>> {
+    pub fn new(list: SpacedList<S, T>) -> Rc<RefCell<Self>> {
         Rc::new(RefCell::new(Self {
             list,
             locks: Locks::default(),
         }))
     }
 
-    fn indices_lock(this: Rc<RefCell<Self>>) -> IndicesLock<S, T> {
+    pub fn indices_lock(this: Rc<RefCell<Self>>) -> IndicesLock<S, T> {
         IndicesLock::new(this)
     }
 
-    fn positions_lock(this: Rc<RefCell<Self>>) -> PositionsLock<S, T> {
+    pub fn positions_lock(this: Rc<RefCell<Self>>) -> PositionsLock<S, T> {
         PositionsLock::new(this)
     }
 
-    fn insertions_lock(this: Rc<RefCell<Self>>) -> InsertionsLock<S, T> {
+    pub fn insertions_lock(this: Rc<RefCell<Self>>) -> InsertionsLock<S, T> {
         InsertionsLock::new(this)
     }
 
@@ -60,19 +60,19 @@ impl<S: Spacing, T> Manager<S, T> {
         DeletionsLock::new(this)
     }*/
 
-    fn values_lock(this: Rc<RefCell<Self>>) -> ValuesLock<S, T> {
+    pub fn values_lock(this: Rc<RefCell<Self>>) -> ValuesLock<S, T> {
         ValuesLock::new(this)
     }
 
-    fn indices_handle(this: Rc<RefCell<Self>>) -> IndicesHandle<S, T> {
+    pub fn indices_handle(this: Rc<RefCell<Self>>) -> IndicesHandle<S, T> {
         IndicesHandle::new(this)
     }
 
-    fn positions_handle(this: Rc<RefCell<Self>>) -> PositionsHandle<S, T> {
+    pub fn positions_handle(this: Rc<RefCell<Self>>) -> PositionsHandle<S, T> {
         PositionsHandle::new(this)
     }
 
-    fn insertions_handle(this: Rc<RefCell<Self>>) -> InsertionsHandle<S, T> {
+    pub fn insertions_handle(this: Rc<RefCell<Self>>) -> InsertionsHandle<S, T> {
         InsertionsHandle::new(this)
     }
 
@@ -80,7 +80,7 @@ impl<S: Spacing, T> Manager<S, T> {
         DeletionsHandle::new(this)
     }*/
 
-    fn values_handle(this: Rc<RefCell<Self>>) -> ValuesHandle<S, T> {
+    pub fn values_handle(this: Rc<RefCell<Self>>) -> ValuesHandle<S, T> {
         ValuesHandle::new(this)
     }
 }

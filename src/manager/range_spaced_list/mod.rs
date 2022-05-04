@@ -37,22 +37,22 @@ pub struct RangeManager<S: Spacing, T> {
 }
 
 impl<S: Spacing, T> RangeManager<S, T> {
-    fn new(list: RangeSpacedList<S, T>) -> Rc<RefCell<Self>> {
+    pub fn new(list: RangeSpacedList<S, T>) -> Rc<RefCell<Self>> {
         Rc::new(RefCell::new(Self {
             list,
             locks: RangeLocks::default(),
         }))
     }
 
-    fn indices_lock(this: Rc<RefCell<Self>>) -> RangeIndicesLock<S, T> {
+    pub fn indices_lock(this: Rc<RefCell<Self>>) -> RangeIndicesLock<S, T> {
         RangeIndicesLock::new(this)
     }
 
-    fn positions_lock(this: Rc<RefCell<Self>>) -> RangePositionsLock<S, T> {
+    pub fn positions_lock(this: Rc<RefCell<Self>>) -> RangePositionsLock<S, T> {
         RangePositionsLock::new(this)
     }
 
-    fn insertions_lock(this: Rc<RefCell<Self>>) -> RangeInsertionsLock<S, T> {
+    pub fn insertions_lock(this: Rc<RefCell<Self>>) -> RangeInsertionsLock<S, T> {
         RangeInsertionsLock::new(this)
     }
 
@@ -60,19 +60,19 @@ impl<S: Spacing, T> RangeManager<S, T> {
         RangeDeletionsLock::new(this)
     }*/
 
-    fn values_lock(this: Rc<RefCell<Self>>) -> RangeValuesLock<S, T> {
+    pub fn values_lock(this: Rc<RefCell<Self>>) -> RangeValuesLock<S, T> {
         RangeValuesLock::new(this)
     }
 
-    fn indices_handle(this: Rc<RefCell<Self>>) -> RangeIndicesHandle<S, T> {
+    pub fn indices_handle(this: Rc<RefCell<Self>>) -> RangeIndicesHandle<S, T> {
         RangeIndicesHandle::new(this)
     }
 
-    fn positions_handle(this: Rc<RefCell<Self>>) -> RangePositionsHandle<S, T> {
+    pub fn positions_handle(this: Rc<RefCell<Self>>) -> RangePositionsHandle<S, T> {
         RangePositionsHandle::new(this)
     }
 
-    fn insertions_handle(this: Rc<RefCell<Self>>) -> RangeInsertionsHandle<S, T> {
+    pub fn insertions_handle(this: Rc<RefCell<Self>>) -> RangeInsertionsHandle<S, T> {
         RangeInsertionsHandle::new(this)
     }
 
@@ -80,7 +80,7 @@ impl<S: Spacing, T> RangeManager<S, T> {
         RangeDeletionsHandle::new(this)
     }*/
 
-    fn values_handle(this: Rc<RefCell<Self>>) -> RangeValuesHandle<S, T> {
+    pub fn values_handle(this: Rc<RefCell<Self>>) -> RangeValuesHandle<S, T> {
         RangeValuesHandle::new(this)
     }
 }

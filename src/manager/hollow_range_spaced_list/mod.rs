@@ -33,22 +33,22 @@ pub struct HollowRangeManager<S: Spacing> {
 }
 
 impl<S: Spacing> HollowRangeManager<S> {
-    fn new(list: HollowRangeSpacedList<S>) -> Rc<RefCell<Self>> {
+    pub fn new(list: HollowRangeSpacedList<S>) -> Rc<RefCell<Self>> {
         Rc::new(RefCell::new(Self {
             list,
             locks: HollowRangeLocks::default(),
         }))
     }
 
-    fn indices_lock(this: Rc<RefCell<Self>>) -> HollowRangeIndicesLock<S> {
+    pub fn indices_lock(this: Rc<RefCell<Self>>) -> HollowRangeIndicesLock<S> {
         HollowRangeIndicesLock::new(this)
     }
 
-    fn positions_lock(this: Rc<RefCell<Self>>) -> HollowRangePositionsLock<S> {
+    pub fn positions_lock(this: Rc<RefCell<Self>>) -> HollowRangePositionsLock<S> {
         HollowRangePositionsLock::new(this)
     }
 
-    fn insertions_lock(this: Rc<RefCell<Self>>) -> HollowRangeInsertionsLock<S> {
+    pub fn insertions_lock(this: Rc<RefCell<Self>>) -> HollowRangeInsertionsLock<S> {
         HollowRangeInsertionsLock::new(this)
     }
 
@@ -56,15 +56,15 @@ impl<S: Spacing> HollowRangeManager<S> {
         HollowRangeDeletionsLock::new(this)
     }*/
 
-    fn indices_handle(this: Rc<RefCell<Self>>) -> HollowRangeIndicesHandle<S> {
+    pub fn indices_handle(this: Rc<RefCell<Self>>) -> HollowRangeIndicesHandle<S> {
         HollowRangeIndicesHandle::new(this)
     }
 
-    fn positions_handle(this: Rc<RefCell<Self>>) -> HollowRangePositionsHandle<S> {
+    pub fn positions_handle(this: Rc<RefCell<Self>>) -> HollowRangePositionsHandle<S> {
         HollowRangePositionsHandle::new(this)
     }
 
-    fn insertions_handle(this: Rc<RefCell<Self>>) -> HollowRangeInsertionsHandle<S> {
+    pub fn insertions_handle(this: Rc<RefCell<Self>>) -> HollowRangeInsertionsHandle<S> {
         HollowRangeInsertionsHandle::new(this)
     }
 
