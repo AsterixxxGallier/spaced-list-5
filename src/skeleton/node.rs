@@ -10,7 +10,7 @@ impl<S: Spacing, T> Skeleton<Node, S, T> {
         if this.borrow().elements.is_empty() {
             this.borrow_mut().offset = distance;
             this.borrow_mut().elements.push(element);
-            return Position::new(this, 0, distance);
+            return Position::persistent_new(this, 0, distance);
         }
         let index = this.borrow_mut().push_link();
         this.borrow_mut().inflate(index, distance);

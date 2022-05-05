@@ -11,8 +11,8 @@ macro_rules! position {
     ($name:ident; <Kind, S: Spacing$(, $T:ident)?>; $type:ty; $skeleton:ty) => {
         pub struct $name<Kind, S: Spacing$(, $T)?> {
             pub(crate) skeleton: Rc<RefCell<$skeleton>>,
-            // TODO implement consistent indices or something
-            pub(crate) index: usize,
+            // TODO implement persistent indices or something
+            pub(crate) persistent_index: isize,
             pub(crate) position: S,
         }
 
@@ -27,7 +27,7 @@ macro_rules! position {
         }
 
         impl<Kind, S: Spacing$(, $T)?> $type {
-            pub(crate) fn new(skeleton: Rc<RefCell<$skeleton>>, index: usize, position: S) -> Self {
+            pub(crate) fn persistent_new(skeleton: Rc<RefCell<$skeleton>>, index: usize, position: S) -> Self {
                 Self {
                     skeleton,
                     index,
@@ -35,7 +35,7 @@ macro_rules! position {
                 }
             }
 
-            pub(crate) fn at_start(skeleton: Rc<RefCell<$skeleton>>) -> Self {
+            pub(crate) fn persistent_at_start(skeleton: Rc<RefCell<$skeleton>>) -> Self {
                 let position = skeleton.borrow().offset;
                 Self {
                     skeleton,
@@ -44,7 +44,7 @@ macro_rules! position {
                 }
             }
 
-            pub(crate) fn at_end(skeleton: Rc<RefCell<$skeleton>>) -> Self {
+            pub(crate) fn persistent_at_end(skeleton: Rc<RefCell<$skeleton>>) -> Self {
                 let index = skeleton.borrow().elements.len() - 1;
                 let position = skeleton.borrow().last_position();
                 Self {
@@ -146,7 +146,7 @@ macro_rules! position {
 
         impl<S: Spacing$(, $T)?> $name<Range, S$(, $T)?> {
             pub fn bound_type(&self) -> BoundType {
-                BoundType::of(self.index)
+                BoundType::of(self.persistent_index)
             }
 
             pub fn span(&self) -> S {
@@ -217,8 +217,8 @@ pub enum BoundType {
 }
 
 impl BoundType {
-    pub(crate) fn of(index: usize) -> Self {
-        match index & 1 {
+    pub(crate) fn of(persistent_index: isize) -> Self {
+        match persistent_index & 1 {
             0 => Self::Start,
             1 => Self::End,
             _ => unreachable!()
