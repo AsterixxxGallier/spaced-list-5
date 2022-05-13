@@ -1,10 +1,12 @@
 use std::cell::{RefCell};
+use std::collections::HashMap;
 use std::marker::PhantomData;
 use std::rc::{Rc, Weak};
+use nohash_hasher::IntMap;
 
 use num_traits::zero;
 
-use crate::Spacing;
+use crate::{EphemeralPosition, Spacing};
 
 pub struct Node;
 
@@ -23,6 +25,9 @@ pub struct Skeleton<Kind, S: Spacing, T> {
     offset: S,
     length: S,
     depth: usize,
+    first_persistent_index: isize,
+    from_persistent: IntMap<isize, EphemeralPosition<Kind, S, T>>,
+    into_persistent: IntMap<isize, EphemeralPosition<Kind, S, T>>,
     _kind: PhantomData<Kind>,
 }
 
@@ -46,6 +51,9 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
             offset: zero(),
             length: zero(),
             depth: 0,
+            first_persistent_index: 0,
+            from_persistent: IntMap::default(),
+            into_persistent: IntMap::default(),
             _kind: PhantomData::<Kind>,
         }))
     }

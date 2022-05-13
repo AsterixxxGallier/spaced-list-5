@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 use super::RangeManager;
-use crate::{Position, Range, Spacing};
+use crate::{EphemeralPosition, Range, Spacing};
 
 macro_rules! handle {
     ($name:ident, $lock_name:ident) => {
@@ -52,15 +52,15 @@ impl<S: Spacing, T> RangePositionsHandle<S, T> {
 }
 
 impl<S: Spacing, T> RangeInsertionsHandle<S, T> {
-    pub fn push(&self, spacing: S, span: S, value: T) -> Position<Range, S, T> {
+    pub fn push(&self, spacing: S, span: S, value: T) -> EphemeralPosition<Range, S, T> {
         self.manager.borrow_mut().list.push(spacing, span, value)
     }
 
-    pub fn insert(&self, start: S, end: S, value: T) -> Position<Range, S, T> {
+    pub fn insert(&self, start: S, end: S, value: T) -> EphemeralPosition<Range, S, T> {
         self.manager.borrow_mut().list.insert(start, end, value)
     }
 
-    pub fn insert_with_span(&self, start: S, span: S, value: T) -> Position<Range, S, T> {
+    pub fn insert_with_span(&self, start: S, span: S, value: T) -> EphemeralPosition<Range, S, T> {
         self.manager.borrow_mut().list.insert_with_span(start, span, value)
     }
 }

@@ -5,7 +5,7 @@ use itertools::Itertools;
 
 use crate::{ForwardsIter, BackwardsIter, Spacing};
 use crate::skeleton::{Node, Range, Skeleton};
-use crate::skeleton::position::{HollowPosition, Position};
+use crate::skeleton::position::{HollowEphemeralPosition, EphemeralPosition};
 
 // TODO implement try_ versions of all public methods that can fail
 // TODO add good error handling to all public methods that can fail
@@ -75,12 +75,12 @@ impl<S: Spacing, T> SpacedList<S, T> {
         Self::default()
     }
 
-    pub fn push(&mut self, spacing: S, value: T) -> Position<Node, S, T> {
+    pub fn push(&mut self, spacing: S, value: T) -> EphemeralPosition<Node, S, T> {
         self.size += 1;
         Skeleton::<Node, _, _>::push(self.skeleton.clone(), spacing, value)
     }
 
-    pub fn insert(&mut self, position: S, value: T) -> Position<Node, S, T> {
+    pub fn insert(&mut self, position: S, value: T) -> EphemeralPosition<Node, S, T> {
         self.size += 1;
         Skeleton::<Node, _, _>::insert(self.skeleton.clone(), position, value)
     }
@@ -89,57 +89,57 @@ impl<S: Spacing, T> SpacedList<S, T> {
     spacing_methods!();
 
 
-    pub fn first(&self) -> Option<Position<Node, S, T>> {
+    pub fn first(&self) -> Option<EphemeralPosition<Node, S, T>> {
         if self.is_empty() {
             None
         } else {
-            Some(Position::at_start(self.skeleton.clone()))
+            Some(EphemeralPosition::at_start(self.skeleton.clone()))
         }
     }
 
-    pub fn last(&self) -> Option<Position<Node, S, T>> {
+    pub fn last(&self) -> Option<EphemeralPosition<Node, S, T>> {
         if self.is_empty() {
             None
         } else {
-            Some(Position::at_end(self.skeleton.clone()))
+            Some(EphemeralPosition::at_end(self.skeleton.clone()))
         }
     }
 
 
-    pub fn before(&self, position: S) -> Option<Position<Node, S, T>> {
+    pub fn before(&self, position: S) -> Option<EphemeralPosition<Node, S, T>> {
         Skeleton::<Node, _, _>::before(self.skeleton.clone(), position)
     }
 
-    pub fn at_or_before(&self, position: S) -> Option<Position<Node, S, T>> {
+    pub fn at_or_before(&self, position: S) -> Option<EphemeralPosition<Node, S, T>> {
         Skeleton::<Node, _, _>::at_or_before(self.skeleton.clone(), position)
     }
 
-    pub fn at(&self, position: S) -> Option<Position<Node, S, T>> {
+    pub fn at(&self, position: S) -> Option<EphemeralPosition<Node, S, T>> {
         Skeleton::<Node, _, _>::at(self.skeleton.clone(), position)
     }
 
-    pub fn at_or_after(&self, position: S) -> Option<Position<Node, S, T>> {
+    pub fn at_or_after(&self, position: S) -> Option<EphemeralPosition<Node, S, T>> {
         Skeleton::<Node, _, _>::at_or_after(self.skeleton.clone(), position)
     }
 
-    pub fn after(&self, position: S) -> Option<Position<Node, S, T>> {
+    pub fn after(&self, position: S) -> Option<EphemeralPosition<Node, S, T>> {
         Skeleton::<Node, _, _>::after(self.skeleton.clone(), position)
     }
 
 
-    pub fn iter(&self) -> impl Iterator<Item=Position<Node, S, T>> {
+    pub fn iter(&self) -> impl Iterator<Item=EphemeralPosition<Node, S, T>> {
         ForwardsIter::from_start(self.skeleton.clone())
     }
 
-    pub fn into_iter(self) -> impl Iterator<Item=Position<Node, S, T>> {
+    pub fn into_iter(self) -> impl Iterator<Item=EphemeralPosition<Node, S, T>> {
         ForwardsIter::from_start(self.skeleton)
     }
 
-    pub fn iter_backwards(&self) -> impl Iterator<Item=Position<Node, S, T>> {
+    pub fn iter_backwards(&self) -> impl Iterator<Item=EphemeralPosition<Node, S, T>> {
         BackwardsIter::from_end(self.skeleton.clone())
     }
 
-    pub fn into_iter_backwards(self) -> impl Iterator<Item=Position<Node, S, T>> {
+    pub fn into_iter_backwards(self) -> impl Iterator<Item=EphemeralPosition<Node, S, T>> {
         BackwardsIter::from_end(self.skeleton)
     }
 
@@ -165,16 +165,16 @@ impl<S: Spacing, T> RangeSpacedList<S, T> {
         Self::default()
     }
 
-    pub fn push(&mut self, spacing: S, span: S, value: T) -> Position<Range, S, T> {
+    pub fn push(&mut self, spacing: S, span: S, value: T) -> EphemeralPosition<Range, S, T> {
         self.size += 1;
         Skeleton::<Range, _, _>::push(self.skeleton.clone(), spacing, span, value)
     }
 
-    pub fn insert(&mut self, start: S, end: S, value: T) -> Position<Range, S, T> {
+    pub fn insert(&mut self, start: S, end: S, value: T) -> EphemeralPosition<Range, S, T> {
         self.insert_with_span(start, end - start, value)
     }
 
-    pub fn insert_with_span(&mut self, start: S, span: S, value: T) -> Position<Range, S, T> {
+    pub fn insert_with_span(&mut self, start: S, span: S, value: T) -> EphemeralPosition<Range, S, T> {
         self.size += 1;
         Skeleton::<Range, _, _>::insert(self.skeleton.clone(), start, span, value)
     }
@@ -183,115 +183,115 @@ impl<S: Spacing, T> RangeSpacedList<S, T> {
     spacing_methods!();
 
 
-    pub fn first(&self) -> Option<Position<Range, S, T>> {
+    pub fn first(&self) -> Option<EphemeralPosition<Range, S, T>> {
         if self.is_empty() {
             None
         } else {
-            Some(Position::at_start(self.skeleton.clone()))
+            Some(EphemeralPosition::at_start(self.skeleton.clone()))
         }
     }
 
-    pub fn last(&self) -> Option<Position<Range, S, T>> {
+    pub fn last(&self) -> Option<EphemeralPosition<Range, S, T>> {
         if self.is_empty() {
             None
         } else {
-            Some(Position::at_end(self.skeleton.clone()))
+            Some(EphemeralPosition::at_end(self.skeleton.clone()))
         }
     }
 
 
-    pub fn starting_or_ending_before(&self, position: S) -> Option<Position<Range, S, T>> {
+    pub fn starting_or_ending_before(&self, position: S) -> Option<EphemeralPosition<Range, S, T>> {
         Skeleton::<Range, _, _>::before(self.skeleton.clone(), position)
     }
 
-    pub fn starting_or_ending_at_or_before(&self, position: S) -> Option<Position<Range, S, T>> {
+    pub fn starting_or_ending_at_or_before(&self, position: S) -> Option<EphemeralPosition<Range, S, T>> {
         Skeleton::<Range, _, _>::at_or_before(self.skeleton.clone(), position)
     }
 
-    pub fn starting_or_ending_at(&self, position: S) -> Option<Position<Range, S, T>> {
+    pub fn starting_or_ending_at(&self, position: S) -> Option<EphemeralPosition<Range, S, T>> {
         Skeleton::<Range, _, _>::at(self.skeleton.clone(), position)
     }
 
-    pub fn starting_or_ending_at_or_after(&self, position: S) -> Option<Position<Range, S, T>> {
+    pub fn starting_or_ending_at_or_after(&self, position: S) -> Option<EphemeralPosition<Range, S, T>> {
         Skeleton::<Range, _, _>::at_or_after(self.skeleton.clone(), position)
     }
 
-    pub fn starting_or_ending_after(&self, position: S) -> Option<Position<Range, S, T>> {
+    pub fn starting_or_ending_after(&self, position: S) -> Option<EphemeralPosition<Range, S, T>> {
         Skeleton::<Range, _, _>::after(self.skeleton.clone(), position)
     }
 
 
-    pub fn starting_before(&self, position: S) -> Option<Position<Range, S, T>> {
+    pub fn starting_before(&self, position: S) -> Option<EphemeralPosition<Range, S, T>> {
         Skeleton::<Range, _, _>::starting_before(self.skeleton.clone(), position)
     }
 
-    pub fn starting_at_or_before(&self, position: S) -> Option<Position<Range, S, T>> {
+    pub fn starting_at_or_before(&self, position: S) -> Option<EphemeralPosition<Range, S, T>> {
         Skeleton::<Range, _, _>::starting_at_or_before(self.skeleton.clone(), position)
     }
 
-    pub fn starting_at(&self, position: S) -> Option<Position<Range, S, T>> {
+    pub fn starting_at(&self, position: S) -> Option<EphemeralPosition<Range, S, T>> {
         Skeleton::<Range, _, _>::starting_at(self.skeleton.clone(), position)
     }
 
-    pub fn starting_at_or_after(&self, position: S) -> Option<Position<Range, S, T>> {
+    pub fn starting_at_or_after(&self, position: S) -> Option<EphemeralPosition<Range, S, T>> {
         Skeleton::<Range, _, _>::starting_at_or_after(self.skeleton.clone(), position)
     }
 
-    pub fn starting_after(&self, position: S) -> Option<Position<Range, S, T>> {
+    pub fn starting_after(&self, position: S) -> Option<EphemeralPosition<Range, S, T>> {
         Skeleton::<Range, _, _>::starting_after(self.skeleton.clone(), position)
     }
 
 
-    pub fn ending_before(&self, position: S) -> Option<Position<Range, S, T>> {
+    pub fn ending_before(&self, position: S) -> Option<EphemeralPosition<Range, S, T>> {
         Skeleton::<Range, _, _>::ending_before(self.skeleton.clone(), position)
     }
 
-    pub fn ending_at_or_before(&self, position: S) -> Option<Position<Range, S, T>> {
+    pub fn ending_at_or_before(&self, position: S) -> Option<EphemeralPosition<Range, S, T>> {
         Skeleton::<Range, _, _>::ending_at_or_before(self.skeleton.clone(), position)
     }
 
-    pub fn ending_at(&self, position: S) -> Option<Position<Range, S, T>> {
+    pub fn ending_at(&self, position: S) -> Option<EphemeralPosition<Range, S, T>> {
         Skeleton::<Range, _, _>::ending_at(self.skeleton.clone(), position)
     }
 
-    pub fn ending_at_or_after(&self, position: S) -> Option<Position<Range, S, T>> {
+    pub fn ending_at_or_after(&self, position: S) -> Option<EphemeralPosition<Range, S, T>> {
         Skeleton::<Range, _, _>::ending_at_or_after(self.skeleton.clone(), position)
     }
 
-    pub fn ending_after(&self, position: S) -> Option<Position<Range, S, T>> {
+    pub fn ending_after(&self, position: S) -> Option<EphemeralPosition<Range, S, T>> {
         Skeleton::<Range, _, _>::ending_after(self.skeleton.clone(), position)
     }
 
 
-    pub fn iter(&self) -> impl Iterator<Item=Position<Range, S, T>> {
+    pub fn iter(&self) -> impl Iterator<Item=EphemeralPosition<Range, S, T>> {
         ForwardsIter::from_start(self.skeleton.clone())
     }
 
-    pub fn into_iter(self) -> impl Iterator<Item=Position<Range, S, T>> {
+    pub fn into_iter(self) -> impl Iterator<Item=EphemeralPosition<Range, S, T>> {
         ForwardsIter::from_start(self.skeleton)
     }
 
-    pub fn iter_ranges(&self) -> impl Iterator<Item=(Position<Range, S, T>, Position<Range, S, T>)> {
+    pub fn iter_ranges(&self) -> impl Iterator<Item=(EphemeralPosition<Range, S, T>, EphemeralPosition<Range, S, T>)> {
         self.iter().tuples()
     }
 
-    pub fn into_iter_ranges(self) -> impl Iterator<Item=(Position<Range, S, T>, Position<Range, S, T>)> {
+    pub fn into_iter_ranges(self) -> impl Iterator<Item=(EphemeralPosition<Range, S, T>, EphemeralPosition<Range, S, T>)> {
         self.into_iter().tuples()
     }
 
-    pub fn iter_backwards(&self) -> impl Iterator<Item=Position<Range, S, T>> {
+    pub fn iter_backwards(&self) -> impl Iterator<Item=EphemeralPosition<Range, S, T>> {
         BackwardsIter::from_end(self.skeleton.clone())
     }
 
-    pub fn into_iter_backwards(self) -> impl Iterator<Item=Position<Range, S, T>> {
+    pub fn into_iter_backwards(self) -> impl Iterator<Item=EphemeralPosition<Range, S, T>> {
         BackwardsIter::from_end(self.skeleton)
     }
 
-    pub fn iter_ranges_backwards(&self) -> impl Iterator<Item=(Position<Range, S, T>, Position<Range, S, T>)> {
+    pub fn iter_ranges_backwards(&self) -> impl Iterator<Item=(EphemeralPosition<Range, S, T>, EphemeralPosition<Range, S, T>)> {
         self.iter_backwards().tuples()
     }
 
-    pub fn into_iter_ranges_backwards(self) -> impl Iterator<Item=(Position<Range, S, T>, Position<Range, S, T>)> {
+    pub fn into_iter_ranges_backwards(self) -> impl Iterator<Item=(EphemeralPosition<Range, S, T>, EphemeralPosition<Range, S, T>)> {
         self.into_iter_backwards().tuples()
     }
 
@@ -318,12 +318,12 @@ impl<S: Spacing> HollowSpacedList<S> {
         Self::default()
     }
 
-    pub fn push(&mut self, spacing: S) -> HollowPosition<Node, S> {
+    pub fn push(&mut self, spacing: S) -> HollowEphemeralPosition<Node, S> {
         self.size += 1;
         Skeleton::<Node, _, _>::push(self.skeleton.clone(), spacing, ()).into()
     }
 
-    pub fn insert(&mut self, position: S) -> HollowPosition<Node, S> {
+    pub fn insert(&mut self, position: S) -> HollowEphemeralPosition<Node, S> {
         self.size += 1;
         Skeleton::<Node, _, _>::insert(self.skeleton.clone(), position, ()).into()
     }
@@ -332,62 +332,62 @@ impl<S: Spacing> HollowSpacedList<S> {
     spacing_methods!();
 
 
-    pub fn first(&self) -> Option<HollowPosition<Node, S>> {
+    pub fn first(&self) -> Option<HollowEphemeralPosition<Node, S>> {
         if self.is_empty() {
             None
         } else {
-            Some(HollowPosition::at_start(self.skeleton.clone()))
+            Some(HollowEphemeralPosition::at_start(self.skeleton.clone()))
         }
     }
 
-    pub fn last(&self) -> Option<HollowPosition<Node, S>> {
+    pub fn last(&self) -> Option<HollowEphemeralPosition<Node, S>> {
         if self.is_empty() {
             None
         } else {
-            Some(HollowPosition::at_end(self.skeleton.clone()))
+            Some(HollowEphemeralPosition::at_end(self.skeleton.clone()))
         }
     }
 
 
-    pub fn before(&self, position: S) -> Option<HollowPosition<Node, S>> {
+    pub fn before(&self, position: S) -> Option<HollowEphemeralPosition<Node, S>> {
         Skeleton::<Node, _, _>::before(self.skeleton.clone(), position)
             .map(|position| position.into())
     }
 
-    pub fn at_or_before(&self, position: S) -> Option<HollowPosition<Node, S>> {
+    pub fn at_or_before(&self, position: S) -> Option<HollowEphemeralPosition<Node, S>> {
         Skeleton::<Node, _, _>::at_or_before(self.skeleton.clone(), position)
             .map(|position| position.into())
     }
 
-    pub fn at(&self, position: S) -> Option<HollowPosition<Node, S>> {
+    pub fn at(&self, position: S) -> Option<HollowEphemeralPosition<Node, S>> {
         Skeleton::<Node, _, _>::at(self.skeleton.clone(), position)
             .map(|position| position.into())
     }
 
-    pub fn at_or_after(&self, position: S) -> Option<HollowPosition<Node, S>> {
+    pub fn at_or_after(&self, position: S) -> Option<HollowEphemeralPosition<Node, S>> {
         Skeleton::<Node, _, _>::at_or_after(self.skeleton.clone(), position)
             .map(|position| position.into())
     }
 
-    pub fn after(&self, position: S) -> Option<HollowPosition<Node, S>> {
+    pub fn after(&self, position: S) -> Option<HollowEphemeralPosition<Node, S>> {
         Skeleton::<Node, _, _>::after(self.skeleton.clone(), position)
             .map(|position| position.into())
     }
 
 
-    pub fn iter(&self) -> impl Iterator<Item=HollowPosition<Node, S>> {
+    pub fn iter(&self) -> impl Iterator<Item=HollowEphemeralPosition<Node, S>> {
         ForwardsIter::from_start(self.skeleton.clone()).map_into()
     }
 
-    pub fn into_iter(self) -> impl Iterator<Item=HollowPosition<Node, S>> {
+    pub fn into_iter(self) -> impl Iterator<Item=HollowEphemeralPosition<Node, S>> {
         ForwardsIter::from_start(self.skeleton).map_into()
     }
 
-    pub fn iter_backwards(&self) -> impl Iterator<Item=HollowPosition<Node, S>> {
+    pub fn iter_backwards(&self) -> impl Iterator<Item=HollowEphemeralPosition<Node, S>> {
         BackwardsIter::from_end(self.skeleton.clone()).map_into()
     }
 
-    pub fn into_iter_backwards(self) -> impl Iterator<Item=HollowPosition<Node, S>> {
+    pub fn into_iter_backwards(self) -> impl Iterator<Item=HollowEphemeralPosition<Node, S>> {
         BackwardsIter::from_end(self.skeleton).map_into()
     }
 
@@ -413,16 +413,16 @@ impl<S: Spacing> HollowRangeSpacedList<S> {
         Self::default()
     }
 
-    pub fn push(&mut self, spacing: S, span: S) -> HollowPosition<Range, S> {
+    pub fn push(&mut self, spacing: S, span: S) -> HollowEphemeralPosition<Range, S> {
         self.size += 1;
         Skeleton::<Range, _, _>::push(self.skeleton.clone(), spacing, span, ()).into()
     }
 
-    pub fn insert(&mut self, start: S, end: S) -> HollowPosition<Range, S> {
+    pub fn insert(&mut self, start: S, end: S) -> HollowEphemeralPosition<Range, S> {
         self.insert_with_span(start, end - start)
     }
 
-    pub fn insert_with_span(&mut self, start: S, span: S) -> HollowPosition<Range, S> {
+    pub fn insert_with_span(&mut self, start: S, span: S) -> HollowEphemeralPosition<Range, S> {
         self.size += 1;
         Skeleton::<Range, _, _>::insert(self.skeleton.clone(), start, span, ()).into()
     }
@@ -431,130 +431,130 @@ impl<S: Spacing> HollowRangeSpacedList<S> {
     spacing_methods!();
 
 
-    pub fn first(&self) -> Option<HollowPosition<Range, S>> {
+    pub fn first(&self) -> Option<HollowEphemeralPosition<Range, S>> {
         if self.is_empty() {
             None
         } else {
-            Some(HollowPosition::at_start(self.skeleton.clone()))
+            Some(HollowEphemeralPosition::at_start(self.skeleton.clone()))
         }
     }
 
-    pub fn last(&self) -> Option<HollowPosition<Range, S>> {
+    pub fn last(&self) -> Option<HollowEphemeralPosition<Range, S>> {
         if self.is_empty() {
             None
         } else {
-            Some(HollowPosition::at_end(self.skeleton.clone()))
+            Some(HollowEphemeralPosition::at_end(self.skeleton.clone()))
         }
     }
 
 
-    pub fn starting_or_ending_before(&self, position: S) -> Option<HollowPosition<Range, S>> {
+    pub fn starting_or_ending_before(&self, position: S) -> Option<HollowEphemeralPosition<Range, S>> {
         Skeleton::<Range, _, _>::before(self.skeleton.clone(), position)
             .map(|position| position.into())
     }
 
-    pub fn starting_or_ending_at_or_before(&self, position: S) -> Option<HollowPosition<Range, S>> {
+    pub fn starting_or_ending_at_or_before(&self, position: S) -> Option<HollowEphemeralPosition<Range, S>> {
         Skeleton::<Range, _, _>::at_or_before(self.skeleton.clone(), position)
             .map(|position| position.into())
     }
 
-    pub fn starting_or_ending_at(&self, position: S) -> Option<HollowPosition<Range, S>> {
+    pub fn starting_or_ending_at(&self, position: S) -> Option<HollowEphemeralPosition<Range, S>> {
         Skeleton::<Range, _, _>::at(self.skeleton.clone(), position)
             .map(|position| position.into())
     }
 
-    pub fn starting_or_ending_at_or_after(&self, position: S) -> Option<HollowPosition<Range, S>> {
+    pub fn starting_or_ending_at_or_after(&self, position: S) -> Option<HollowEphemeralPosition<Range, S>> {
         Skeleton::<Range, _, _>::at_or_after(self.skeleton.clone(), position)
             .map(|position| position.into())
     }
 
-    pub fn starting_or_ending_after(&self, position: S) -> Option<HollowPosition<Range, S>> {
+    pub fn starting_or_ending_after(&self, position: S) -> Option<HollowEphemeralPosition<Range, S>> {
         Skeleton::<Range, _, _>::after(self.skeleton.clone(), position)
             .map(|position| position.into())
     }
 
 
-    pub fn starting_before(&self, position: S) -> Option<HollowPosition<Range, S>> {
+    pub fn starting_before(&self, position: S) -> Option<HollowEphemeralPosition<Range, S>> {
         Skeleton::<Range, _, _>::starting_before(self.skeleton.clone(), position)
             .map(|position| position.into())
     }
 
-    pub fn starting_at_or_before(&self, position: S) -> Option<HollowPosition<Range, S>> {
+    pub fn starting_at_or_before(&self, position: S) -> Option<HollowEphemeralPosition<Range, S>> {
         Skeleton::<Range, _, _>::starting_at_or_before(self.skeleton.clone(), position)
             .map(|position| position.into())
     }
 
-    pub fn starting_at(&self, position: S) -> Option<HollowPosition<Range, S>> {
+    pub fn starting_at(&self, position: S) -> Option<HollowEphemeralPosition<Range, S>> {
         Skeleton::<Range, _, _>::starting_at(self.skeleton.clone(), position)
             .map(|position| position.into())
     }
 
-    pub fn starting_at_or_after(&self, position: S) -> Option<HollowPosition<Range, S>> {
+    pub fn starting_at_or_after(&self, position: S) -> Option<HollowEphemeralPosition<Range, S>> {
         Skeleton::<Range, _, _>::starting_at_or_after(self.skeleton.clone(), position)
             .map(|position| position.into())
     }
 
-    pub fn starting_after(&self, position: S) -> Option<HollowPosition<Range, S>> {
+    pub fn starting_after(&self, position: S) -> Option<HollowEphemeralPosition<Range, S>> {
         Skeleton::<Range, _, _>::starting_after(self.skeleton.clone(), position)
             .map(|position| position.into())
     }
 
 
-    pub fn ending_before(&self, position: S) -> Option<HollowPosition<Range, S>> {
+    pub fn ending_before(&self, position: S) -> Option<HollowEphemeralPosition<Range, S>> {
         Skeleton::<Range, _, _>::ending_before(self.skeleton.clone(), position)
             .map(|position| position.into())
     }
 
-    pub fn ending_at_or_before(&self, position: S) -> Option<HollowPosition<Range, S>> {
+    pub fn ending_at_or_before(&self, position: S) -> Option<HollowEphemeralPosition<Range, S>> {
         Skeleton::<Range, _, _>::ending_at_or_before(self.skeleton.clone(), position)
             .map(|position| position.into())
     }
 
-    pub fn ending_at(&self, position: S) -> Option<HollowPosition<Range, S>> {
+    pub fn ending_at(&self, position: S) -> Option<HollowEphemeralPosition<Range, S>> {
         Skeleton::<Range, _, _>::ending_at(self.skeleton.clone(), position)
             .map(|position| position.into())
     }
 
-    pub fn ending_at_or_after(&self, position: S) -> Option<HollowPosition<Range, S>> {
+    pub fn ending_at_or_after(&self, position: S) -> Option<HollowEphemeralPosition<Range, S>> {
         Skeleton::<Range, _, _>::ending_at_or_after(self.skeleton.clone(), position)
             .map(|position| position.into())
     }
 
-    pub fn ending_after(&self, position: S) -> Option<HollowPosition<Range, S>> {
+    pub fn ending_after(&self, position: S) -> Option<HollowEphemeralPosition<Range, S>> {
         Skeleton::<Range, _, _>::ending_after(self.skeleton.clone(), position)
             .map(|position| position.into())
     }
 
 
-    pub fn iter(&self) -> impl Iterator<Item=HollowPosition<Range, S>> {
+    pub fn iter(&self) -> impl Iterator<Item=HollowEphemeralPosition<Range, S>> {
         ForwardsIter::from_start(self.skeleton.clone()).map_into()
     }
 
-    pub fn into_iter(self) -> impl Iterator<Item=HollowPosition<Range, S>> {
+    pub fn into_iter(self) -> impl Iterator<Item=HollowEphemeralPosition<Range, S>> {
         ForwardsIter::from_start(self.skeleton).map_into()
     }
 
-    pub fn iter_ranges(&self) -> impl Iterator<Item=(HollowPosition<Range, S>, HollowPosition<Range, S>)> {
+    pub fn iter_ranges(&self) -> impl Iterator<Item=(HollowEphemeralPosition<Range, S>, HollowEphemeralPosition<Range, S>)> {
         self.iter().tuples()
     }
 
-    pub fn into_iter_ranges(self) -> impl Iterator<Item=(HollowPosition<Range, S>, HollowPosition<Range, S>)> {
+    pub fn into_iter_ranges(self) -> impl Iterator<Item=(HollowEphemeralPosition<Range, S>, HollowEphemeralPosition<Range, S>)> {
         self.into_iter().tuples()
     }
 
-    pub fn iter_backwards(&self) -> impl Iterator<Item=HollowPosition<Range, S>> {
+    pub fn iter_backwards(&self) -> impl Iterator<Item=HollowEphemeralPosition<Range, S>> {
         BackwardsIter::from_end(self.skeleton.clone()).map_into()
     }
 
-    pub fn into_iter_backwards(self) -> impl Iterator<Item=HollowPosition<Range, S>> {
+    pub fn into_iter_backwards(self) -> impl Iterator<Item=HollowEphemeralPosition<Range, S>> {
         BackwardsIter::from_end(self.skeleton).map_into()
     }
 
-    pub fn iter_ranges_backwards(&self) -> impl Iterator<Item=(HollowPosition<Range, S>, HollowPosition<Range, S>)> {
+    pub fn iter_ranges_backwards(&self) -> impl Iterator<Item=(HollowEphemeralPosition<Range, S>, HollowEphemeralPosition<Range, S>)> {
         self.iter_backwards().tuples()
     }
 
-    pub fn into_iter_ranges_backwards(self) -> impl Iterator<Item=(HollowPosition<Range, S>, HollowPosition<Range, S>)> {
+    pub fn into_iter_ranges_backwards(self) -> impl Iterator<Item=(HollowEphemeralPosition<Range, S>, HollowEphemeralPosition<Range, S>)> {
         self.into_iter_backwards().tuples()
     }
 

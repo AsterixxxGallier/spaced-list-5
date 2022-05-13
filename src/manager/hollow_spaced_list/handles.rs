@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 use super::HollowManager;
-use crate::{HollowPosition, Node, Spacing};
+use crate::{HollowEphemeralPosition, Node, Spacing};
 
 macro_rules! handle {
     ($name:ident, $lock_name:ident) => {
@@ -51,11 +51,11 @@ impl<S: Spacing> HollowPositionsHandle<S> {
 }
 
 impl<S: Spacing> HollowInsertionsHandle<S> {
-    pub fn push(&self, spacing: S) -> HollowPosition<Node, S> {
+    pub fn push(&self, spacing: S) -> HollowEphemeralPosition<Node, S> {
         self.manager.borrow_mut().list.push(spacing)
     }
 
-    pub fn insert(&self, position: S) -> HollowPosition<Node, S> {
+    pub fn insert(&self, position: S) -> HollowEphemeralPosition<Node, S> {
         self.manager.borrow_mut().list.insert(position)
     }
 }

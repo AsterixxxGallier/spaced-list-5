@@ -8,11 +8,11 @@ use crate::{ForwardsIter, BackwardsIter, ParentData, Spacing};
 use crate::skeleton::{Range, Skeleton};
 
 macro_rules! position {
-    ($name:ident; <Kind, S: Spacing$(, $T:ident)?>; $type:ty; $skeleton:ty) => {
+    ($name:ident; <Kind, S: Spacing$(, $T:ident)?>; $type:ty; $skeleton:ty; $index:ty; $start:expr) => {
         pub struct $name<Kind, S: Spacing$(, $T)?> {
             pub(crate) skeleton: Rc<RefCell<$skeleton>>,
             // TODO implement persistent indices or something
-            pub(crate) persistent_index: isize,
+            pub(crate) index: $index,
             pub(crate) position: S,
         }
 
@@ -27,7 +27,7 @@ macro_rules! position {
         }
 
         impl<Kind, S: Spacing$(, $T)?> $type {
-            pub(crate) fn persistent_new(skeleton: Rc<RefCell<$skeleton>>, index: usize, position: S) -> Self {
+            pub(crate) fn new(skeleton: Rc<RefCell<$skeleton>>, index: $index, position: S) -> Self {
                 Self {
                     skeleton,
                     index,
@@ -35,16 +35,17 @@ macro_rules! position {
                 }
             }
 
-            pub(crate) fn persistent_at_start(skeleton: Rc<RefCell<$skeleton>>) -> Self {
+            pub(crate) fn at_start(skeleton: Rc<RefCell<$skeleton>>) -> Self {
+                let index = $start;
                 let position = skeleton.borrow().offset;
                 Self {
                     skeleton,
-                    index: 0,
+                    index,
                     position,
                 }
             }
 
-            pub(crate) fn persistent_at_end(skeleton: Rc<RefCell<$skeleton>>) -> Self {
+            pub(crate) fn at_end(skeleton: Rc<RefCell<$skeleton>>) -> Self {
                 let index = skeleton.borrow().elements.len() - 1;
                 let position = skeleton.borrow().last_position();
                 Self {
@@ -146,7 +147,7 @@ macro_rules! position {
 
         impl<S: Spacing$(, $T)?> $name<Range, S$(, $T)?> {
             pub fn bound_type(&self) -> BoundType {
-                BoundType::of(self.persistent_index)
+                BoundType::of(self.index.try_into().unwrap())
             }
 
             pub fn span(&self) -> S {
@@ -194,7 +195,39 @@ macro_rules! position {
     };
 }
 
-position!(Position; <Kind, S: Spacing, T>; Position<Kind, S, T>; Skeleton<Kind, S, T>);
+// TODO make this crate-private
+position!(EphemeralPosition; <Kind, S: Spacing, T>; EphemeralPosition<Kind, S, T>; Skeleton<Kind, S, T>; usize; 0);
+
+impl<Kind, S: Spacing, T> EphemeralPosition<Kind, S, T> {
+    pub fn element(&self) -> Ref<T> {
+        Ref::map(RefCell::borrow(&self.skeleton),
+                 |skeleton| &skeleton.elements[self.index])
+    }
+
+    pub fn element_mut(&self) -> RefMut<T> {
+        RefMut::map(RefCell::borrow_mut(&self.skeleton),
+                    |skeleton| &mut skeleton.elements[self.index])
+    }
+}
+
+// TODO remove HollowEphemeralPosition because Hollow is a public luxury
+position!(HollowEphemeralPosition; <Kind, S: Spacing>; HollowEphemeralPosition<Kind, S>; Skeleton<Kind, S, ()>; usize; 0);
+
+impl<Kind, S: Spacing> From<EphemeralPosition<Kind, S, ()>> for HollowEphemeralPosition<Kind, S> {
+    fn from(position: EphemeralPosition<Kind, S, ()>) -> Self {
+        Self::new(position.skeleton, position.index, position.position)
+    }
+}
+
+impl<Kind, S: Spacing> From<HollowEphemeralPosition<Kind, S>> for EphemeralPosition<Kind, S, ()> {
+    fn from(position: HollowEphemeralPosition<Kind, S>) -> Self {
+        Self::new(position.skeleton, position.index, position.position)
+    }
+}
+
+// skeleton.borrow().first_persistent_index
+
+position!(Position; <Kind, S: Spacing, T>; Position<Kind, S, T>; Skeleton<Kind, S, T>; usize; 0);
 
 impl<Kind, S: Spacing, T> Position<Kind, S, T> {
     pub fn element(&self) -> Ref<T> {
@@ -208,23 +241,7 @@ impl<Kind, S: Spacing, T> Position<Kind, S, T> {
     }
 }
 
-position!(HollowPosition; <Kind, S: Spacing>; HollowPosition<Kind, S>; Skeleton<Kind, S, ()>);
-
-#[derive(Debug, Ord, PartialOrd, Eq, PartialEq)]
-pub enum BoundType {
-    Start,
-    End,
-}
-
-impl BoundType {
-    pub(crate) fn of(persistent_index: isize) -> Self {
-        match persistent_index & 1 {
-            0 => Self::Start,
-            1 => Self::End,
-            _ => unreachable!()
-        }
-    }
-}
+position!(HollowPosition; <Kind, S: Spacing>; HollowPosition<Kind, S>; Skeleton<Kind, S, ()>; usize; 0);
 
 impl<Kind, S: Spacing> From<Position<Kind, S, ()>> for HollowPosition<Kind, S> {
     fn from(position: Position<Kind, S, ()>) -> Self {
@@ -235,5 +252,21 @@ impl<Kind, S: Spacing> From<Position<Kind, S, ()>> for HollowPosition<Kind, S> {
 impl<Kind, S: Spacing> From<HollowPosition<Kind, S>> for Position<Kind, S, ()> {
     fn from(position: HollowPosition<Kind, S>) -> Self {
         Self::new(position.skeleton, position.index, position.position)
+    }
+}
+
+#[derive(Debug, Ord, PartialOrd, Eq, PartialEq)]
+pub enum BoundType {
+    Start,
+    End,
+}
+
+impl BoundType {
+    pub(crate) fn of(index: isize) -> Self {
+        match index & 1 {
+            0 => Self::Start,
+            1 => Self::End,
+            _ => unreachable!()
+        }
     }
 }

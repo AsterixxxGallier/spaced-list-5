@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 use super::Manager;
-use crate::{Node, Position, Spacing};
+use crate::{Node, EphemeralPosition, Spacing};
 
 macro_rules! handle {
     ($name:ident, $lock_name:ident) => {
@@ -52,11 +52,11 @@ impl<S: Spacing, T> PositionsHandle<S, T> {
 }
 
 impl<S: Spacing, T> InsertionsHandle<S, T> {
-    pub fn push(&self, spacing: S, value: T) -> Position<Node, S, T> {
+    pub fn push(&self, spacing: S, value: T) -> EphemeralPosition<Node, S, T> {
         self.manager.borrow_mut().list.push(spacing, value)
     }
 
-    pub fn insert(&self, position: S, value: T) -> Position<Node, S, T> {
+    pub fn insert(&self, position: S, value: T) -> EphemeralPosition<Node, S, T> {
         self.manager.borrow_mut().list.insert(position, value)
     }
 }

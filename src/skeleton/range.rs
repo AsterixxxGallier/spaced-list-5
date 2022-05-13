@@ -2,18 +2,18 @@ use std::cell::RefCell;
 use std::mem;
 use std::rc::Rc;
 
-use crate::Position;
+use crate::EphemeralPosition;
 use crate::skeleton::{Range, Skeleton, Spacing};
 use crate::skeleton::position::BoundType;
 
 impl<S: Spacing, T> Skeleton<Range, S, T> {
-    pub(crate) fn push(this: Rc<RefCell<Self>>, distance: S, span: S, element: T) -> Position<Range, S, T> {
+    pub(crate) fn push(this: Rc<RefCell<Self>>, distance: S, span: S, element: T) -> EphemeralPosition<Range, S, T> {
         if this.borrow_mut().elements.is_empty() {
             this.borrow_mut().offset = distance;
             this.borrow_mut().push_link();
             this.borrow_mut().inflate(0, span);
             this.borrow_mut().elements.push(element);
-            return Position::new(this, 0, distance);
+            return EphemeralPosition::new(this, 0, distance);
         }
         let start_index = this.borrow_mut().push_link();
         this.borrow_mut().inflate(start_index, distance);
@@ -21,10 +21,10 @@ impl<S: Spacing, T> Skeleton<Range, S, T> {
         let span_index = this.borrow_mut().push_link();
         this.borrow_mut().inflate(span_index, span);
         this.borrow_mut().elements.push(element);
-        Position::new(this, start_index, start_position)
+        EphemeralPosition::new(this, start_index, start_position)
     }
 
-    pub(crate) fn insert(this: Rc<RefCell<Self>>, position: S, span: S, element: T) -> Position<Range, S, T> {
+    pub(crate) fn insert(this: Rc<RefCell<Self>>, position: S, span: S, element: T) -> EphemeralPosition<Range, S, T> {
         if this.borrow().elements.is_empty() {
             return Self::push(this, position, span, element);
         }
@@ -52,13 +52,13 @@ impl<S: Spacing, T> Skeleton<Range, S, T> {
         }
         let result =
             Self::shallow_at_or_before(this.clone(), position).unwrap();
-        assert_eq!(BoundType::of(result.persistent_index), BoundType::End,
+        assert_eq!(BoundType::of(result.index.try_into().unwrap()), BoundType::End,
                    "Cannot insert range inside of another range");
         let space_between = this.borrow().link(result.index);
         let sub = Self::ensure_sub(this, result.index);
         assert!(position - result.position + span < space_between,
                 "Cannot insert range that intersects another range");
-        Position {
+        EphemeralPosition {
             position,
             ..Self::insert(sub, position - result.position, span, element)
         }

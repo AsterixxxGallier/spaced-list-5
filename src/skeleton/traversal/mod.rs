@@ -3,7 +3,7 @@ use std::rc::Rc;
 
 use paste::paste;
 
-use crate::skeleton::{link_index, ParentData, Range, Skeleton, Spacing, position::Position};
+use crate::skeleton::{link_index, ParentData, Range, Skeleton, Spacing, position::EphemeralPosition};
 
 macro_rules! traverse {
     // region loop
@@ -150,16 +150,16 @@ macro_rules! traverse {
     // region any
     (@after loop($depth:ident, <, $target:ident, any;
         $skeleton:ident, $degree:ident, $index:ident, $position:ident)) => {
-        Some(Position::new($skeleton, $index, $position))
+        Some(EphemeralPosition::new($skeleton, $index, $position))
     };
     (@after loop($depth:ident, <=, $target:ident, any;
         $skeleton:ident, $degree:ident, $index:ident, $position:ident)) => {
-        Some(Position::new($skeleton, $index, $position))
+        Some(EphemeralPosition::new($skeleton, $index, $position))
     };
     (@after loop($depth:ident, ==, $target:ident, any;
         $skeleton:ident, $degree:ident, $index:ident, $position:ident)) => {
         if $position == $target {
-            Some(Position::new($skeleton, $index, $position))
+            Some(EphemeralPosition::new($skeleton, $index, $position))
         } else {
             None
         }
@@ -170,14 +170,14 @@ macro_rules! traverse {
             if $position < $target {
                 traverse!(@next($depth; $skeleton, $index, $position)).unwrap();
             }
-            Some(Position::new($skeleton, $index, $position))
+            Some(EphemeralPosition::new($skeleton, $index, $position))
         }
     };
     (@after loop($depth:ident, >, $target:ident, any;
         $skeleton:ident, $degree:ident, $index:ident, $position:ident)) => {
         {
             traverse!(@next($depth; $skeleton, $index, $position)).unwrap();
-            Some(Position::new($skeleton, $index, $position))
+            Some(EphemeralPosition::new($skeleton, $index, $position))
         }
     };
     // endregion
@@ -198,7 +198,7 @@ macro_rules! traverse {
             if !traverse!(@index is at bound($bound; $index)) {
                 traverse!(@previous($depth; $skeleton, $index, $position)).ok()?;
             }
-            Some(Position::new($skeleton, $index, $position))
+            Some(EphemeralPosition::new($skeleton, $index, $position))
         }
     };
     (@after loop($depth:ident, <=, $target:ident, $bound:ident;
@@ -207,13 +207,13 @@ macro_rules! traverse {
             if !traverse!(@index is at bound($bound; $index)) {
                 traverse!(@previous($depth; $skeleton, $index, $position)).ok()?;
             }
-            Some(Position::new($skeleton, $index, $position))
+            Some(EphemeralPosition::new($skeleton, $index, $position))
         }
     };
     (@after loop($depth:ident, ==, $target:ident, $bound:ident;
         $skeleton:ident, $degree:ident, $index:ident, $position:ident)) => {
         if $position == $target && traverse!(@index is at bound($bound; $index)) {
-            Some(Position::new($skeleton, $index, $position))
+            Some(EphemeralPosition::new($skeleton, $index, $position))
         } else {
             None
         }
@@ -227,7 +227,7 @@ macro_rules! traverse {
             if !traverse!(@index is at bound($bound; $index)) {
                 traverse!(@next($depth; $skeleton, $index, $position)).ok()?;
             }
-            Some(Position::new($skeleton, $index, $position))
+            Some(EphemeralPosition::new($skeleton, $index, $position))
         }
     };
     (@after loop($depth:ident, >, $target:ident, $bound:ident;
@@ -237,7 +237,7 @@ macro_rules! traverse {
             if !traverse!(@index is at bound($bound; $index)) {
                 traverse!(@next($depth; $skeleton, $index, $position)).ok()?;
             }
-            Some(Position::new($skeleton, $index, $position))
+            Some(EphemeralPosition::new($skeleton, $index, $position))
         }
     };
     // endregion
@@ -317,14 +317,14 @@ macro_rules! traverse {
     (@trivial edge cases(<, $target:ident, $bound:ident; $skeleton:ident)) => {
         traverse!(@if one is at bound($bound) {
             if $target > $skeleton.borrow().last_position() {
-                return Some(Position::at_end($skeleton));
+                return Some(EphemeralPosition::at_end($skeleton));
             }
         } else {});
     };
     (@trivial edge cases(<=, $target:ident, $bound:ident; $skeleton:ident)) => {
         traverse!(@if one is at bound($bound) {
             if $target >= $skeleton.borrow().last_position() {
-                return Some(Position::at_end($skeleton));
+                return Some(EphemeralPosition::at_end($skeleton));
             }
         } else {});
     };
@@ -332,12 +332,12 @@ macro_rules! traverse {
         {
             traverse!(@if zero is at bound($bound) {
                 if $target == $skeleton.borrow().offset() {
-                    return Some(Position::at_start($skeleton));
+                    return Some(EphemeralPosition::at_start($skeleton));
                 }
             } else {});
             traverse!(@if one is at bound($bound) {
                 if $target == $skeleton.borrow().last_position() {
-                    return Some(Position::at_end($skeleton));
+                    return Some(EphemeralPosition::at_end($skeleton));
                 }
             } else {});
         }
@@ -345,14 +345,14 @@ macro_rules! traverse {
     (@trivial edge cases(>=, $target:ident, $bound:ident; $skeleton:ident)) => {
         traverse!(@if zero is at bound($bound) {
             if $target <= $skeleton.borrow().offset() {
-                return Some(Position::at_start($skeleton));
+                return Some(EphemeralPosition::at_start($skeleton));
             }
         } else {});
     };
     (@trivial edge cases(>, $target:ident, $bound:ident; $skeleton:ident)) => {
         traverse!(@if zero is at bound($bound) {
             if $target < $skeleton.borrow().offset() {
-                return Some(Position::at_start($skeleton));
+                return Some(EphemeralPosition::at_start($skeleton));
             }
         } else {});
     };
@@ -366,7 +366,7 @@ macro_rules! traverse {
         } else if $skeleton.borrow().links.is_empty() {
             traverse!(@if zero is at bound($bound) {
                 if $skeleton.borrow().offset $cmp $target {
-                    Some(Position::new($skeleton.clone(), 0, $skeleton.borrow().offset))
+                    Some(EphemeralPosition::new($skeleton.clone(), 0, $skeleton.borrow().offset))
                 } else {
                     None
                 }
@@ -404,14 +404,14 @@ macro_rules! traversal_methods {
     (@shallow $pos:ident: $cmp:tt) => {
         paste! {
             pub fn [<shallow_ $pos>](this: Rc<RefCell<Self>>, target: S)
-                -> Option<Position<Kind, S, T>> {
+                -> Option<EphemeralPosition<Kind, S, T>> {
                 traverse!(this; shallow; $cmp target)
             }
         }
     };
     (@deep $pos:ident: $cmp:tt) => {
         pub fn $pos(this: Rc<RefCell<Self>>, target: S)
-            -> Option<Position<Kind, S, T>> {
+            -> Option<EphemeralPosition<Kind, S, T>> {
             traverse!(this; deep; $cmp target)
         }
     };
@@ -422,7 +422,7 @@ macro_rules! traversal_methods {
     (@shallow $bound:ident $pos:ident: $cmp:tt) => {
         paste! {
             pub fn [<shallow_ $bound ing_ $pos>](this: Rc<RefCell<Self>>, target: S)
-                -> Option<Position<Range, S, T>> {
+                -> Option<EphemeralPosition<Range, S, T>> {
                 traverse!(this; shallow; $cmp target at $bound)
             }
         }
@@ -430,7 +430,7 @@ macro_rules! traversal_methods {
     (@deep $bound:ident $pos:ident: $cmp:tt) => {
         paste! {
             pub fn [<$bound ing_ $pos>](this: Rc<RefCell<Self>>, target: S)
-                -> Option<Position<Range, S, T>> {
+                -> Option<EphemeralPosition<Range, S, T>> {
                 traverse!(this; deep; $cmp target at $bound)
             }
         }
