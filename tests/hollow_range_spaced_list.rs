@@ -1,7 +1,7 @@
 use std::fmt::{Display};
 use itertools::Itertools;
 
-use spaced_list_5::{HollowEphemeralPosition, HollowRangeSpacedList, Range, Spacing};
+use crate::{HollowRangeSpacedList, Range, Spacing};
 
 fn print<'a, S>(iter: impl Iterator<Item = (HollowEphemeralPosition<Range, S>, HollowEphemeralPosition<Range, S>)>)
     where S: 'a + Spacing + Display {

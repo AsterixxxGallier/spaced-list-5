@@ -36,9 +36,7 @@ pub use spaced_lists::HollowSpacedList;
 pub use spaced_lists::HollowRangeSpacedList;
 
 #[doc(inline)]
-pub use skeleton::position::EphemeralPosition;
-#[doc(inline)]
-pub use skeleton::position::HollowEphemeralPosition;
+pub(crate) use skeleton::position::EphemeralPosition;
 #[doc(inline)]
 pub use skeleton::position::BoundType;
 

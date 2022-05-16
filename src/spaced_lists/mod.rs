@@ -5,7 +5,7 @@ use itertools::Itertools;
 
 use crate::{ForwardsIter, BackwardsIter, Spacing};
 use crate::skeleton::{Node, Range, Skeleton};
-use crate::skeleton::position::{HollowEphemeralPosition, EphemeralPosition};
+use crate::skeleton::position::{EphemeralPosition};
 
 // TODO implement try_ versions of all public methods that can fail
 // TODO add good error handling to all public methods that can fail

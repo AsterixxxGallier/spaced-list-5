@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 use super::HollowRangeManager;
-use crate::{HollowEphemeralPosition, Range, Spacing};
+use crate::{Range, Spacing};
 
 macro_rules! handle {
     ($name:ident, $lock_name:ident) => {

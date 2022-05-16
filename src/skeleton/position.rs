@@ -4,7 +4,7 @@ use std::rc::Rc;
 use itertools::Itertools;
 use maybe_owned::MaybeOwned;
 
-use crate::{ForwardsIter, BackwardsIter, ParentData, Spacing};
+use crate::{BackwardsIter, ForwardsIter, ParentData, Spacing};
 use crate::skeleton::{Range, Skeleton};
 
 macro_rules! position {
@@ -196,9 +196,100 @@ macro_rules! position {
 }
 
 // TODO make this crate-private
-position!(EphemeralPosition; <Kind, S: Spacing, T>; EphemeralPosition<Kind, S, T>; Skeleton<Kind, S, T>; usize; 0);
+// position!(EphemeralPosition; <Kind, S: Spacing, T>; EphemeralPosition<Kind, S, T>; Skeleton<Kind, S, T>; usize; 0);
+pub(crate) struct EphemeralPosition<Kind, S: Spacing, T> {
+    pub(crate) skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>,
+
+    pub(crate) index: usize,
+    pub(crate) position: S,
+}
+
+impl<Kind, S: Spacing, T> Clone for EphemeralPosition<Kind, S, T> {
+    fn clone(&self) -> Self {
+        Self {
+            skeleton: self.skeleton.clone(),
+            index: self.index,
+            position: self.position,
+        }
+    }
+}
 
 impl<Kind, S: Spacing, T> EphemeralPosition<Kind, S, T> {
+    pub(crate) fn new(skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>, index: usize, position: S) -> Self {
+        Self {
+            skeleton,
+            index,
+            position,
+        }
+    }
+
+    pub(crate) fn at_start(skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>) -> Self {
+        let position = skeleton.borrow().offset;
+        Self {
+            skeleton,
+            index: 0,
+            position,
+        }
+    }
+
+    pub(crate) fn at_end(skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>) -> Self {
+        let index = skeleton.borrow().elements.len() - 1;
+        let position = skeleton.borrow().last_position();
+        Self {
+            skeleton,
+            index,
+            position,
+        }
+    }
+}
+
+impl<S: Spacing, T> EphemeralPosition<Range, S, T> {
+    pub fn bound_type(&self) -> BoundType {
+        BoundType::of(self.index.try_into().unwrap())
+    }
+
+    pub fn span(&self) -> S {
+        self.skeleton.borrow().links[self.index & !1]
+    }
+
+    pub fn into_range(self) -> (Self, Self) {
+        match self.bound_type() {
+            BoundType::Start => {
+                let end = Self::new(
+                    self.skeleton.clone(),
+                    self.index + 1,
+                    self.position + self.span());
+                (self, end)
+            }
+            BoundType::End => {
+                let start = Self::new(
+                    self.skeleton.clone(),
+                    self.index - 1,
+                    self.position - self.span());
+                (start, self)
+            }
+        }
+    }
+
+    pub fn range(&self) -> (MaybeOwned<Self>, MaybeOwned<Self>) {
+        match self.bound_type() {
+            BoundType::Start => {
+                let end = Self::new(
+                    self.skeleton.clone(),
+                    self.index + 1,
+                    self.position + self.span());
+                (self.into(), end.into())
+            }
+            BoundType::End => {
+                let start = Self::new(
+                    self.skeleton.clone(),
+                    self.index - 1,
+                    self.position - self.span());
+                (start.into(), self.into())
+            }
+        }
+    }
+
     pub fn element(&self) -> Ref<T> {
         Ref::map(RefCell::borrow(&self.skeleton),
                  |skeleton| &skeleton.elements[self.index])
@@ -210,24 +301,9 @@ impl<Kind, S: Spacing, T> EphemeralPosition<Kind, S, T> {
     }
 }
 
-// TODO remove HollowEphemeralPosition because Hollow is a public luxury
-position!(HollowEphemeralPosition; <Kind, S: Spacing>; HollowEphemeralPosition<Kind, S>; Skeleton<Kind, S, ()>; usize; 0);
-
-impl<Kind, S: Spacing> From<EphemeralPosition<Kind, S, ()>> for HollowEphemeralPosition<Kind, S> {
-    fn from(position: EphemeralPosition<Kind, S, ()>) -> Self {
-        Self::new(position.skeleton, position.index, position.position)
-    }
-}
-
-impl<Kind, S: Spacing> From<HollowEphemeralPosition<Kind, S>> for EphemeralPosition<Kind, S, ()> {
-    fn from(position: HollowEphemeralPosition<Kind, S>) -> Self {
-        Self::new(position.skeleton, position.index, position.position)
-    }
-}
-
 // skeleton.borrow().first_persistent_index
 
-position!(Position; <Kind, S: Spacing, T>; Position<Kind, S, T>; Skeleton<Kind, S, T>; usize; 0);
+/*position!(Position; <Kind, S: Spacing, T>; Position<Kind, S, T>; Skeleton<Kind, S, T>; usize; 0);
 
 impl<Kind, S: Spacing, T> Position<Kind, S, T> {
     pub fn element(&self) -> Ref<T> {
@@ -253,7 +329,7 @@ impl<Kind, S: Spacing> From<HollowPosition<Kind, S>> for Position<Kind, S, ()> {
     fn from(position: HollowPosition<Kind, S>) -> Self {
         Self::new(position.skeleton, position.index, position.position)
     }
-}
+}*/
 
 #[derive(Debug, Ord, PartialOrd, Eq, PartialEq)]
 pub enum BoundType {
