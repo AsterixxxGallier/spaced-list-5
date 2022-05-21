@@ -1,6 +1,6 @@
 use std::ops::Range;
 
-use spaced_list_5::{RangeSpacedList, SpacedList, HollowRangeSpacedList, EphemeralPosition};
+use spaced_list_5::{RangeSpacedList, SpacedList, HollowRangeSpacedList, Position};
 
 struct Source {
     content: String,

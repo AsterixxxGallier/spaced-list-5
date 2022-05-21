@@ -3,7 +3,7 @@ use itertools::Itertools;
 
 use crate::{HollowRangeSpacedList, Range, Spacing};
 
-fn print<'a, S>(iter: impl Iterator<Item = (HollowEphemeralPosition<Range, S>, HollowEphemeralPosition<Range, S>)>)
+fn print<'a, S>(iter: impl Iterator<Item = (HollowPosition<Range, S>, HollowPosition<Range, S>)>)
     where S: 'a + Spacing + Display {
     for (start, end) in iter {
         print!("{}->{}  ", start.position(), end.position());

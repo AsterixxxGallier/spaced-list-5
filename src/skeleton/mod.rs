@@ -6,7 +6,7 @@ use nohash_hasher::IntMap;
 
 use num_traits::zero;
 
-use crate::{EphemeralPosition, Spacing};
+use crate::{Position, Spacing};
 
 pub struct Node;
 
@@ -26,8 +26,8 @@ pub struct Skeleton<Kind, S: Spacing, T> {
     length: S,
     depth: usize,
     first_persistent_index: isize,
-    from_persistent: IntMap<isize, EphemeralPosition<Kind, S, T>>,
-    into_persistent: IntMap<isize, EphemeralPosition<Kind, S, T>>,
+    from_persistent: IntMap<isize, Position<Kind, S, T>>,
+    into_persistent: IntMap<isize, Position<Kind, S, T>>,
     _kind: PhantomData<Kind>,
 }
 

@@ -303,7 +303,7 @@ impl<S: Spacing, T> EphemeralPosition<Range, S, T> {
 
 // skeleton.borrow().first_persistent_index
 
-/*position!(Position; <Kind, S: Spacing, T>; Position<Kind, S, T>; Skeleton<Kind, S, T>; usize; 0);
+/*/*position!(Position; <Kind, S: Spacing, T>; Position<Kind, S, T>; Skeleton<Kind, S, T>; usize; 0);
 
 impl<Kind, S: Spacing, T> Position<Kind, S, T> {
     pub fn element(&self) -> Ref<T> {
@@ -317,7 +317,7 @@ impl<Kind, S: Spacing, T> Position<Kind, S, T> {
     }
 }
 
-position!(HollowPosition; <Kind, S: Spacing>; HollowPosition<Kind, S>; Skeleton<Kind, S, ()>; usize; 0);
+position!(HollowPosition; <Kind, S: Spacing>; HollowPosition<Kind, S>; Skeleton<Kind, S, ()>; usize; 0);*/
 
 impl<Kind, S: Spacing> From<Position<Kind, S, ()>> for HollowPosition<Kind, S> {
     fn from(position: Position<Kind, S, ()>) -> Self {

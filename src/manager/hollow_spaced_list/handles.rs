@@ -51,11 +51,11 @@ impl<S: Spacing> HollowPositionsHandle<S> {
 }
 
 impl<S: Spacing> HollowInsertionsHandle<S> {
-    pub fn push(&self, spacing: S) -> HollowEphemeralPosition<Node, S> {
+    pub fn push(&self, spacing: S) -> HollowPosition<Node, S> {
         self.manager.borrow_mut().list.push(spacing)
     }
 
-    pub fn insert(&self, position: S) -> HollowEphemeralPosition<Node, S> {
+    pub fn insert(&self, position: S) -> HollowPosition<Node, S> {
         self.manager.borrow_mut().list.insert(position)
     }
 }
