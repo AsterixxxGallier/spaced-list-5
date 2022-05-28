@@ -6,7 +6,7 @@ use nohash_hasher::IntMap;
 
 use num_traits::zero;
 
-use crate::{Position, Spacing};
+use crate::{EphemeralPosition, Position, Spacing};
 
 pub struct Node;
 
@@ -17,7 +17,7 @@ pub(crate) struct ParentData<Parent> {
     pub(crate) index_in_parent: usize
 }
 
-pub struct Skeleton<Kind, S: Spacing, T> {
+pub(crate) struct Skeleton<Kind, S: Spacing, T> {
     links: Vec<S>,
     elements: Vec<T>,
     subs: Vec<Option<Rc<RefCell<Self>>>>,
@@ -26,8 +26,8 @@ pub struct Skeleton<Kind, S: Spacing, T> {
     length: S,
     depth: usize,
     first_persistent_index: isize,
-    from_persistent: IntMap<isize, Position<Kind, S, T>>,
-    into_persistent: IntMap<isize, Position<Kind, S, T>>,
+    from_persistent: IntMap<isize, EphemeralPosition<Kind, S, T>>,
+    into_persistent: IntMap<usize, Position<Kind, S, T>>,
     _kind: PhantomData<Kind>,
 }
 

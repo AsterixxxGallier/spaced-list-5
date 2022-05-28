@@ -36,7 +36,9 @@ pub use spaced_lists::HollowSpacedList;
 pub use spaced_lists::HollowRangeSpacedList;
 
 #[doc(inline)]
-pub(crate) use skeleton::position::EphemeralPosition;
+pub use skeleton::position::Position;
+#[doc(inline)]
+pub use skeleton::position::HollowPosition;
 #[doc(inline)]
 pub use skeleton::position::BoundType;
 
@@ -49,3 +51,4 @@ pub(crate) use skeleton::Skeleton;
 pub(crate) use skeleton::ParentData;
 pub(crate) use skeleton::traversal::iteration::ForwardsIter;
 pub(crate) use skeleton::traversal::iteration::BackwardsIter;
+pub(crate) use skeleton::position::EphemeralPosition;

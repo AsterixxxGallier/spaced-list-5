@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::mem;
 use std::rc::Rc;
 
-use crate::EphemeralPosition;
+use crate::{EphemeralPosition, Position};
 use crate::skeleton::{Node, Skeleton, Spacing};
 
 impl<S: Spacing, T> Skeleton<Node, S, T> {
@@ -69,6 +69,7 @@ impl<S: Spacing, T> Skeleton<Node, S, T> {
                 previous_first_position,
                 previous_first_element,
             );
+            let insertion_position = pos.position;
             // FIXME Problem:
             //        After the offset-swap-around maneuver, the first element will not be at the
             //        persistent index 0, but at a negative one!
@@ -77,8 +78,10 @@ impl<S: Spacing, T> Skeleton<Node, S, T> {
             let first_persistent_index = this.borrow().first_persistent_index;
             this.borrow_mut().from_persistent.insert(first_persistent_index, pos);
             this.borrow_mut().first_persistent_index -= 1;
+            let position = Position::new(this.clone(), this.borrow().first_persistent_index, insertion_position);
+            this.borrow_mut().into_persistent.insert(-first_persistent_index as usize, position);
             // return EphemeralPosition::persistent_new(this, -1 /*TODO*/, position);
-            return EphemeralPosition::new(this, 0, position);
+            return EphemeralPosition::new(this, 0, insertion_position);
         }
         if position >= this.borrow().last_position() {
             let distance = position - this.borrow().last_position();
