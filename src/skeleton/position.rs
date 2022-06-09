@@ -8,11 +8,11 @@ use crate::{BackwardsIter, ForwardsIter, ParentData, Spacing};
 use crate::skeleton::{Range, Skeleton};
 
 macro_rules! position {
-    ($name:ident; <Kind, S: Spacing$(, $T:ident)?>; $type:ty; $skeleton:ty; $index:ty; $start:expr) => {
+    ($name:ident; <Kind, S: Spacing$(, $T:ident)?>; $type:ty; $skeleton:ty) => {
         pub struct $name<Kind, S: Spacing$(, $T)?> {
             pub(crate) skeleton: Rc<RefCell<$skeleton>>,
             // TODO implement persistent indices or something
-            pub(crate) index: $index,
+            pub(crate) index: isize,
             pub(crate) position: S,
         }
 
@@ -27,7 +27,7 @@ macro_rules! position {
         }
 
         impl<Kind, S: Spacing$(, $T)?> $type {
-            pub(crate) fn new(skeleton: Rc<RefCell<$skeleton>>, index: $index, position: S) -> Self {
+            pub(crate) fn new(skeleton: Rc<RefCell<$skeleton>>, index: isize, position: S) -> Self {
                 Self {
                     skeleton,
                     index,
@@ -36,7 +36,7 @@ macro_rules! position {
             }
 
             pub(crate) fn at_start(skeleton: Rc<RefCell<$skeleton>>) -> Self {
-                let index = $start;
+                let index = skeleton.borrow().first_persistent_index;
                 let position = skeleton.borrow().offset;
                 Self {
                     skeleton,
@@ -379,7 +379,7 @@ impl<S: Spacing, T> EphemeralPosition<Range, S, T> {
 
 // skeleton.borrow().first_persistent_index
 
-position!(Position; <Kind, S: Spacing, T>; Position<Kind, S, T>; Skeleton<Kind, S, T>; isize; 0);
+position!(Position; <Kind, S: Spacing, T>; Position<Kind, S, T>; Skeleton<Kind, S, T>);
 
 /*pub struct Position<Kind, S: Spacing, T> {
     pub(crate) skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>,
@@ -603,7 +603,7 @@ impl<Kind, S: Spacing, T> From<Position<Kind, S, T>> for EphemeralPosition<Kind,
     }
 }
 
-position!(HollowPosition; <Kind, S: Spacing>; HollowPosition<Kind, S>; Skeleton<Kind, S, ()>; isize; 0);
+position!(HollowPosition; <Kind, S: Spacing>; HollowPosition<Kind, S>; Skeleton<Kind, S, ()>);
 
 impl<Kind, S: Spacing> HollowPosition<Kind, S> {
     pub(crate) fn ephemeral(&self) -> EphemeralPosition<Kind, S, ()> {
