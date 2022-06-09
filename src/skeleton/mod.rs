@@ -1,5 +1,4 @@
 use std::cell::{RefCell};
-use std::collections::HashMap;
 use std::marker::PhantomData;
 use std::rc::{Rc, Weak};
 use nohash_hasher::IntMap;

@@ -244,7 +244,7 @@ impl<Kind, S: Spacing, T> EphemeralPosition<Kind, S, T> {
         }
     }
 
-    fn persistent(&self) -> Position<Kind, S, T> {
+    pub(crate) fn persistent(&self) -> Position<Kind, S, T> {
         self.skeleton.borrow().into_persistent.get(&self.index).cloned()
             .unwrap_or(Position::new(self.skeleton.clone(), self.index as isize, self.position))
     }
@@ -585,7 +585,7 @@ impl<Kind, S: Spacing, T> Position<Kind, S, T> {
         self.ephemeral().element_mut()
     }*/
 
-    fn ephemeral(&self) -> EphemeralPosition<Kind, S, T> {
+    pub(crate) fn ephemeral(&self) -> EphemeralPosition<Kind, S, T> {
         self.skeleton.borrow().from_persistent.get(&self.index).cloned()
             .unwrap_or(EphemeralPosition::new(self.skeleton.clone(), self.index as usize, self.position))
     }
@@ -606,7 +606,7 @@ impl<Kind, S: Spacing, T> From<Position<Kind, S, T>> for EphemeralPosition<Kind,
 position!(HollowPosition; <Kind, S: Spacing>; HollowPosition<Kind, S>; Skeleton<Kind, S, ()>; isize; 0);
 
 impl<Kind, S: Spacing> HollowPosition<Kind, S> {
-    fn ephemeral(&self) -> EphemeralPosition<Kind, S, ()> {
+    pub(crate) fn ephemeral(&self) -> EphemeralPosition<Kind, S, ()> {
         let position: Position<Kind, S, ()> = self.clone().into();
         position.ephemeral()
     }
