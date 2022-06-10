@@ -121,3 +121,5 @@ mod range;
 pub mod traversal;
 
 pub mod position;
+
+pub mod index;
