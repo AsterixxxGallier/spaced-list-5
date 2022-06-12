@@ -3,7 +3,7 @@ use std::rc::Rc;
 
 use maybe_owned::MaybeOwned;
 
-use crate::{ParentData, Spacing};
+use crate::{EphemeralPosition, HollowPosition, ParentData, Position, Spacing};
 use crate::skeleton::{Range, Skeleton};
 
 pub(crate) struct EphemeralIndex<Kind, S: Spacing, T> {
@@ -44,8 +44,8 @@ impl<Kind, S: Spacing, T> EphemeralIndex<Kind, S, T> {
         }
     }
 
-    pub(crate) fn position(&self) -> S {
-        todo!()
+    pub(crate) fn position(&self) -> EphemeralPosition<Kind, S, T> {
+        Skeleton::at_index(self.skeleton.clone(), self.index).unwrap()
     }
 
     pub(crate) fn persistent(&self) -> Index<Kind, S, T> {
@@ -201,10 +201,6 @@ macro_rules! index {
                 }
             }
 
-            pub fn position(&self) -> S {
-                todo!() // TODO
-            }
-
             /*pub fn iter_next(&self) -> impl Iterator<Item = Self> {
                 ForwardsIter::from(self.clone().into()).map_into()
             }
@@ -302,6 +298,13 @@ impl<Kind, S: Spacing, T> Index<Kind, S, T> {
         self.skeleton.borrow().from_persistent.get(&self.index).cloned()
             .unwrap_or(EphemeralIndex::new(self.skeleton.clone(), self.index as usize))
     }
+
+    pub fn position(&self) -> Position<Kind, S, T> {
+        let ephemeral_index = self.ephemeral();
+        let ephemeral_position = ephemeral_index.position();
+        let position = ephemeral_position.persistent();
+        position
+    }
 }
 
 impl<Kind, S: Spacing, T> From<EphemeralIndex<Kind, S, T>> for Index<Kind, S, T> {
@@ -322,6 +325,10 @@ impl<Kind, S: Spacing> HollowIndex<Kind, S> {
     pub(crate) fn ephemeral(&self) -> EphemeralIndex<Kind, S, ()> {
         let index: Index<Kind, S, ()> = self.clone().into();
         index.ephemeral()
+    }
+
+    pub fn position(&self) -> HollowPosition<Kind, S> {
+        self.ephemeral().position().persistent().into()
     }
 }
 

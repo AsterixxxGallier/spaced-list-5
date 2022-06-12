@@ -2,8 +2,9 @@ use std::cell::RefCell;
 use std::mem;
 use std::rc::Rc;
 
-use crate::{EphemeralPosition, Position};
+use crate::{EphemeralPosition};
 use crate::skeleton::{Node, Skeleton, Spacing};
+use crate::skeleton::index::{EphemeralIndex, Index};
 
 impl<S: Spacing, T> Skeleton<Node, S, T> {
     pub(crate) fn push(this: Rc<RefCell<Self>>, distance: S, element: T) -> EphemeralPosition<Node, S, T> {
@@ -69,27 +70,27 @@ impl<S: Spacing, T> Skeleton<Node, S, T> {
             this.borrow_mut().inflate_after_offset(previous_first_position - position);
             this.borrow_mut().offset = position;
 
-            let insertion_position = Self::insert(
+            let insertion_index = Self::insert(
                 this.clone(),
                 previous_first_position,
                 previous_first_element,
-            );
+            ).into_index();
 
             let first_persistent_index = this.borrow().first_persistent_index;
 
-            this.borrow_mut().from_persistent.insert(first_persistent_index, insertion_position);
+            this.borrow_mut().from_persistent.insert(first_persistent_index, insertion_index);
 
             this.borrow_mut().first_persistent_index -= 1;
 
             let first_persistent_index = first_persistent_index - 1;
 
-            let first_position =
-                EphemeralPosition::new(this.clone(), 0, position);
-            this.borrow_mut().from_persistent.insert(first_persistent_index, first_position);
+            let first_index =
+                EphemeralIndex::new(this.clone(), 0);
+            this.borrow_mut().from_persistent.insert(first_persistent_index, first_index);
 
-            let first_position =
-                Position::new(this.clone(), first_persistent_index, position);
-            this.borrow_mut().into_persistent.insert(0, first_position);
+            let first_index =
+                Index::new(this.clone(), first_persistent_index);
+            this.borrow_mut().into_persistent.insert(0, first_index);
 
             // let position = Position::new(this.clone(), first_persistent_index, previous_first_position);
             // this.borrow_mut().into_persistent.insert(-first_persistent_index as usize, position);

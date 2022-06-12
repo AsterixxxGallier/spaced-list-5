@@ -4,8 +4,9 @@ use std::rc::Rc;
 use itertools::Itertools;
 use maybe_owned::MaybeOwned;
 
-use crate::{BackwardsIter, ForwardsIter, ParentData, Spacing};
+use crate::{BackwardsIter, ForwardsIter, Node, ParentData, Spacing};
 use crate::skeleton::{Range, Skeleton};
+use crate::skeleton::index::{EphemeralIndex, HollowIndex, Index};
 
 pub(crate) struct EphemeralPosition<Kind, S: Spacing, T> {
     pub(crate) skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>,
@@ -52,9 +53,21 @@ impl<Kind, S: Spacing, T> EphemeralPosition<Kind, S, T> {
         }
     }
 
+    pub(crate) fn into_index(self) -> EphemeralIndex<Kind, S, T> {
+        EphemeralIndex::new(self.skeleton, self.index)
+    }
+
+    pub(crate) fn index(&self) -> EphemeralIndex<Kind, S, T> {
+        EphemeralIndex::new(self.skeleton.clone(), self.index)
+    }
+
     pub(crate) fn persistent(&self) -> Position<Kind, S, T> {
+        // persistent calls position which calls persistent
         self.skeleton.borrow().into_persistent.get(&self.index).cloned()
-            .unwrap_or(Position::new(self.skeleton.clone(), self.index as isize, self.position))
+            .map_or(
+                Position::new(self.skeleton.clone(), self.index as isize, self.position),
+                |index| index.position()
+            )
     }
 
     pub(crate) fn element(&self) -> Ref<T> {
@@ -335,7 +348,18 @@ impl<Kind, S: Spacing, T> Position<Kind, S, T> {
 
     pub(crate) fn ephemeral(&self) -> EphemeralPosition<Kind, S, T> {
         self.skeleton.borrow().from_persistent.get(&self.index).cloned()
-            .unwrap_or(EphemeralPosition::new(self.skeleton.clone(), self.index as usize, self.position))
+            .map_or(
+                EphemeralPosition::new(self.skeleton.clone(), self.index as usize, self.position),
+                |index| index.position()
+            )
+    }
+
+    pub(crate) fn into_index(self) -> Index<Kind, S, T> {
+        Index::new(self.skeleton, self.index)
+    }
+
+    pub(crate) fn index(&self) -> Index<Kind, S, T> {
+        Index::new(self.skeleton.clone(), self.index)
     }
 }
 
@@ -357,6 +381,14 @@ impl<Kind, S: Spacing> HollowPosition<Kind, S> {
     pub(crate) fn ephemeral(&self) -> EphemeralPosition<Kind, S, ()> {
         let position: Position<Kind, S, ()> = self.clone().into();
         position.ephemeral()
+    }
+
+    pub(crate) fn into_index(self) -> HollowIndex<Kind, S> {
+        HollowIndex::new(self.skeleton, self.index)
+    }
+
+    pub(crate) fn index(&self) -> HollowIndex<Kind, S> {
+        HollowIndex::new(self.skeleton.clone(), self.index)
     }
 }
 

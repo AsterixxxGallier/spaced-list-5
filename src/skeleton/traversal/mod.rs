@@ -446,6 +446,22 @@ macro_rules! traversal_methods {
 #[allow(unused)]
 impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
     traversal_methods!();
+
+    pub fn at_index(this: Rc<RefCell<Self>>, index: usize) -> Option<EphemeralPosition<Kind, S, T>> {
+        if index > this.borrow().links.len() {
+            return None;
+        }
+        let mut position = this.borrow().offset;
+        let mut current_index = 0;
+        for degree in (0..this.borrow().depth).rev() {
+            let next_index = current_index + (1 << degree);
+            if next_index <= index {
+                position += this.borrow().links[current_index];
+                current_index = next_index;
+            }
+        }
+        Some(EphemeralPosition::new(this, index, position))
+    }
 }
 
 #[allow(unused)]
