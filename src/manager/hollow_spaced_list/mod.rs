@@ -71,4 +71,29 @@ impl<S: Spacing> HollowManager<S> {
     /*fn deletions_handle(this: Rc<RefCell<Self>>) -> HollowDeletionsHandle<S> {
         HollowDeletionsHandle::new(this)
     }*/
+
+    pub fn before(this: Rc<RefCell<Self>>, position: S) -> Option<HollowLockedPosition<S>> {
+        this.borrow().list.before(position)
+            .map(|position| Self::lock(this.clone(), position))
+    }
+
+    pub fn at_or_before(this: Rc<RefCell<Self>>, position: S) -> Option<HollowLockedPosition<S>> {
+        this.borrow().list.at_or_before(position)
+            .map(|position| Self::lock(this.clone(), position))
+    }
+
+    pub fn at(this: Rc<RefCell<Self>>, position: S) -> Option<HollowLockedPosition<S>> {
+        this.borrow().list.at(position)
+            .map(|position| Self::lock(this.clone(), position))
+    }
+
+    pub fn at_or_after(this: Rc<RefCell<Self>>, position: S) -> Option<HollowLockedPosition<S>> {
+        this.borrow().list.at_or_after(position)
+            .map(|position| Self::lock(this.clone(), position))
+    }
+
+    pub fn after(this: Rc<RefCell<Self>>, position: S) -> Option<HollowLockedPosition<S>> {
+        this.borrow().list.after(position)
+            .map(|position| Self::lock(this.clone(), position))
+    }
 }

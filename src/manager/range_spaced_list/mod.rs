@@ -83,4 +83,79 @@ impl<S: Spacing, T> RangeManager<S, T> {
     pub fn values_handle(this: Rc<RefCell<Self>>) -> RangeValuesHandle<S, T> {
         RangeValuesHandle::new(this)
     }
+
+    pub fn starting_or_ending_before(this: Rc<RefCell<Self>>, position: S) -> Option<RangeLockedPosition<S, T>> {
+        this.borrow().list.starting_or_ending_before(position)
+            .map(|position| Self::lock(this.clone(), position))
+    }
+
+    pub fn starting_or_ending_at_or_before(this: Rc<RefCell<Self>>, position: S) -> Option<RangeLockedPosition<S, T>> {
+        this.borrow().list.starting_or_ending_at_or_before(position)
+            .map(|position| Self::lock(this.clone(), position))
+    }
+
+    pub fn starting_or_ending_at(this: Rc<RefCell<Self>>, position: S) -> Option<RangeLockedPosition<S, T>> {
+        this.borrow().list.starting_or_ending_at(position)
+            .map(|position| Self::lock(this.clone(), position))
+    }
+
+    pub fn starting_or_ending_at_or_after(this: Rc<RefCell<Self>>, position: S) -> Option<RangeLockedPosition<S, T>> {
+        this.borrow().list.starting_or_ending_at_or_after(position)
+            .map(|position| Self::lock(this.clone(), position))
+    }
+
+    pub fn starting_or_ending_after(this: Rc<RefCell<Self>>, position: S) -> Option<RangeLockedPosition<S, T>> {
+        this.borrow().list.starting_or_ending_after(position)
+            .map(|position| Self::lock(this.clone(), position))
+    }
+
+    pub fn starting_before(this: Rc<RefCell<Self>>, position: S) -> Option<RangeLockedPosition<S, T>> {
+        this.borrow().list.starting_before(position)
+            .map(|position| Self::lock(this.clone(), position))
+    }
+
+    pub fn starting_at_or_before(this: Rc<RefCell<Self>>, position: S) -> Option<RangeLockedPosition<S, T>> {
+        this.borrow().list.starting_at_or_before(position)
+            .map(|position| Self::lock(this.clone(), position))
+    }
+
+    pub fn starting_at(this: Rc<RefCell<Self>>, position: S) -> Option<RangeLockedPosition<S, T>> {
+        this.borrow().list.starting_at(position)
+            .map(|position| Self::lock(this.clone(), position))
+    }
+
+    pub fn starting_at_or_after(this: Rc<RefCell<Self>>, position: S) -> Option<RangeLockedPosition<S, T>> {
+        this.borrow().list.starting_at_or_after(position)
+            .map(|position| Self::lock(this.clone(), position))
+    }
+
+    pub fn starting_after(this: Rc<RefCell<Self>>, position: S) -> Option<RangeLockedPosition<S, T>> {
+        this.borrow().list.starting_after(position)
+            .map(|position| Self::lock(this.clone(), position))
+    }
+
+    pub fn ending_before(this: Rc<RefCell<Self>>, position: S) -> Option<RangeLockedPosition<S, T>> {
+        this.borrow().list.ending_before(position)
+            .map(|position| Self::lock(this.clone(), position))
+    }
+
+    pub fn ending_at_or_before(this: Rc<RefCell<Self>>, position: S) -> Option<RangeLockedPosition<S, T>> {
+        this.borrow().list.ending_at_or_before(position)
+            .map(|position| Self::lock(this.clone(), position))
+    }
+
+    pub fn ending_at(this: Rc<RefCell<Self>>, position: S) -> Option<RangeLockedPosition<S, T>> {
+        this.borrow().list.ending_at(position)
+            .map(|position| Self::lock(this.clone(), position))
+    }
+
+    pub fn ending_at_or_after(this: Rc<RefCell<Self>>, position: S) -> Option<RangeLockedPosition<S, T>> {
+        this.borrow().list.ending_at_or_after(position)
+            .map(|position| Self::lock(this.clone(), position))
+    }
+
+    pub fn ending_after(this: Rc<RefCell<Self>>, position: S) -> Option<RangeLockedPosition<S, T>> {
+        this.borrow().list.ending_after(position)
+            .map(|position| Self::lock(this.clone(), position))
+    }
 }
