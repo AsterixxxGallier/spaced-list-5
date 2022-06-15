@@ -1,12 +1,17 @@
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
-use crate::{RangeSpacedList, Spacing};
+use crate::{Position, Range, RangeSpacedList, Spacing};
 use self::handles::{RangeInsertionsHandle, RangePositionsHandle, RangeValuesHandle};
 use self::locks::{RangeInsertionsLock, RangePositionsLock, RangeValuesLock};
 
 pub mod locks;
 pub mod handles;
+
+struct RangeLockedPosition<S: Spacing, T> {
+    position: Position<Range, S, T>,
+    lock: RangePositionsLock<S, T>
+}
 
 #[derive(Default)]
 struct RangeLocks {

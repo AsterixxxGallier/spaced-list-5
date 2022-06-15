@@ -1,12 +1,17 @@
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
-use crate::{SpacedList, Spacing};
+use crate::{Node, Position, SpacedList, Spacing};
 use self::handles::{InsertionsHandle, PositionsHandle, ValuesHandle};
 use self::locks::{InsertionsLock, PositionsLock, ValuesLock};
 
 pub mod locks;
 pub mod handles;
+
+struct LockedPosition<S: Spacing, T> {
+    position: Position<Node, S, T>,
+    lock: PositionsLock<S, T>
+}
 
 #[derive(Default)]
 struct Locks {

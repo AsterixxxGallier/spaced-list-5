@@ -1,12 +1,17 @@
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
-use crate::{HollowSpacedList, Spacing};
+use crate::{HollowPosition, HollowSpacedList, Node, Spacing};
 use self::handles::{HollowInsertionsHandle, HollowPositionsHandle};
 use self::locks::{HollowInsertionsLock, HollowPositionsLock};
 
 pub mod locks;
 pub mod handles;
+
+struct HollowLockedPosition<S: Spacing> {
+    position: HollowPosition<Node, S>,
+    lock: HollowPositionsLock<S>
+}
 
 #[derive(Default)]
 struct HollowLocks {
