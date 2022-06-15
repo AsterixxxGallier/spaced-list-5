@@ -98,27 +98,27 @@ enum Paren {
 }
 
 fn main() {
-    // let mut source = Source::new("(print hello world)".into());
-    // let mut parens = RangeSpacedList::new();
-    // for (index, char) in source.content.char_indices() {
-    //     if char == '(' {
-    //         parens.insert_with_span(index, 1, Paren::Opening);
-    //     } else if char == ')' {
-    //         parens.insert_with_span(index, 1, Paren::Closing);
-    //     }
-    // }
-    // let mut paren_pairs = SpacedList::new();
-    // let mut opening_paren_stack = vec![];
-    // for (start, end) in parens.iter_ranges() {
-    //     match *start.element() {
-    //         Paren::Opening => {
-    //             opening_paren_stack.push(start.clone());
-    //         }
-    //         Paren::Closing => {
-    //             paren_pairs.insert(start.position(), (Paren::Opening, start.clone(), end.clone()));
-    //             paren_pairs.insert(end.position(), (Paren::Closing, start.clone(), end.clone()));
-    //             opening_paren_stack.pop();
-    //         }
-    //     }
-    // }
+    let mut source = Source::new("(print hello world)".into());
+    let mut parens = RangeSpacedList::new();
+    for (index, char) in source.content.char_indices() {
+        if char == '(' {
+            parens.insert_with_span(index, 1, Paren::Opening);
+        } else if char == ')' {
+            parens.insert_with_span(index, 1, Paren::Closing);
+        }
+    }
+    let mut paren_pairs = SpacedList::new();
+    let mut opening_paren_stack = vec![];
+    for (start, end) in parens.iter_ranges() {
+        match *start.element() {
+            Paren::Opening => {
+                opening_paren_stack.push(start.clone());
+            }
+            Paren::Closing => {
+                paren_pairs.insert(start.position(), (Paren::Opening, start.clone(), end.clone()));
+                paren_pairs.insert(end.position(), (Paren::Closing, start.clone(), end.clone()));
+                opening_paren_stack.pop();
+            }
+        }
+    }
 }

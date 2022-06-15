@@ -326,16 +326,44 @@ macro_rules! position {
 position!(Position; <Kind, S: Spacing, T>; Position<Kind, S, T>; Skeleton<Kind, S, T>);
 
 impl<Kind, S: Spacing, T> Position<Kind, S, T> {
-    pub fn element(&self) -> Ref<T> {
+    pub fn element(&self) -> Ref<Ref<T>> {
+        // let index = self.skeleton.borrow().from_persistent.get(&self.index)
+        //     .unwrap_or(&EphemeralIndex::new(self.skeleton.clone(), self.index as usize));
+        // Ref::map(RefCell::borrow(&index.skeleton),
+        // |skeleton| &skeleton.elements[index.index])
         Ref::map(RefCell::borrow(&self.skeleton),
-        |skeleton| &skeleton.elements[skeleton.from_persistent.get(&self.index)
-            .map_or(self.index as usize, |index| index.index)])
+                 |skeleton| {
+                     let option = skeleton.from_persistent.get(&self.index);
+                     match option {
+                         None => {
+                             &Ref::map(RefCell::borrow(&self.skeleton),
+                                      |skeleton| {
+                                          &skeleton.elements[self.index as usize]
+                                      })
+                             // &skeleton.elements[self.index as usize]
+                         }
+                         Some(index) => {
+                             &Ref::map(RefCell::borrow(&index.skeleton),
+                                       |skeleton| {
+                                           &skeleton.elements[index.index]
+                                       })
+                         }
+                     }
+                     // let index = option
+                     //     .unwrap_or(&EphemeralIndex::new(self.skeleton.clone(), self.index as usize));
+                     // &Ref::map(RefCell::borrow(&index.skeleton),
+                     //           |skeleton| {
+                     //               &skeleton.elements[index.index]
+                     //           })
+                     // &skeleton.elements[index
+                     //     .map_or(self.index as usize, |index| index.index)]
+                 })
     }
 
     pub fn element_mut(&self) -> RefMut<T> {
         RefMut::map(RefCell::borrow_mut(&self.skeleton),
-        |skeleton| &mut skeleton.elements[skeleton.from_persistent.get(&self.index)
-            .map_or(self.index as usize, |index| index.index)])
+                    |skeleton| &mut skeleton.elements[skeleton.from_persistent.get(&self.index)
+                        .map_or(self.index as usize, |index| index.index)])
     }
 
     pub(crate) fn ephemeral(&self) -> EphemeralPosition<Kind, S, T> {
