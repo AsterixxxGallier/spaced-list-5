@@ -1,11 +1,11 @@
-use std::cell::{RefCell};
+use std::cell::RefCell;
 use std::marker::PhantomData;
 use std::rc::{Rc, Weak};
-use nohash_hasher::IntMap;
 
+use nohash_hasher::IntMap;
 use num_traits::zero;
 
-use crate::{Spacing};
+use crate::Spacing;
 use crate::skeleton::index::{EphemeralIndex, Index};
 
 pub struct Node;
@@ -14,7 +14,7 @@ pub struct Range;
 
 pub(crate) struct ParentData<Parent> {
     pub(crate) parent: Weak<RefCell<Parent>>,
-    pub(crate) index_in_parent: usize
+    pub(crate) index_in_parent: usize,
 }
 
 pub(crate) struct Skeleton<Kind, S: Spacing, T> {
@@ -107,7 +107,7 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
                 none.insert(Skeleton::new(Some(
                     ParentData {
                         parent: Rc::downgrade(&this),
-                        index_in_parent: index
+                        index_in_parent: index,
                     }))).clone()
         }
     }

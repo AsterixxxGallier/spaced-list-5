@@ -1,9 +1,9 @@
-use std::cell::{RefCell};
+use std::cell::RefCell;
 use std::rc::Rc;
 
 use paste::paste;
 
-use crate::skeleton::{link_index, ParentData, Range, Skeleton, Spacing, position::EphemeralPosition};
+use crate::skeleton::{link_index, ParentData, position::EphemeralPosition, Range, Skeleton, Spacing};
 
 macro_rules! traverse {
     // region loop

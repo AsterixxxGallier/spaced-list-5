@@ -1,8 +1,10 @@
 use std::cell::RefCell;
 use std::rc::Rc;
-use super::HollowManager;
-use crate::{HollowPosition, Node, Spacing};
+
+use crate::Spacing;
 use crate::manager::hollow_spaced_list::HollowLockedPosition;
+
+use super::HollowManager;
 
 macro_rules! handle {
     ($name:ident, $lock_name:ident) => {

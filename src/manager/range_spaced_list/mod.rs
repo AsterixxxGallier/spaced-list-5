@@ -2,6 +2,7 @@ use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use crate::{Position, Range, RangeSpacedList, Spacing};
+
 use self::handles::{RangeInsertionsHandle, RangePositionsHandle, RangeValuesHandle};
 use self::locks::{RangeInsertionsLock, RangePositionsLock, RangeValuesLock};
 
@@ -10,7 +11,7 @@ pub mod handles;
 
 pub struct RangeLockedPosition<S: Spacing, T> {
     position: Position<Range, S, T>,
-    lock: RangePositionsLock<S, T>
+    lock: RangePositionsLock<S, T>,
 }
 
 #[derive(Default)]
@@ -48,7 +49,7 @@ impl<S: Spacing, T> RangeManager<S, T> {
     pub(crate) fn lock(this: Rc<RefCell<Self>>, position: Position<Range, S, T>) -> RangeLockedPosition<S, T> {
         RangeLockedPosition {
             position,
-            lock: RangeManager::positions_lock(this)
+            lock: RangeManager::positions_lock(this),
         }
     }
 

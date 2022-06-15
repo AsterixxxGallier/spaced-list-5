@@ -1,7 +1,9 @@
 use std::cell::RefCell;
 use std::rc::Rc;
-use super::HollowManager;
+
 use crate::Spacing;
+
+use super::HollowManager;
 
 macro_rules! lock {
     ($name:ident, $lock_name:ident) => {

@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::mem;
 use std::rc::Rc;
 
-use crate::{EphemeralPosition};
+use crate::EphemeralPosition;
 use crate::skeleton::{Node, Skeleton, Spacing};
 use crate::skeleton::index::{EphemeralIndex, Index};
 
@@ -97,32 +97,32 @@ impl<S: Spacing, T> Skeleton<Node, S, T> {
             // return EphemeralPosition::persistent_new(this, -1 /*TODO*/, position);
             return EphemeralPosition::new(this, 0, position);
         }
-/*        if position < this.borrow().offset {
-            let previous_first_position = this.borrow().offset;
-            let previous_first_element =
-                mem::replace(&mut this.borrow_mut().elements[0], element);
-            this.borrow_mut().inflate_after_offset(previous_first_position - position);
-            this.borrow_mut().offset = position;
-            let pos = Self::insert(
-                this.clone(),
-                previous_first_position,
-                previous_first_element,
-            );
-            let insertion_position = pos.position;
-            // FIXME Problem:
-            //        After the offset-swap-around maneuver, the first element will not be at the
-            //        persistent index 0, but at a negative one!
-
-            // TODO for range too
-            let first_persistent_index = this.borrow().first_persistent_index;
-            this.borrow_mut().from_persistent.insert(first_persistent_index, pos);
-            this.borrow_mut().first_persistent_index -= 1;
-            let position = Position::new(this.clone(), this.borrow().first_persistent_index, insertion_position);
-            this.borrow_mut().into_persistent.insert(-first_persistent_index as usize, position);
-            // return EphemeralPosition::persistent_new(this, -1 /*TODO*/, position);
-            return EphemeralPosition::new(this, 0, insertion_position);
-        }
-*/        if position >= this.borrow().last_position() {
+        /*        if position < this.borrow().offset {
+                    let previous_first_position = this.borrow().offset;
+                    let previous_first_element =
+                        mem::replace(&mut this.borrow_mut().elements[0], element);
+                    this.borrow_mut().inflate_after_offset(previous_first_position - position);
+                    this.borrow_mut().offset = position;
+                    let pos = Self::insert(
+                        this.clone(),
+                        previous_first_position,
+                        previous_first_element,
+                    );
+                    let insertion_position = pos.position;
+                    // FIXME Problem:
+                    //        After the offset-swap-around maneuver, the first element will not be at the
+                    //        persistent index 0, but at a negative one!
+        
+                    // TODO for range too
+                    let first_persistent_index = this.borrow().first_persistent_index;
+                    this.borrow_mut().from_persistent.insert(first_persistent_index, pos);
+                    this.borrow_mut().first_persistent_index -= 1;
+                    let position = Position::new(this.clone(), this.borrow().first_persistent_index, insertion_position);
+                    this.borrow_mut().into_persistent.insert(-first_persistent_index as usize, position);
+                    // return EphemeralPosition::persistent_new(this, -1 /*TODO*/, position);
+                    return EphemeralPosition::new(this, 0, insertion_position);
+                }
+        */        if position >= this.borrow().last_position() {
             let distance = position - this.borrow().last_position();
             return Self::push(this, distance, element);
         }
@@ -138,7 +138,7 @@ impl<S: Spacing, T> Skeleton<Node, S, T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{SpacedList};
+    use crate::SpacedList;
 
     #[test]
     fn test() {

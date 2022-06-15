@@ -49,7 +49,7 @@ impl<S: Spacing, T> Manager<S, T> {
     pub(crate) fn lock(this: Rc<RefCell<Self>>, position: Position<Node, S, T>) -> LockedPosition<S, T> {
         LockedPosition {
             position,
-            lock: Manager::positions_lock(this)
+            lock: Manager::positions_lock(this),
         }
     }
 

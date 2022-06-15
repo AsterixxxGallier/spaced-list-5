@@ -3,9 +3,9 @@ use std::rc::Rc;
 
 use itertools::Itertools;
 
-use crate::{ForwardsIter, BackwardsIter, Spacing, HollowPosition};
+use crate::{BackwardsIter, ForwardsIter, HollowPosition, Spacing};
 use crate::skeleton::{Node, Range, Skeleton};
-use crate::skeleton::position::{Position};
+use crate::skeleton::position::Position;
 
 // TODO implement try_ versions of all public methods that can fail
 // TODO add good error handling to all public methods that can fail

@@ -1,8 +1,10 @@
 use std::cell::RefCell;
 use std::rc::Rc;
-use super::RangeManager;
-use crate::{Position, Range, Spacing};
+
 use crate::manager::range_spaced_list::RangeLockedPosition;
+use crate::Spacing;
+
+use super::RangeManager;
 
 macro_rules! handle {
     ($name:ident, $lock_name:ident) => {

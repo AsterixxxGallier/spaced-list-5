@@ -18,6 +18,30 @@ use std::ops::{Add, AddAssign, Sub, SubAssign};
 
 use num_traits::Zero;
 
+#[doc(inline)]
+pub use skeleton::Node;
+pub(crate) use skeleton::ParentData;
+#[doc(inline)]
+pub use skeleton::position::BoundType;
+pub(crate) use skeleton::position::EphemeralPosition;
+#[doc(inline)]
+pub use skeleton::position::HollowPosition;
+#[doc(inline)]
+pub use skeleton::position::Position;
+#[doc(inline)]
+pub use skeleton::Range;
+pub(crate) use skeleton::Skeleton;
+pub(crate) use skeleton::traversal::iteration::BackwardsIter;
+pub(crate) use skeleton::traversal::iteration::ForwardsIter;
+#[doc(inline)]
+pub use spaced_lists::HollowRangeSpacedList;
+#[doc(inline)]
+pub use spaced_lists::HollowSpacedList;
+#[doc(inline)]
+pub use spaced_lists::RangeSpacedList;
+#[doc(inline)]
+pub use spaced_lists::SpacedList;
+
 pub trait Spacing = Add<Output=Self> + AddAssign + Sub<Output=Self> + SubAssign + Zero + Ord + Copy;
 
 mod skeleton;
@@ -26,29 +50,3 @@ mod spaced_lists;
 
 pub mod manager;
 
-#[doc(inline)]
-pub use spaced_lists::SpacedList;
-#[doc(inline)]
-pub use spaced_lists::RangeSpacedList;
-#[doc(inline)]
-pub use spaced_lists::HollowSpacedList;
-#[doc(inline)]
-pub use spaced_lists::HollowRangeSpacedList;
-
-#[doc(inline)]
-pub use skeleton::position::Position;
-#[doc(inline)]
-pub use skeleton::position::HollowPosition;
-#[doc(inline)]
-pub use skeleton::position::BoundType;
-
-#[doc(inline)]
-pub use skeleton::Node;
-#[doc(inline)]
-pub use skeleton::Range;
-
-pub(crate) use skeleton::Skeleton;
-pub(crate) use skeleton::ParentData;
-pub(crate) use skeleton::traversal::iteration::ForwardsIter;
-pub(crate) use skeleton::traversal::iteration::BackwardsIter;
-pub(crate) use skeleton::position::EphemeralPosition;
