@@ -8,7 +8,7 @@ use self::locks::{RangeInsertionsLock, RangePositionsLock, RangeValuesLock};
 pub mod locks;
 pub mod handles;
 
-struct RangeLockedPosition<S: Spacing, T> {
+pub struct RangeLockedPosition<S: Spacing, T> {
     position: Position<Range, S, T>,
     lock: RangePositionsLock<S, T>
 }
@@ -43,6 +43,13 @@ impl<S: Spacing, T> RangeManager<S, T> {
             list,
             locks: RangeLocks::default(),
         }))
+    }
+
+    pub(crate) fn lock(this: Rc<RefCell<Self>>, position: Position<Range, S, T>) -> RangeLockedPosition<S, T> {
+        RangeLockedPosition {
+            position,
+            lock: RangeManager::positions_lock(this)
+        }
     }
 
     pub fn positions_lock(this: Rc<RefCell<Self>>) -> RangePositionsLock<S, T> {

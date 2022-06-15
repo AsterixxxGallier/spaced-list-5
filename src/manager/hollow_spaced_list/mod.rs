@@ -8,7 +8,7 @@ use self::locks::{HollowInsertionsLock, HollowPositionsLock};
 pub mod locks;
 pub mod handles;
 
-struct HollowLockedPosition<S: Spacing> {
+pub struct HollowLockedPosition<S: Spacing> {
     position: HollowPosition<Node, S>,
     lock: HollowPositionsLock<S>
 }
@@ -39,6 +39,13 @@ impl<S: Spacing> HollowManager<S> {
             list,
             locks: HollowLocks::default(),
         }))
+    }
+
+    pub(crate) fn lock(this: Rc<RefCell<Self>>, position: HollowPosition<Node, S>) -> HollowLockedPosition<S> {
+        HollowLockedPosition {
+            position,
+            lock: HollowManager::positions_lock(this)
+        }
     }
 
     pub fn positions_lock(this: Rc<RefCell<Self>>) -> HollowPositionsLock<S> {

@@ -2,15 +2,16 @@ use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use crate::{Node, Position, SpacedList, Spacing};
+
 use self::handles::{InsertionsHandle, PositionsHandle, ValuesHandle};
 use self::locks::{InsertionsLock, PositionsLock, ValuesLock};
 
 pub mod locks;
 pub mod handles;
 
-struct LockedPosition<S: Spacing, T> {
+pub struct LockedPosition<S: Spacing, T> {
     position: Position<Node, S, T>,
-    lock: PositionsLock<S, T>
+    lock: PositionsLock<S, T>,
 }
 
 #[derive(Default)]
@@ -43,6 +44,13 @@ impl<S: Spacing, T> Manager<S, T> {
             list,
             locks: Locks::default(),
         }))
+    }
+
+    pub(crate) fn lock(this: Rc<RefCell<Self>>, position: Position<Node, S, T>) -> LockedPosition<S, T> {
+        LockedPosition {
+            position,
+            lock: Manager::positions_lock(this)
+        }
     }
 
     pub fn positions_lock(this: Rc<RefCell<Self>>) -> PositionsLock<S, T> {

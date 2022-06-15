@@ -2,6 +2,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use super::HollowRangeManager;
 use crate::{HollowPosition, Range, Spacing};
+use crate::manager::hollow_range_spaced_list::HollowRangeLockedPosition;
 
 macro_rules! handle {
     ($name:ident, $lock_name:ident) => {
@@ -51,15 +52,15 @@ impl<S: Spacing> HollowRangePositionsHandle<S> {
 }
 
 impl<S: Spacing> HollowRangeInsertionsHandle<S> {
-    pub fn push(&self, spacing: S, span: S) -> HollowPosition<Range, S> {
-        self.manager.borrow_mut().list.push(spacing, span)
+    pub fn push(&self, spacing: S, span: S) -> HollowRangeLockedPosition<S> {
+        HollowRangeManager::lock(self.manager.clone(), self.manager.borrow_mut().list.push(spacing, span))
     }
 
-    pub fn insert(&self, start: S, end: S) -> HollowPosition<Range, S> {
-        self.manager.borrow_mut().list.insert(start, end)
+    pub fn insert(&self, start: S, end: S) -> HollowRangeLockedPosition<S> {
+        HollowRangeManager::lock(self.manager.clone(), self.manager.borrow_mut().list.insert(start, end))
     }
 
-    pub fn insert_with_span(&self, start: S, span: S) -> HollowPosition<Range, S> {
-        self.manager.borrow_mut().list.insert_with_span(start, span)
+    pub fn insert_with_span(&self, start: S, span: S) -> HollowRangeLockedPosition<S> {
+        HollowRangeManager::lock(self.manager.clone(), self.manager.borrow_mut().list.insert_with_span(start, span))
     }
 }
