@@ -62,11 +62,10 @@ impl<Kind, S: Spacing, T> EphemeralPosition<Kind, S, T> {
     }
 
     pub(crate) fn persistent(&self) -> Position<Kind, S, T> {
-        // persistent calls position which calls persistent
         self.skeleton.borrow().into_persistent.get(&self.index).cloned()
             .map_or(
                 Position::new(self.skeleton.clone(), self.index as isize, self.position),
-                |index| index.position()
+                |index| Position::new(index.skeleton, index.index, self.position)
             )
     }
 
@@ -350,7 +349,7 @@ impl<Kind, S: Spacing, T> Position<Kind, S, T> {
         self.skeleton.borrow().from_persistent.get(&self.index).cloned()
             .map_or(
                 EphemeralPosition::new(self.skeleton.clone(), self.index as usize, self.position),
-                |index| index.position()
+                |index| EphemeralPosition::new(index.skeleton, index.index, self.position)
             )
     }
 

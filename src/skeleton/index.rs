@@ -300,10 +300,7 @@ impl<Kind, S: Spacing, T> Index<Kind, S, T> {
     }
 
     pub fn position(&self) -> Position<Kind, S, T> {
-        let ephemeral_index = self.ephemeral();
-        let ephemeral_position = ephemeral_index.position();
-        let position = ephemeral_position.persistent();
-        position
+        self.ephemeral().position().persistent()
     }
 }
 
