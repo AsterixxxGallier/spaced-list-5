@@ -326,24 +326,17 @@ macro_rules! position {
 position!(Position; <Kind, S: Spacing, T>; Position<Kind, S, T>; Skeleton<Kind, S, T>);
 
 impl<Kind, S: Spacing, T> Position<Kind, S, T> {
-    /*pub fn element(&self) -> Ref<T> {
-        // self.ephemeral().element()
-        // let position = &self.skeleton.borrow().from_persistent[&self.index];
-        // position.element()
-        // Ref::map(RefCell::borrow(&position.skeleton),
-        //          |skeleton| &skeleton.elements[position.index])
-        // Ref::map(RefCell::borrow(&self.skeleton),
-        //          |skeleton| {
-        //              let position = skeleton.from_persistent[&self.index];
-        //              &position.element()
-                     // &Ref::map(RefCell::borrow(&position.skeleton),
-                     //          |skeleton| &skeleton.elements[position.index])
-                 // })
+    pub fn element(&self) -> Ref<T> {
+        Ref::map(RefCell::borrow(&self.skeleton),
+        |skeleton| &skeleton.elements[skeleton.from_persistent.get(&self.index)
+            .map_or(self.index as usize, |index| index.index)])
     }
 
     pub fn element_mut(&self) -> RefMut<T> {
-        self.ephemeral().element_mut()
-    }*/
+        RefMut::map(RefCell::borrow_mut(&self.skeleton),
+        |skeleton| &mut skeleton.elements[skeleton.from_persistent.get(&self.index)
+            .map_or(self.index as usize, |index| index.index)])
+    }
 
     pub(crate) fn ephemeral(&self) -> EphemeralPosition<Kind, S, T> {
         self.skeleton.borrow().from_persistent.get(&self.index).cloned()
