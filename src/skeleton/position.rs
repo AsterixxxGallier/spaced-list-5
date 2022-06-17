@@ -1,4 +1,8 @@
 use std::cell::{Ref, RefCell, RefMut};
+use std::marker::PhantomData;
+use std::mem::MaybeUninit;
+use std::ops::{Deref, DerefMut};
+use std::ptr::null;
 use std::rc::Rc;
 
 use itertools::Itertools;
@@ -197,6 +201,76 @@ impl<S: Spacing, T> EphemeralPosition<Range, S, T> {
     }
 }
 
+/*pub struct ElementRef<'a, Kind, S: Spacing + 'a, T: 'a> {
+    skeleton: Ref<'a, Skeleton<Kind, S, T>>,
+    index: usize,
+}
+
+impl<'a, Kind, S: Spacing + 'a, T: 'a> ElementRef<'a, Kind, S, T> {
+    fn new(skeleton: Ref<'a, Skeleton<Kind, S, T>>, index: usize) -> Self {
+        Self {
+            skeleton,
+            index,
+        }
+    }
+
+    fn borrow(&self) -> Ref<'a, T> {
+        Ref::map(Ref::clone(&self.skeleton), |x| &x.elements[self.index])
+    }
+}*/
+
+pub struct ElementRef<Kind, S: Spacing, T> {
+    skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>,
+    index: usize,
+}
+
+impl<Kind, S: Spacing, T> ElementRef<Kind, S, T> {
+    fn new(skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>, index: usize) -> Self {
+        Self {
+            skeleton,
+            index,
+        }
+    }
+
+    pub fn borrow(&self) -> Ref<T> {
+        Ref::map(self.skeleton.borrow(), |x| &x.elements[self.index])
+    }
+
+    pub fn borrow_mut(&self) -> RefMut<T> {
+        RefMut::map(self.skeleton.borrow_mut(), |x| &mut x.elements[self.index])
+    }
+}
+
+// impl<'a, Kind, S: Spacing + 'a, T: 'a> Deref for ElementRef<'a, Kind, S, T> {
+//     type Target = Ref<'a, T>;
+//
+//     fn deref(&self) -> &Self::Target {
+//         let borrow = self.skeleton.borrow();
+//         &Ref::map(borrow,
+//                   |skeleton| &skeleton.elements[self.index])
+//     }
+// }
+
+/*pub struct ElementRefMut<Kind, S: Spacing, T> {
+    skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>,
+    index: usize,
+}
+
+impl<Kind, S: Spacing, T> Deref for ElementRefMut<Kind, S, T> {
+    type Target = RefMut<'a, T>;
+
+    fn deref(&self) -> &Self::Target {
+        &RefMut::map(self.skeleton.borrow_mut(),
+                     |skeleton| &mut skeleton.elements[self.index])
+    }
+}
+
+impl<Kind, S: Spacing, T> DerefMut for ElementRefMut<Kind, S, T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        unsafe { &mut self.reference.assume_init() }
+    }
+}*/
+
 macro_rules! position {
     ($name:ident; <Kind, S: Spacing$(, $T:ident)?>; $type:ty; $skeleton:ty) => {
         pub struct $name<Kind, S: Spacing$(, $T)?> {
@@ -326,44 +400,15 @@ macro_rules! position {
 position!(Position; <Kind, S: Spacing, T>; Position<Kind, S, T>; Skeleton<Kind, S, T>);
 
 impl<Kind, S: Spacing, T> Position<Kind, S, T> {
-    pub fn element(&self) -> Ref<Ref<T>> {
-        // let index = self.skeleton.borrow().from_persistent.get(&self.index)
-        //     .unwrap_or(&EphemeralIndex::new(self.skeleton.clone(), self.index as usize));
-        // Ref::map(RefCell::borrow(&index.skeleton),
-        // |skeleton| &skeleton.elements[index.index])
-        Ref::map(RefCell::borrow(&self.skeleton),
-                 |skeleton| {
-                     let option = skeleton.from_persistent.get(&self.index);
-                     match option {
-                         None => {
-                             &Ref::map(RefCell::borrow(&self.skeleton),
-                                      |skeleton| {
-                                          &skeleton.elements[self.index as usize]
-                                      })
-                             // &skeleton.elements[self.index as usize]
-                         }
-                         Some(index) => {
-                             &Ref::map(RefCell::borrow(&index.skeleton),
-                                       |skeleton| {
-                                           &skeleton.elements[index.index]
-                                       })
-                         }
-                     }
-                     // let index = option
-                     //     .unwrap_or(&EphemeralIndex::new(self.skeleton.clone(), self.index as usize));
-                     // &Ref::map(RefCell::borrow(&index.skeleton),
-                     //           |skeleton| {
-                     //               &skeleton.elements[index.index]
-                     //           })
-                     // &skeleton.elements[index
-                     //     .map_or(self.index as usize, |index| index.index)]
-                 })
-    }
-
-    pub fn element_mut(&self) -> RefMut<T> {
-        RefMut::map(RefCell::borrow_mut(&self.skeleton),
-                    |skeleton| &mut skeleton.elements[skeleton.from_persistent.get(&self.index)
-                        .map_or(self.index as usize, |index| index.index)])
+    pub fn element(&self) -> ElementRef<Kind, S, T> {
+        match self.skeleton.borrow().from_persistent.get(&self.index) {
+            Some(EphemeralIndex { skeleton, index }) => {
+                ElementRef::new(skeleton.clone(), *index)
+            }
+            None => {
+                ElementRef::new(self.skeleton.clone(), self.index as usize)
+            }
+        }
     }
 
     pub(crate) fn ephemeral(&self) -> EphemeralPosition<Kind, S, T> {

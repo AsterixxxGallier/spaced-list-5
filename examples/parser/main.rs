@@ -110,7 +110,7 @@ fn main() {
     let mut paren_pairs = SpacedList::new();
     let mut opening_paren_stack = vec![];
     for (start, end) in parens.iter_ranges() {
-        match *start.element() {
+        match *start.element().borrow() {
             Paren::Opening => {
                 opening_paren_stack.push(start.clone());
             }
