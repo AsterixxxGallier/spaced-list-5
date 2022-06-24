@@ -201,24 +201,6 @@ impl<S: Spacing, T> EphemeralPosition<Range, S, T> {
     }
 }
 
-/*pub struct ElementRef<'a, Kind, S: Spacing + 'a, T: 'a> {
-    skeleton: Ref<'a, Skeleton<Kind, S, T>>,
-    index: usize,
-}
-
-impl<'a, Kind, S: Spacing + 'a, T: 'a> ElementRef<'a, Kind, S, T> {
-    fn new(skeleton: Ref<'a, Skeleton<Kind, S, T>>, index: usize) -> Self {
-        Self {
-            skeleton,
-            index,
-        }
-    }
-
-    fn borrow(&self) -> Ref<'a, T> {
-        Ref::map(Ref::clone(&self.skeleton), |x| &x.elements[self.index])
-    }
-}*/
-
 /// The skeleton this refers to may NOT be mutated for the lifetime of this struct.
 /// This is important because this struct stores an ephemeral index.
 /// Mutating the referenced skeleton may lead to the wrong element being referenced.
