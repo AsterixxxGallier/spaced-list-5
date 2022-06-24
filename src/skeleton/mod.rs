@@ -12,6 +12,13 @@ pub struct Node;
 
 pub struct Range;
 
+/// Third kind: NestedRange
+/// Requirements:
+/// - normal ranges
+/// - nested ranges inside them
+///
+/// simple solution: store sublists per range
+
 pub(crate) struct ParentData<Parent> {
     pub(crate) parent: Weak<RefCell<Parent>>,
     pub(crate) index_in_parent: usize,
