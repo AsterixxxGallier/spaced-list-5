@@ -1,12 +1,10 @@
 use std::cell::{Ref, RefCell, RefMut};
-use std::marker::PhantomData;
-use std::mem::MaybeUninit;
-use std::ops::{Deref, DerefMut};
-use std::ptr::null;
+use std::ops::Deref;
 use std::rc::Rc;
 
 use itertools::Itertools;
 use maybe_owned::MaybeOwned;
+use ouroboros::self_referencing;
 
 use crate::{BackwardsIter, ForwardsIter, ParentData, Spacing};
 use crate::skeleton::{Range, Skeleton};
@@ -219,37 +217,28 @@ impl<'a, Kind, S: Spacing + 'a, T: 'a> ElementRef<'a, Kind, S, T> {
     }
 }*/
 
+#[self_referencing]
 pub struct ElementRef<Kind, S: Spacing, T> {
     skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>,
+    #[borrows(skeleton)]
+    #[covariant]
+    reference: Box<dyn 'this + Deref<Target = Skeleton<Kind, S, T>>>,
     index: usize,
 }
 
 impl<Kind, S: Spacing, T> ElementRef<Kind, S, T> {
-    fn new(skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>, index: usize) -> Self {
-        Self {
+    fn new_(skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>, index: usize) -> Self {
+        ElementRefBuilder {
             skeleton,
+            reference_builder: |skeleton| skeleton.borrow(),
             index,
-        }
+        }.build()
     }
 
     pub fn borrow(&self) -> Ref<T> {
         Ref::map(self.skeleton.borrow(), |x| &x.elements[self.index])
     }
-
-    pub fn borrow_mut(&self) -> RefMut<T> {
-        RefMut::map(self.skeleton.borrow_mut(), |x| &mut x.elements[self.index])
-    }
 }
-
-// impl<'a, Kind, S: Spacing + 'a, T: 'a> Deref for ElementRef<'a, Kind, S, T> {
-//     type Target = Ref<'a, T>;
-//
-//     fn deref(&self) -> &Self::Target {
-//         let borrow = self.skeleton.borrow();
-//         &Ref::map(borrow,
-//                   |skeleton| &skeleton.elements[self.index])
-//     }
-// }
 
 /*pub struct ElementRefMut<Kind, S: Spacing, T> {
     skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>,
