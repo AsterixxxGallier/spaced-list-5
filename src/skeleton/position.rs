@@ -227,36 +227,6 @@ impl<Kind, S: Spacing, T> ElementRef<Kind, S, T> {
     }
 }
 
-// impl<'a, Kind, S: Spacing + 'a, T: 'a> Deref for ElementRef<'a, Kind, S, T> {
-//     type Target = Ref<'a, T>;
-//
-//     fn deref(&self) -> &Self::Target {
-//         let borrow = self.skeleton.borrow();
-//         &Ref::map(borrow,
-//                   |skeleton| &skeleton.elements[self.index])
-//     }
-// }
-
-/*pub struct ElementRefMut<Kind, S: Spacing, T> {
-    skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>,
-    index: usize,
-}
-
-impl<Kind, S: Spacing, T> Deref for ElementRefMut<Kind, S, T> {
-    type Target = RefMut<'a, T>;
-
-    fn deref(&self) -> &Self::Target {
-        &RefMut::map(self.skeleton.borrow_mut(),
-                     |skeleton| &mut skeleton.elements[self.index])
-    }
-}
-
-impl<Kind, S: Spacing, T> DerefMut for ElementRefMut<Kind, S, T> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        unsafe { &mut self.reference.assume_init() }
-    }
-}*/
-
 macro_rules! position {
     ($name:ident; <Kind, S: Spacing$(, $T:ident)?>; $type:ty; $skeleton:ty) => {
         pub struct $name<Kind, S: Spacing$(, $T)?> {
