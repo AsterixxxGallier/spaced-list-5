@@ -219,6 +219,10 @@ impl<'a, Kind, S: Spacing + 'a, T: 'a> ElementRef<'a, Kind, S, T> {
     }
 }*/
 
+/// The skeleton this refers to may NOT be mutated for the lifetime of this struct.
+/// This is important because this struct stores an ephemeral index.
+/// Mutating the referenced skeleton may lead to the wrong element being referenced.
+// TODO keep a Ref to the Skeleton so it cannot be mutated for the lifetime of this struct
 pub struct ElementRef<Kind, S: Spacing, T> {
     skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>,
     index: usize,
