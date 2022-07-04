@@ -405,6 +405,24 @@ macro_rules! position {
                 }
             }
         }
+
+        impl<Kind, S: Spacing + Display$(, $T)?> Display for $type {
+            fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+                f.write_str(concat!(stringify!($name), " { "))?;
+                self.position.fmt(f)?;
+                f.write_str(" }")?;
+                Ok(())
+            }
+        }
+
+        impl<Kind, S: Spacing + Debug$(, $T)?> Debug for $type {
+            fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+                f.debug_struct(stringify!($name))
+                    .field("position", &self.position)
+                    .field("index", &self.index)
+                    .finish()
+            }
+        }
     };
 }
 
