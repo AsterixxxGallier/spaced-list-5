@@ -1,14 +1,13 @@
 use std::cell::{Ref, RefCell, RefMut};
-use std::marker::PhantomData;
-use std::mem::MaybeUninit;
-use std::ops::{Deref, DerefMut};
-use std::ptr::null;
 use std::rc::Rc;
+use std::fmt::Formatter;
+use std::fmt::Display;
+use std::fmt::Debug;
 
 use itertools::Itertools;
 use maybe_owned::MaybeOwned;
 
-use crate::{BackwardsIter, ForwardsIter, ParentData, Spacing};
+use crate::{BackwardsIter, ForwardsIter, Node, ParentData, Spacing};
 use crate::skeleton::{Range, Skeleton};
 use crate::skeleton::index::{EphemeralIndex, HollowIndex, Index};
 
@@ -231,13 +230,25 @@ impl<Kind, S: Spacing, T> ElementRef<Kind, S, T> {
             index,
         }
     }
+}
 
+impl<S: Spacing, T> ElementRef<Node, S, T> {
     pub fn borrow(&self) -> Ref<T> {
         Ref::map(self.skeleton.borrow(), |x| &x.elements[self.index])
     }
 
     pub fn borrow_mut(&self) -> RefMut<T> {
         RefMut::map(self.skeleton.borrow_mut(), |x| &mut x.elements[self.index])
+    }
+}
+
+impl<S: Spacing, T> ElementRef<Range, S, T> {
+    pub fn borrow(&self) -> Ref<T> {
+        Ref::map(self.skeleton.borrow(), |x| &x.elements[self.index / 2])
+    }
+
+    pub fn borrow_mut(&self) -> RefMut<T> {
+        RefMut::map(self.skeleton.borrow_mut(), |x| &mut x.elements[self.index / 2])
     }
 }
 
