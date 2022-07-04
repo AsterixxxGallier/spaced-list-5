@@ -200,24 +200,10 @@ impl<S: Spacing, T> EphemeralPosition<Range, S, T> {
     }
 }
 
-/*pub struct ElementRef<'a, Kind, S: Spacing + 'a, T: 'a> {
-    skeleton: Ref<'a, Skeleton<Kind, S, T>>,
-    index: usize,
-}
-
-impl<'a, Kind, S: Spacing + 'a, T: 'a> ElementRef<'a, Kind, S, T> {
-    fn new(skeleton: Ref<'a, Skeleton<Kind, S, T>>, index: usize) -> Self {
-        Self {
-            skeleton,
-            index,
-        }
-    }
-
-    fn borrow(&self) -> Ref<'a, T> {
-        Ref::map(Ref::clone(&self.skeleton), |x| &x.elements[self.index])
-    }
-}*/
-
+/// The skeleton this refers to may NOT be mutated for the lifetime of this struct.
+/// This is important because this struct stores an ephemeral index.
+/// Mutating the referenced skeleton may lead to the wrong element being referenced.
+// TODO keep a Ref to the Skeleton so it cannot be mutated for the lifetime of this struct
 pub struct ElementRef<Kind, S: Spacing, T> {
     skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>,
     index: usize,
@@ -251,36 +237,6 @@ impl<S: Spacing, T> ElementRef<Range, S, T> {
         RefMut::map(self.skeleton.borrow_mut(), |x| &mut x.elements[self.index / 2])
     }
 }
-
-// impl<'a, Kind, S: Spacing + 'a, T: 'a> Deref for ElementRef<'a, Kind, S, T> {
-//     type Target = Ref<'a, T>;
-//
-//     fn deref(&self) -> &Self::Target {
-//         let borrow = self.skeleton.borrow();
-//         &Ref::map(borrow,
-//                   |skeleton| &skeleton.elements[self.index])
-//     }
-// }
-
-/*pub struct ElementRefMut<Kind, S: Spacing, T> {
-    skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>,
-    index: usize,
-}
-
-impl<Kind, S: Spacing, T> Deref for ElementRefMut<Kind, S, T> {
-    type Target = RefMut<'a, T>;
-
-    fn deref(&self) -> &Self::Target {
-        &RefMut::map(self.skeleton.borrow_mut(),
-                     |skeleton| &mut skeleton.elements[self.index])
-    }
-}
-
-impl<Kind, S: Spacing, T> DerefMut for ElementRefMut<Kind, S, T> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        unsafe { &mut self.reference.assume_init() }
-    }
-}*/
 
 macro_rules! position {
     ($name:ident; <Kind, S: Spacing$(, $T:ident)?>; $type:ty; $skeleton:ty) => {
