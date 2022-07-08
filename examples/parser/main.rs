@@ -109,6 +109,7 @@ fn main() {
     }
     let mut paren_pairs = SpacedList::new();
     let mut opening_paren_stack = vec![];
+    // TODO build a recursive function that consumes this iterator and passes it to sub-recursions of itself, returning a tree node every time
     for (start, end) in parens.iter_ranges() {
         match *start.element().borrow() {
             Paren::Opening => {
