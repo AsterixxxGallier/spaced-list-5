@@ -1,7 +1,7 @@
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
-use crate::{HollowPosition, HollowRangeSpacedList, Range, Spacing};
+use crate::{HollowPosition, HollowRangeSpacedList, ClosedRange, Spacing};
 
 use self::handles::{HollowRangeInsertionsHandle, HollowRangePositionsHandle};
 use self::locks::{HollowRangeInsertionsLock, HollowRangePositionsLock};
@@ -10,7 +10,7 @@ pub mod locks;
 pub mod handles;
 
 pub struct HollowRangeLockedPosition<S: Spacing> {
-    position: HollowPosition<Range, S>,
+    position: HollowPosition<ClosedRange, S>,
     lock: HollowRangePositionsLock<S>,
 }
 
@@ -42,7 +42,7 @@ impl<S: Spacing> HollowRangeManager<S> {
         }))
     }
 
-    pub(crate) fn lock(this: Rc<RefCell<Self>>, position: HollowPosition<Range, S>) -> HollowRangeLockedPosition<S> {
+    pub(crate) fn lock(this: Rc<RefCell<Self>>, position: HollowPosition<ClosedRange, S>) -> HollowRangeLockedPosition<S> {
         HollowRangeLockedPosition {
             position,
             lock: HollowRangeManager::positions_lock(this),

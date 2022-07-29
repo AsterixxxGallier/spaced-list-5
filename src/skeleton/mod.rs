@@ -10,7 +10,7 @@ use crate::skeleton::index::{EphemeralIndex, Index};
 
 pub struct Node;
 
-pub struct Range;
+pub struct ClosedRange;
 
 pub(crate) struct ParentData<Parent> {
     pub(crate) parent: Weak<RefCell<Parent>>,

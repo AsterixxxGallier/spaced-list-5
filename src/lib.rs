@@ -30,7 +30,7 @@ pub use skeleton::position::HollowPosition;
 #[doc(inline)]
 pub use skeleton::position::Position;
 #[doc(inline)]
-pub use skeleton::Range;
+pub use skeleton::ClosedRange;
 pub(crate) use skeleton::Skeleton;
 pub(crate) use skeleton::traversal::iteration::BackwardsIter;
 pub(crate) use skeleton::traversal::iteration::ForwardsIter;

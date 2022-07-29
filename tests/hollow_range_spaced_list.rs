@@ -1,8 +1,8 @@
 use std::fmt::{Display};
 use itertools::Itertools;
-use spaced_list_5::{HollowPosition, HollowRangeSpacedList, Range, Spacing};
+use spaced_list_5::{HollowPosition, HollowRangeSpacedList, ClosedRange, Spacing};
 
-fn print<'a, S>(iter: impl Iterator<Item = (HollowPosition<Range, S>, HollowPosition<Range, S>)>)
+fn print<'a, S>(iter: impl Iterator<Item = (HollowPosition<ClosedRange, S>, HollowPosition<ClosedRange, S>)>)
     where S: 'a + Spacing + Display {
     for (start, end) in iter {
         print!("{}->{}  ", start.position(), end.position());

@@ -3,7 +3,7 @@ use std::rc::Rc;
 
 use paste::paste;
 
-use crate::skeleton::{link_index, ParentData, position::EphemeralPosition, Range, Skeleton, Spacing};
+use crate::skeleton::{link_index, ParentData, position::EphemeralPosition, ClosedRange, Skeleton, Spacing};
 
 macro_rules! traverse {
     // region loop
@@ -422,7 +422,7 @@ macro_rules! traversal_methods {
     (@shallow $bound:ident $pos:ident: $cmp:tt) => {
         paste! {
             pub fn [<shallow_ $bound ing_ $pos>](this: Rc<RefCell<Self>>, target: S)
-                -> Option<EphemeralPosition<Range, S, T>> {
+                -> Option<EphemeralPosition<ClosedRange, S, T>> {
                 traverse!(this; shallow; $cmp target at $bound)
             }
         }
@@ -430,7 +430,7 @@ macro_rules! traversal_methods {
     (@deep $bound:ident $pos:ident: $cmp:tt) => {
         paste! {
             pub fn [<$bound ing_ $pos>](this: Rc<RefCell<Self>>, target: S)
-                -> Option<EphemeralPosition<Range, S, T>> {
+                -> Option<EphemeralPosition<ClosedRange, S, T>> {
                 traverse!(this; deep; $cmp target at $bound)
             }
         }
@@ -465,7 +465,7 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
 }
 
 #[allow(unused)]
-impl<S: Spacing, T> Skeleton<Range, S, T> {
+impl<S: Spacing, T> Skeleton<ClosedRange, S, T> {
     traversal_methods!(range);
 }
 
