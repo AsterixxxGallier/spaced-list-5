@@ -1,6 +1,6 @@
-use std::ops::Range;
+use std::ops::Range as IntRange;
 
-use spaced_list_5::{RangeSpacedList, SpacedList, HollowRangeSpacedList, Position};
+use spaced_list_5::{RangeSpacedList, SpacedList, HollowRangeSpacedList, Position, Range};
 
 struct Source {
     content: String,
@@ -9,9 +9,9 @@ struct Source {
 
 enum Change {
     /// Contains the index range of the added text
-    Addition(Range<usize>),
+    Addition(IntRange<usize>),
     /*/// Contains the index range of the deleted text
-    Deletion(Range<usize>),*/
+    Deletion(IntRange<usize>),*/
 }
 
 impl Source {
@@ -34,7 +34,7 @@ impl Source {
         }
     }
 
-    /*fn delete(&mut self, range: Range<usize>) {
+    /*fn delete(&mut self, range: IntRange<usize>) {
         for listener in &self.listeners {
             listener(self.content.as_str(), Change::Deletion(range.clone()));
         }
@@ -92,13 +92,15 @@ impl<'source> Parser<'source> {
     }
 }*/
 
+#[derive(Debug, Eq, PartialEq)]
 enum Paren {
     Opening,
     Closing
 }
 
 fn main() {
-    let mut source = Source::new("(print hello world)".into());
+    // let mut source = Source::new("(print hello world)".into());
+    let mut source = Source::new("(()(()))".into());
     let mut parens = RangeSpacedList::new();
     for (index, char) in source.content.char_indices() {
         if char == '(' {
@@ -107,9 +109,8 @@ fn main() {
             parens.insert_with_span(index, 1, Paren::Closing);
         }
     }
-    let mut paren_pairs = SpacedList::new();
+    /*let mut paren_pairs = SpacedList::new();
     let mut opening_paren_stack = vec![];
-    // TODO build a recursive function that consumes this iterator and passes it to sub-recursions of itself, returning a tree node every time
     for (start, end) in parens.iter_ranges() {
         match *start.element().borrow() {
             Paren::Opening => {
@@ -120,6 +121,43 @@ fn main() {
                 paren_pairs.insert(end.position(), (Paren::Closing, start.clone(), end.clone()));
                 opening_paren_stack.pop();
             }
+        }
+    }*/
+    let tree = build_tree(&mut parens.iter_ranges());
+    println!("{:#?}", tree);
+}
+
+#[derive(Debug)]
+struct TreeNode {
+    opening: Position<Range, usize, Paren>,
+    closing: Position<Range, usize, Paren>,
+    children: Vec<TreeNode>
+}
+
+#[derive(Debug)]
+enum TreeNodeOrClosingParen {
+    TreeNode(TreeNode),
+    ClosingParen(Position<Range, usize, Paren>)
+}
+
+fn build_tree(iterator: &mut impl Iterator<Item=(Position<Range, usize, Paren>, Position<Range, usize, Paren>)>) -> Option<TreeNodeOrClosingParen> {
+    let (opening, _) = iterator.next()?;
+    match *opening.element().borrow() {
+        Paren::Opening => {
+            let mut children = vec![];
+            loop {
+                match build_tree(iterator).unwrap() {
+                    TreeNodeOrClosingParen::TreeNode(child) => children.push(child),
+                    TreeNodeOrClosingParen::ClosingParen(closing) => break Some(TreeNodeOrClosingParen::TreeNode(TreeNode {
+                        opening,
+                        closing,
+                        children
+                    }))
+                }
+            }
+        }
+        Paren::Closing => {
+            Some(TreeNodeOrClosingParen::ClosingParen(opening))
         }
     }
 }
