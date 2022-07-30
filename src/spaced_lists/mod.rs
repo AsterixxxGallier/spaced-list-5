@@ -3,8 +3,8 @@ use std::rc::Rc;
 
 use itertools::Itertools;
 
-use crate::{BackwardsIter, ForwardsIter, HollowPosition, Spacing};
-use crate::skeleton::{Node, ClosedRange, Skeleton};
+use crate::{BackwardsIter, BoundType, ForwardsIter, HollowPosition, Spacing};
+use crate::skeleton::{Node, ClosedRange, Skeleton, OpenNestedRange};
 use crate::skeleton::position::Position;
 
 // TODO implement try_ versions of all public methods that can fail
@@ -171,7 +171,7 @@ impl<S: Spacing, T> RangeSpacedList<S, T> {
     }
 
     pub fn push(&mut self, spacing: S, span: S, value: T) -> Position<ClosedRange, S, T> {
-        self.size += 1;
+        self.size += 2;
         Skeleton::<ClosedRange, _, _>::push(self.skeleton.clone(), spacing, span, value).into()
     }
 
@@ -180,7 +180,7 @@ impl<S: Spacing, T> RangeSpacedList<S, T> {
     }
 
     pub fn insert_with_span(&mut self, start: S, span: S, value: T) -> Position<ClosedRange, S, T> {
-        self.size += 1;
+        self.size += 2;
         Skeleton::<ClosedRange, _, _>::insert(self.skeleton.clone(), start, span, value).into()
     }
 
@@ -312,6 +312,180 @@ impl<S: Spacing, T> RangeSpacedList<S, T> {
     }
 
     pub fn into_iter_ranges_backwards(self) -> impl Iterator<Item=(Position<ClosedRange, S, T>, Position<ClosedRange, S, T>)> {
+        self.into_iter_backwards().tuples()
+    }
+
+
+    trivial_accessors!();
+}
+
+pub struct NestedRangeSpacedList<S: Spacing, T> {
+    skeleton: Rc<RefCell<Skeleton<OpenNestedRange, S, T>>>,
+    size: usize,
+}
+
+impl<S: Spacing, T> Default for NestedRangeSpacedList<S, T> {
+    fn default() -> Self {
+        Self {
+            skeleton: Skeleton::new(None),
+            size: 0,
+        }
+    }
+}
+
+impl<S: Spacing, T> NestedRangeSpacedList<S, T> {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn push(&mut self, spacing: S, bound_type: BoundType, value: T) -> Position<OpenNestedRange, S, T> {
+        self.size += 1;
+        Skeleton::<OpenNestedRange, _, _>::push(self.skeleton.clone(), spacing, bound_type, value).into()
+    }
+
+    pub fn push_range(&mut self, spacing: S, span: S, value: T) -> Position<OpenNestedRange, S, T> {
+        self.size += 2;
+        Skeleton::<OpenNestedRange, _, _>::push_range(self.skeleton.clone(), spacing, span, value).into()
+    }
+
+    pub fn insert_range(&mut self, start: S, end: S, value: T) -> Position<OpenNestedRange, S, T> {
+        self.insert_range_with_span(start, end - start, value)
+    }
+
+    pub fn insert_range_with_span(&mut self, start: S, span: S, value: T) -> Position<OpenNestedRange, S, T> {
+        self.size += 2;
+        Skeleton::<OpenNestedRange, _, _>::insert_range(self.skeleton.clone(), start, span, value).into()
+    }
+
+
+    spacing_methods!();
+
+
+    pub fn first(&self) -> Option<Position<OpenNestedRange, S, T>> {
+        if self.is_empty() {
+            None
+        } else {
+            Some(Position::at_start(self.skeleton.clone()))
+        }
+    }
+
+    pub fn last(&self) -> Option<Position<OpenNestedRange, S, T>> {
+        if self.is_empty() {
+            None
+        } else {
+            Some(Position::at_end(self.skeleton.clone()))
+        }
+    }
+
+
+    pub fn starting_or_ending_before(&self, position: S) -> Option<Position<OpenNestedRange, S, T>> {
+        Skeleton::<OpenNestedRange, _, _>::before(self.skeleton.clone(), position)
+            .map(|ephemeral| ephemeral.into())
+    }
+
+    pub fn starting_or_ending_at_or_before(&self, position: S) -> Option<Position<OpenNestedRange, S, T>> {
+        Skeleton::<OpenNestedRange, _, _>::at_or_before(self.skeleton.clone(), position)
+            .map(|ephemeral| ephemeral.into())
+    }
+
+    pub fn starting_or_ending_at(&self, position: S) -> Option<Position<OpenNestedRange, S, T>> {
+        Skeleton::<OpenNestedRange, _, _>::at(self.skeleton.clone(), position)
+            .map(|ephemeral| ephemeral.into())
+    }
+
+    pub fn starting_or_ending_at_or_after(&self, position: S) -> Option<Position<OpenNestedRange, S, T>> {
+        Skeleton::<OpenNestedRange, _, _>::at_or_after(self.skeleton.clone(), position)
+            .map(|ephemeral| ephemeral.into())
+    }
+
+    pub fn starting_or_ending_after(&self, position: S) -> Option<Position<OpenNestedRange, S, T>> {
+        Skeleton::<OpenNestedRange, _, _>::after(self.skeleton.clone(), position)
+            .map(|ephemeral| ephemeral.into())
+    }
+
+
+    pub fn starting_before(&self, position: S) -> Option<Position<OpenNestedRange, S, T>> {
+        Skeleton::<OpenNestedRange, _, _>::starting_before(self.skeleton.clone(), position)
+            .map(|ephemeral| ephemeral.into())
+    }
+
+    pub fn starting_at_or_before(&self, position: S) -> Option<Position<OpenNestedRange, S, T>> {
+        Skeleton::<OpenNestedRange, _, _>::starting_at_or_before(self.skeleton.clone(), position)
+            .map(|ephemeral| ephemeral.into())
+    }
+
+    pub fn starting_at(&self, position: S) -> Option<Position<OpenNestedRange, S, T>> {
+        Skeleton::<OpenNestedRange, _, _>::starting_at(self.skeleton.clone(), position)
+            .map(|ephemeral| ephemeral.into())
+    }
+
+    pub fn starting_at_or_after(&self, position: S) -> Option<Position<OpenNestedRange, S, T>> {
+        Skeleton::<OpenNestedRange, _, _>::starting_at_or_after(self.skeleton.clone(), position)
+            .map(|ephemeral| ephemeral.into())
+    }
+
+    pub fn starting_after(&self, position: S) -> Option<Position<OpenNestedRange, S, T>> {
+        Skeleton::<OpenNestedRange, _, _>::starting_after(self.skeleton.clone(), position)
+            .map(|ephemeral| ephemeral.into())
+    }
+
+
+    pub fn ending_before(&self, position: S) -> Option<Position<OpenNestedRange, S, T>> {
+        Skeleton::<OpenNestedRange, _, _>::ending_before(self.skeleton.clone(), position)
+            .map(|ephemeral| ephemeral.into())
+    }
+
+    pub fn ending_at_or_before(&self, position: S) -> Option<Position<OpenNestedRange, S, T>> {
+        Skeleton::<OpenNestedRange, _, _>::ending_at_or_before(self.skeleton.clone(), position)
+            .map(|ephemeral| ephemeral.into())
+    }
+
+    pub fn ending_at(&self, position: S) -> Option<Position<OpenNestedRange, S, T>> {
+        Skeleton::<OpenNestedRange, _, _>::ending_at(self.skeleton.clone(), position)
+            .map(|ephemeral| ephemeral.into())
+    }
+
+    pub fn ending_at_or_after(&self, position: S) -> Option<Position<OpenNestedRange, S, T>> {
+        Skeleton::<OpenNestedRange, _, _>::ending_at_or_after(self.skeleton.clone(), position)
+            .map(|ephemeral| ephemeral.into())
+    }
+
+    pub fn ending_after(&self, position: S) -> Option<Position<OpenNestedRange, S, T>> {
+        Skeleton::<OpenNestedRange, _, _>::ending_after(self.skeleton.clone(), position)
+            .map(|ephemeral| ephemeral.into())
+    }
+
+
+    pub fn iter(&self) -> impl Iterator<Item=Position<OpenNestedRange, S, T>> {
+        ForwardsIter::from_start(self.skeleton.clone())
+    }
+
+    pub fn into_iter(self) -> impl Iterator<Item=Position<OpenNestedRange, S, T>> {
+        ForwardsIter::from_start(self.skeleton)
+    }
+
+    // TODO nested range iterator
+    pub fn iter_ranges(&self) -> impl Iterator<Item=(Position<OpenNestedRange, S, T>, Position<OpenNestedRange, S, T>)> {
+        self.iter().tuples()
+    }
+
+    pub fn into_iter_ranges(self) -> impl Iterator<Item=(Position<OpenNestedRange, S, T>, Position<OpenNestedRange, S, T>)> {
+        self.into_iter().tuples()
+    }
+
+    pub fn iter_backwards(&self) -> impl Iterator<Item=Position<OpenNestedRange, S, T>> {
+        BackwardsIter::from_end(self.skeleton.clone())
+    }
+
+    pub fn into_iter_backwards(self) -> impl Iterator<Item=Position<OpenNestedRange, S, T>> {
+        BackwardsIter::from_end(self.skeleton)
+    }
+
+    pub fn iter_ranges_backwards(&self) -> impl Iterator<Item=(Position<OpenNestedRange, S, T>, Position<OpenNestedRange, S, T>)> {
+        self.iter_backwards().tuples()
+    }
+
+    pub fn into_iter_ranges_backwards(self) -> impl Iterator<Item=(Position<OpenNestedRange, S, T>, Position<OpenNestedRange, S, T>)> {
         self.into_iter_backwards().tuples()
     }
 
@@ -453,7 +627,7 @@ impl<S: Spacing> HollowRangeSpacedList<S> {
     }
 
     pub fn push(&mut self, spacing: S, span: S) -> HollowPosition<ClosedRange, S> {
-        self.size += 1;
+        self.size += 2;
         let position: Position<ClosedRange, S, ()> =
             Skeleton::<ClosedRange, _, _>::push(self.skeleton.clone(), spacing, span, ()).into();
         position.into()
@@ -466,7 +640,7 @@ impl<S: Spacing> HollowRangeSpacedList<S> {
     }
 
     pub fn insert_with_span(&mut self, start: S, span: S) -> HollowPosition<ClosedRange, S> {
-        self.size += 1;
+        self.size += 2;
         let position: Position<ClosedRange, S, ()> =
             Skeleton::<ClosedRange, _, _>::insert(self.skeleton.clone(), start, span, ()).into();
         position.into()
@@ -651,3 +825,5 @@ impl<S: Spacing> HollowRangeSpacedList<S> {
 
     trivial_accessors!();
 }
+
+// TODO HollowNestedRangeSpacedList

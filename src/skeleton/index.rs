@@ -4,7 +4,7 @@ use std::rc::Rc;
 use maybe_owned::MaybeOwned;
 
 use crate::{EphemeralPosition, HollowPosition, ParentData, Position, Spacing};
-use crate::skeleton::{ClosedRange, Skeleton};
+use crate::skeleton::{ClosedRange, OpenNestedRange, Skeleton};
 
 pub(crate) struct EphemeralIndex<Kind, S: Spacing, T> {
     pub(crate) skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>,
@@ -161,6 +161,58 @@ impl<S: Spacing, T> EphemeralIndex<ClosedRange, S, T> {
     }
 }
 
+impl<S: Spacing, T> EphemeralIndex<OpenNestedRange, S, T> {
+    pub(crate) fn bound_type(&self) -> BoundType {
+        BoundType::of(self.index.try_into().unwrap())
+    }
+
+    pub(crate) fn span(&self) -> Option<S> {
+        self.skeleton.borrow().links.get(self.index & !1).cloned()
+    }
+
+    pub(crate) fn into_range(self) -> (Self, Option<Self>) {
+        match self.bound_type() {
+            BoundType::Start => {
+                if self.index + 1 < self.skeleton.borrow().elements.len() {
+                    let end = Self::new(
+                        self.skeleton.clone(),
+                        self.index + 1);
+                    (self, Some(end))
+                } else {
+                    (self, None)
+                }
+            }
+            BoundType::End => {
+                let start = Self::new(
+                    self.skeleton.clone(),
+                    self.index - 1);
+                (start, Some(self))
+            }
+        }
+    }
+
+    pub(crate) fn range(&self) -> (MaybeOwned<Self>, Option<MaybeOwned<Self>>) {
+        match self.bound_type() {
+            BoundType::Start => {
+                if self.index + 1 < self.skeleton.borrow().elements.len() {
+                    let end = Self::new(
+                        self.skeleton.clone(),
+                        self.index + 1);
+                    (self.into(), Some(end.into()))
+                } else {
+                        (self.into(), None)
+                    }
+            }
+            BoundType::End => {
+                let start = Self::new(
+                    self.skeleton.clone(),
+                    self.index - 1);
+                (start.into(), Some(self.into()))
+            }
+        }
+    }
+}
+
 macro_rules! index {
     ($name:ident; <Kind, S: Spacing$(, $T:ident)?>; $type:ty; $skeleton:ty) => {
         pub struct $name<Kind, S: Spacing$(, $T)?> {
@@ -265,6 +317,60 @@ macro_rules! index {
                             self.skeleton.clone(),
                             self.index - 1);
                         (start.into(), self.into())
+                    }
+                }
+            }
+        }
+
+        impl<S: Spacing$(, $T)?> $name<OpenNestedRange, S$(, $T)?> {
+            pub fn bound_type(&self) -> BoundType {
+                BoundType::of(self.index.try_into().unwrap())
+            }
+
+            pub fn span(&self) -> Option<S> {
+                self.ephemeral().span()
+            }
+
+            pub fn into_range(self) -> (Self, Option<Self>) {
+                match self.bound_type() {
+                    BoundType::Start => {
+                        let ephemeral = self.ephemeral();
+                        if ephemeral.index + 1 < ephemeral.skeleton.borrow().elements.len() {
+                            let end = Self::new(
+                                self.skeleton.clone(),
+                                self.index + 1);
+                            (self, Some(end))
+                        } else {
+                            (self, None)
+                        }
+                    }
+                    BoundType::End => {
+                        let start = Self::new(
+                            self.skeleton.clone(),
+                            self.index - 1);
+                        (start, Some(self))
+                    }
+                }
+            }
+
+            pub fn range(&self) -> (MaybeOwned<Self>, Option<MaybeOwned<Self>>) {
+                match self.bound_type() {
+                    BoundType::Start => {
+                        let ephemeral = self.ephemeral();
+                        if ephemeral.index + 1 < ephemeral.skeleton.borrow().elements.len() {
+                            let end = Self::new(
+                                self.skeleton.clone(),
+                                self.index + 1);
+                            (self.into(), Some(end.into()))
+                        } else {
+                            (self.into(), None)
+                        }
+                    }
+                    BoundType::End => {
+                        let start = Self::new(
+                            self.skeleton.clone(),
+                            self.index - 1);
+                        (start.into(), Some(self.into()))
                     }
                 }
             }

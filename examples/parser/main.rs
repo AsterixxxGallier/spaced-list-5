@@ -1,6 +1,6 @@
 use std::ops::Range as IntRange;
 
-use spaced_list_5::{RangeSpacedList, SpacedList, HollowRangeSpacedList, Position, Range};
+use spaced_list_5::{RangeSpacedList, SpacedList, HollowRangeSpacedList, Position, ClosedRange};
 
 struct Source {
     content: String,
@@ -129,18 +129,18 @@ fn main() {
 
 #[derive(Debug)]
 struct TreeNode {
-    opening: Position<Range, usize, Paren>,
-    closing: Position<Range, usize, Paren>,
+    opening: Position<ClosedRange, usize, Paren>,
+    closing: Position<ClosedRange, usize, Paren>,
     children: Vec<TreeNode>
 }
 
 #[derive(Debug)]
 enum TreeNodeOrClosingParen {
     TreeNode(TreeNode),
-    ClosingParen(Position<Range, usize, Paren>)
+    ClosingParen(Position<ClosedRange, usize, Paren>)
 }
 
-fn build_tree(iterator: &mut impl Iterator<Item=(Position<Range, usize, Paren>, Position<Range, usize, Paren>)>) -> Option<TreeNodeOrClosingParen> {
+fn build_tree(iterator: &mut impl Iterator<Item=(Position<ClosedRange, usize, Paren>, Position<ClosedRange, usize, Paren>)>) -> Option<TreeNodeOrClosingParen> {
     let (opening, _) = iterator.next()?;
     match *opening.element().borrow() {
         Paren::Opening => {

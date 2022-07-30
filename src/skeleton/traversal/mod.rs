@@ -3,7 +3,7 @@ use std::rc::Rc;
 
 use paste::paste;
 
-use crate::skeleton::{link_index, ParentData, position::EphemeralPosition, ClosedRange, Skeleton, Spacing};
+use crate::skeleton::{link_index, ParentData, position::EphemeralPosition, ClosedRange, Skeleton, Spacing, OpenNestedRange};
 
 macro_rules! traverse {
     // region loop
@@ -419,27 +419,27 @@ macro_rules! traversal_methods {
         for_all_traversals!(traversal_methods @shallow);
         for_all_traversals!(traversal_methods @deep);
     };
-    (@shallow $bound:ident $pos:ident: $cmp:tt) => {
+    (@shallow $RangeKind:ident $bound:ident $pos:ident: $cmp:tt) => {
         paste! {
             pub fn [<shallow_ $bound ing_ $pos>](this: Rc<RefCell<Self>>, target: S)
-                -> Option<EphemeralPosition<ClosedRange, S, T>> {
+                -> Option<EphemeralPosition<$RangeKind, S, T>> {
                 traverse!(this; shallow; $cmp target at $bound)
             }
         }
     };
-    (@deep $bound:ident $pos:ident: $cmp:tt) => {
+    (@deep $RangeKind:ident $bound:ident $pos:ident: $cmp:tt) => {
         paste! {
             pub fn [<$bound ing_ $pos>](this: Rc<RefCell<Self>>, target: S)
-                -> Option<EphemeralPosition<ClosedRange, S, T>> {
+                -> Option<EphemeralPosition<$RangeKind, S, T>> {
                 traverse!(this; deep; $cmp target at $bound)
             }
         }
     };
-    (range) => {
-        for_all_traversals!(traversal_methods @shallow start);
-        for_all_traversals!(traversal_methods @shallow end);
-        for_all_traversals!(traversal_methods @deep start);
-        for_all_traversals!(traversal_methods @deep end);
+    (range $RangeKind:ident) => {
+        for_all_traversals!(traversal_methods @shallow $RangeKind start);
+        for_all_traversals!(traversal_methods @shallow $RangeKind end);
+        for_all_traversals!(traversal_methods @deep $RangeKind start);
+        for_all_traversals!(traversal_methods @deep $RangeKind end);
     };
 }
 
@@ -466,7 +466,12 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
 
 #[allow(unused)]
 impl<S: Spacing, T> Skeleton<ClosedRange, S, T> {
-    traversal_methods!(range);
+    traversal_methods!(range ClosedRange);
+}
+
+#[allow(unused)]
+impl<S: Spacing, T> Skeleton<OpenNestedRange, S, T> {
+    traversal_methods!(range OpenNestedRange);
 }
 
 pub mod iteration;

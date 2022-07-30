@@ -12,6 +12,8 @@ pub struct Node;
 
 pub struct ClosedRange;
 
+pub struct OpenNestedRange;
+
 pub(crate) struct ParentData<Parent> {
     pub(crate) parent: Weak<RefCell<Parent>>,
     pub(crate) index_in_parent: usize,
@@ -80,7 +82,9 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
         if self.links.len().is_power_of_two() {
             self.depth += 1;
         }
-        self.subs.push(None);
+        if self.subs.len() < self.links.len() {
+            self.subs.push(None);
+        }
         index
     }
 
@@ -101,14 +105,28 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
     }
 
     fn ensure_sub(this: Rc<RefCell<Self>>, index: usize) -> Rc<RefCell<Self>> {
-        match &mut this.borrow_mut().subs[index] {
-            Some(sub) => sub.clone(),
-            none =>
-                none.insert(Skeleton::new(Some(
-                    ParentData {
-                        parent: Rc::downgrade(&this),
-                        index_in_parent: index,
-                    }))).clone()
+        let len = this.borrow().subs.len();
+        if index < len {
+            match &mut this.borrow_mut().subs[index] {
+                Some(sub) => sub.clone(),
+                none =>
+                    none.insert(Skeleton::new(Some(
+                        ParentData {
+                            parent: Rc::downgrade(&this),
+                            index_in_parent: index,
+                        }))).clone()
+            }
+        } else if index == len {
+            let sub = Skeleton::new(Some(
+                ParentData {
+                    parent: Rc::downgrade(&this),
+                    index_in_parent: index,
+                }
+            ));
+            this.borrow_mut().subs.push(Some(sub.clone()));
+            sub
+        } else {
+            panic!("Cannot have sub without a preceding link or element (tried to add sub out of bounds)")
         }
     }
 }
