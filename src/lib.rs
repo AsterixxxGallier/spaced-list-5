@@ -41,6 +41,8 @@ pub use spaced_lists::HollowSpacedList;
 #[doc(inline)]
 pub use spaced_lists::RangeSpacedList;
 #[doc(inline)]
+pub use spaced_lists::NestedRangeSpacedList;
+#[doc(inline)]
 pub use spaced_lists::SpacedList;
 
 pub trait Spacing = Add<Output=Self> + AddAssign + Sub<Output=Self> + SubAssign + Zero + Ord + Copy;
