@@ -1,6 +1,6 @@
 use std::ops::Range as IntRange;
 
-use spaced_list_5::{RangeSpacedList, SpacedList, HollowRangeSpacedList, Position, ClosedRange};
+use spaced_list_5::{RangeSpacedList, SpacedList, HollowRangeSpacedList, Position, ClosedRange, NestedRangeSpacedList, BoundType};
 
 struct Source {
     content: String,
@@ -123,11 +123,26 @@ fn main() {
             }
         }
     }*/
-    let tree = build_tree(&mut parens.iter_ranges());
-    println!("{:#?}", tree);
+    // let tree = build_tree(&mut parens.iter_ranges());
+    // println!("{:#?}", tree);
+
+    let mut nested_parens = NestedRangeSpacedList::<usize, _>::new();
+    for (start, end) in parens.iter_ranges() {
+        match *start.element().borrow() {
+            Paren::Opening => {
+                println!("pushing start");
+                nested_parens.push(start.position() - nested_parens.end(), BoundType::Start, ());
+            }
+            Paren::Closing => {
+                println!("pushing end");
+                nested_parens.push(end.position() - nested_parens.end(), BoundType::End, ());
+            }
+        }
+    }
+    println!("hi")
 }
 
-#[derive(Debug)]
+/*#[derive(Debug)]
 struct TreeNode {
     opening: Position<ClosedRange, usize, Paren>,
     closing: Position<ClosedRange, usize, Paren>,
@@ -160,4 +175,4 @@ fn build_tree(iterator: &mut impl Iterator<Item=(Position<ClosedRange, usize, Pa
             Some(TreeNodeOrClosingParen::ClosingParen(opening))
         }
     }
-}
+}*/
