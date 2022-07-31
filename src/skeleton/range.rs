@@ -83,7 +83,7 @@ impl<S: Spacing, T> Skeleton<OpenNestedRange, S, T> {
             let position = this.borrow().last_position();
             EphemeralPosition::new(this, index, position)
         } else if bound_type == BoundType::Start {
-            let sub = Self::ensure_sub(this, index);
+            let sub = Self::ensure_sub(this, index - 1);
             Self::push(sub, distance, bound_type, element)
         } else {
             panic!("Cannot push ending bound to list that does not have a starting bound at its end")
