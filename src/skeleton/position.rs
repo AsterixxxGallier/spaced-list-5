@@ -8,7 +8,7 @@ use itertools::Itertools;
 use maybe_owned::MaybeOwned;
 
 use crate::{BackwardsIter, ForwardsIter, Node, ParentData, Spacing};
-use crate::skeleton::{Range, Skeleton};
+use crate::skeleton::{AllRangeKinds, Range, Skeleton};
 use crate::skeleton::index::{EphemeralIndex, HollowIndex, Index};
 
 pub(crate) struct EphemeralPosition<Kind, S: Spacing, T> {
@@ -152,7 +152,7 @@ impl<Kind, S: Spacing, T> EphemeralPosition<Kind, S, T> {
     }
 }
 
-impl<S: Spacing, T> EphemeralPosition<Range, S, T> {
+impl<Kind: AllRangeKinds, S: Spacing, T> EphemeralPosition<Kind, S, T> {
     pub(crate) fn bound_type(&self) -> BoundType {
         BoundType::of(self.index.try_into().unwrap())
     }
@@ -314,7 +314,7 @@ macro_rules! position {
             }
         }
 
-        impl<S: Spacing$(, $T)?> $name<Range, S$(, $T)?> {
+        impl<Kind: AllRangeKinds, S: Spacing$(, $T)?> $name<Kind, S$(, $T)?> {
             pub fn bound_type(&self) -> BoundType {
                 BoundType::of(self.index.try_into().unwrap())
             }

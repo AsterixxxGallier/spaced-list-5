@@ -31,6 +31,8 @@ pub use skeleton::position::HollowPosition;
 pub use skeleton::position::Position;
 #[doc(inline)]
 pub use skeleton::Range;
+#[doc(inline)]
+pub use skeleton::NestedRange;
 pub(crate) use skeleton::Skeleton;
 pub(crate) use skeleton::traversal::iteration::BackwardsIter;
 pub(crate) use skeleton::traversal::iteration::ForwardsIter;

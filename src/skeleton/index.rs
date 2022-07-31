@@ -4,7 +4,7 @@ use std::rc::Rc;
 use maybe_owned::MaybeOwned;
 
 use crate::{EphemeralPosition, HollowPosition, ParentData, Position, Spacing};
-use crate::skeleton::{Range, Skeleton};
+use crate::skeleton::{AllRangeKinds, Range, Skeleton};
 
 pub(crate) struct EphemeralIndex<Kind, S: Spacing, T> {
     pub(crate) skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>,
@@ -117,7 +117,7 @@ impl<Kind, S: Spacing, T> EphemeralIndex<Kind, S, T> {
     }
 }
 
-impl<S: Spacing, T> EphemeralIndex<Range, S, T> {
+impl<Kind: AllRangeKinds, S: Spacing, T> EphemeralIndex<Kind, S, T> {
     pub(crate) fn bound_type(&self) -> BoundType {
         BoundType::of(self.index.try_into().unwrap())
     }
@@ -226,7 +226,7 @@ macro_rules! index {
             }*/
         }
 
-        impl<S: Spacing$(, $T)?> $name<Range, S$(, $T)?> {
+        impl<Kind: AllRangeKinds, S: Spacing$(, $T)?> $name<Kind, S$(, $T)?> {
             pub fn bound_type(&self) -> BoundType {
                 BoundType::of(self.index.try_into().unwrap())
             }

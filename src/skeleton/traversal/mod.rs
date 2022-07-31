@@ -2,6 +2,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use paste::paste;
+use crate::NestedRange;
 
 use crate::skeleton::{link_index, ParentData, position::EphemeralPosition, Range, Skeleton, Spacing};
 
@@ -467,6 +468,11 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
 #[allow(unused)]
 impl<S: Spacing, T> Skeleton<Range, S, T> {
     traversal_methods!(range);
+}
+
+#[allow(unused)]
+impl<S: Spacing, T> Skeleton<NestedRange, S, T> {
+    // TODO implement NestedRange traversal methods
 }
 
 pub mod iteration;

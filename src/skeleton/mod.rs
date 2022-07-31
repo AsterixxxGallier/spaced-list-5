@@ -10,7 +10,13 @@ use crate::skeleton::index::{EphemeralIndex, Index};
 
 pub struct Node;
 
+pub trait AllRangeKinds {}
+impl AllRangeKinds for Range {}
+impl AllRangeKinds for NestedRange {}
+
 pub struct Range;
+
+pub struct NestedRange;
 
 pub(crate) struct ParentData<Parent> {
     pub(crate) parent: Weak<RefCell<Parent>>,
@@ -118,6 +124,8 @@ mod flate;
 mod node;
 
 mod range;
+
+mod nested_range;
 
 pub mod traversal;
 
