@@ -1,124 +1,167 @@
-use std::ops::Range;
-
-use spaced_list_5::{RangeSpacedList, SpacedList, HollowRangeSpacedList, Position};
-
-struct Source {
-    content: String,
-    listeners: Vec<&'static dyn Fn(&str, Change)>,
-}
-
-enum Change {
-    /// Contains the index range of the added text
-    Addition(Range<usize>),
-    /*/// Contains the index range of the deleted text
-    Deletion(Range<usize>),*/
-}
-
-impl Source {
-    fn new(content: String) -> Self {
-        Self {
-            content,
-            listeners: vec![],
-        }
-    }
-
-    fn listen<Listener: 'static + Fn(&str, Change)>(&mut self, listener: &'static Listener) {
-        self.listeners.push(listener)
-    }
-
-    fn add(&mut self, index: usize, string: &str) {
-        self.content.insert_str(index, string);
-        let range = index..index + string.len();
-        for listener in &self.listeners {
-            listener(self.content.as_str(), Change::Addition(range.clone()));
-        }
-    }
-
-    /*fn delete(&mut self, range: Range<usize>) {
-        for listener in &self.listeners {
-            listener(self.content.as_str(), Change::Deletion(range.clone()));
-        }
-        self.content.drain(range);
-    }*/
-}
-
-/*struct Pattern {
-    initial: &'static dyn Fn(Parser),
-    on_change: &'static dyn Fn(Parser, Change),
-}
-
-impl Pattern {
-    fn new<Initial, OnChange>(initial: &'static Initial, on_change: &'static OnChange) -> Self
-        where Initial: 'static + Fn(Parser),
-              OnChange: 'static + Fn(Parser, Change) {
-        Self {
-            initial,
-            on_change,
-        }
-    }
-
-    fn initial(&self, parser: Parser) {
-        (self.initial)(parser)
-    }
-
-    fn on_change(&self, parser: Parser, change: Change) {
-        (self.on_change)(parser, change)
-    }
-}
-
-struct Parser<'source> {
-    source: &'source Source,
-    opening_parens: HollowRangeSpacedList<usize>,
-    closing_parens: HollowRangeSpacedList<usize>,
-}
-
-impl<'source> Parser<'source> {
-    fn new(source: &'source mut Source, patterns: Vec<Pattern>) -> Self {
-        let parser: Parser<'source> = Self {
-            source,
-            opening_parens: HollowRangeSpacedList::<usize>::new(),
-            closing_parens: HollowRangeSpacedList::<usize>::new(),
-        };
-        for pattern in &patterns {
-            pattern.initial(parser);
-        }
-        for pattern in patterns {
-            source.listen(
-                &|source, change|
-                    pattern.on_change(parser, change)
-            );
-        }
-        parser
-    }
-}*/
-
-enum Paren {
-    Opening,
-    Closing
-}
+use std::cmp::min;
+use std::ops::Add;
+use ansi_term::Color::{Blue, Green, Yellow};
+use spaced_list_5::{HollowRangeSpacedList, RangeSpacedList};
 
 fn main() {
-    let mut source = Source::new("(print hello world)".into());
-    let mut parens = RangeSpacedList::new();
-    for (index, char) in source.content.char_indices() {
-        if char == '(' {
-            parens.insert_with_span(index, 1, Paren::Opening);
-        } else if char == ')' {
-            parens.insert_with_span(index, 1, Paren::Closing);
+    let source =
+        r"foo:
+    bar: baz
+    123: 456
++: >foo";
+
+    // region parse colons
+    let mut colons = HollowRangeSpacedList::new();
+    for (index, char) in source.chars().enumerate() {
+        if char == ':' {
+            colons.insert_with_span(index, 1);
         }
     }
-    let mut paren_pairs = SpacedList::new();
-    let mut opening_paren_stack = vec![];
-    for (start, end) in parens.iter_ranges() {
-        match *start.element().borrow() {
-            Paren::Opening => {
-                opening_paren_stack.push(start.clone());
-            }
-            Paren::Closing => {
-                paren_pairs.insert(start.position(), (Paren::Opening, start.clone(), end.clone()));
-                paren_pairs.insert(end.position(), (Paren::Closing, start.clone(), end.clone()));
-                opening_paren_stack.pop();
-            }
+    // endregion
+
+    // region parse arrows
+    let mut arrows = HollowRangeSpacedList::new();
+    for (index, char) in source.chars().enumerate() {
+        if char == '>' {
+            arrows.insert_with_span(index, 1);
         }
     }
+    // endregion
+
+    // region parse line breaks
+    let mut line_breaks = HollowRangeSpacedList::new();
+    for (index, char) in source.chars().enumerate() {
+        if char == '\n' {
+            line_breaks.insert_with_span(index, 1);
+        }
+    }
+    // endregion
+
+    // region parse whitespace
+    let mut whitespace = HollowRangeSpacedList::new();
+    let mut chars = source.chars();
+    let mut start = 0;
+    while let Some(char) = chars.next() {
+        if char.is_whitespace() && char != '\n' {
+            let mut span = 1;
+            while let Some(char) = chars.next() {
+                if char.is_whitespace() && char != '\n' {
+                    span += 1;
+                } else {
+                    break;
+                }
+            }
+            whitespace.insert_with_span(start, span);
+            start += span;
+        } else {
+            start += 1;
+        }
+    }
+    // endregion
+
+    // region parse full lines
+    let mut full_lines = HollowRangeSpacedList::new();
+    let mut start = 0;
+    for (line_end, line_start) in line_breaks.iter_ranges() {
+        full_lines.insert(start, line_end.position());
+        start = line_start.position()
+    }
+    full_lines.insert(start, source.len());
+    // endregion
+
+    // region parse lines
+    let mut lines = RangeSpacedList::new();
+    for (start, end) in full_lines.iter_ranges() {
+        let end = whitespace
+            .ending_at(end.position())
+            .map(|option| option.into_range().0.position())
+            .unwrap_or(end.position());
+        if let Some(indentation) = whitespace.starting_at(start.position()) {
+            let value = indentation.span();
+            let start = indentation.into_range().1.position();
+            lines.insert(start, end, value);
+        } else {
+            lines.insert(start.position(), end, 0);
+        }
+    }
+    // endregion
+
+    // region parse text
+    let mut text = HollowRangeSpacedList::new();
+    for (start, end) in lines.iter_ranges() {
+        let mut start = start.position();
+        while start < end.position() {
+            if let Some(colon) = colons.starting_at(start) {
+                start += colon.span();
+                continue;
+            }
+            if let Some(arrow) = arrows.starting_at(start) {
+                start += arrow.span();
+                continue;
+            }
+            if let Some(whitespace) = whitespace.starting_at(start) {
+                start += whitespace.span();
+                continue;
+            }
+            let mut end = end.position();
+            if let Some(colon) = colons.starting_after(start) {
+                if colon.position() < end {
+                    end = whitespace
+                        .ending_at(colon.position())
+                        .map(|option| option.into_range().0.position())
+                        .unwrap_or(colon.position());
+                }
+            }
+            if let Some(arrow) = arrows.starting_after(start) {
+                if arrow.position() < end {
+                    end = whitespace
+                        .ending_at(arrow.position())
+                        .map(|option| option.into_range().0.position())
+                        .unwrap_or(arrow.position());
+                }
+            }
+            text.insert(start, end);
+            start = end;
+        }
+    }
+    // endregion
+
+    // region print syntax highlighted source code
+    let mut colored_source = String::new();
+    let mut start = 0;
+    loop {
+        if let Some(colon) = colons.starting_at(start) {
+            let string: String = source.chars().skip(start).take(colon.span()).collect();
+            colored_source += Blue.paint(string).to_string().as_str();
+            start += colon.span();
+            continue;
+        }
+        if let Some(arrow) = arrows.starting_at(start) {
+            let string: String = source.chars().skip(start).take(arrow.span()).collect();
+            colored_source += Green.paint(string).to_string().as_str();
+            start += arrow.span();
+            continue;
+        }
+        if let Some(text) = text.starting_at(start) {
+            let string: String = source.chars().skip(start).take(text.span()).collect();
+            colored_source += Yellow.paint(string).to_string().as_str();
+            start += text.span();
+            continue;
+        }
+        if let Some(whitespace) = whitespace.starting_at(start) {
+            let string: String = source.chars().skip(start).take(whitespace.span()).collect();
+            colored_source += string.as_str();
+            start += whitespace.span();
+            continue;
+        }
+        if let Some(line_break) = line_breaks.starting_at(start) {
+            let string: String = source.chars().skip(start).take(line_break.span()).collect();
+            colored_source += string.as_str();
+            start += line_break.span();
+            continue;
+        }
+        break;
+    }
+    println!("{}", colored_source);
+    // endregion
 }

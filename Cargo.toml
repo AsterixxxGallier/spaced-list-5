@@ -12,6 +12,7 @@ maybe-owned = "0.3.4"
 itertools = "0.10.3"
 slab = "0.4.6"
 nohash-hasher = "0.2.0"
+ansi_term = "0.12.1"
 
 [dev-dependencies]
 rand = "0.8.5"
