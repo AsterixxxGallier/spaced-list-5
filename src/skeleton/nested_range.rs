@@ -3,11 +3,11 @@ use std::mem;
 use std::rc::Rc;
 
 use crate::EphemeralPosition;
-use crate::skeleton::{Range, Skeleton, Spacing};
+use crate::skeleton::{NestedRange, Skeleton, Spacing};
 use crate::skeleton::position::BoundType;
 
-impl<S: Spacing, T> Skeleton<Range, S, T> {
-    pub(crate) fn push(this: Rc<RefCell<Self>>, distance: S, span: S, element: T) -> EphemeralPosition<Range, S, T> {
+impl<S: Spacing, T> Skeleton<NestedRange, S, T> {
+    pub(crate) fn push(this: Rc<RefCell<Self>>, distance: S, span: S, element: T) -> EphemeralPosition<NestedRange, S, T> {
         if this.borrow_mut().elements.is_empty() {
             this.borrow_mut().offset = distance;
             this.borrow_mut().push_link();
@@ -24,7 +24,7 @@ impl<S: Spacing, T> Skeleton<Range, S, T> {
         EphemeralPosition::new(this, start_index, start_position)
     }
 
-    pub(crate) fn insert(this: Rc<RefCell<Self>>, position: S, span: S, element: T) -> EphemeralPosition<Range, S, T> {
+    pub(crate) fn insert(this: Rc<RefCell<Self>>, position: S, span: S, element: T) -> EphemeralPosition<NestedRange, S, T> {
         if this.borrow().elements.is_empty() {
             return Self::push(this, position, span, element);
         }
@@ -56,7 +56,8 @@ impl<S: Spacing, T> Skeleton<Range, S, T> {
             BoundType::Start => {
                 let outer_span = result.span();
                 let sub = Self::ensure_sub(this, result.index);
-                assert!(position - result.position + span < outer_span,
+                // TODO check if less than or equals needs to be used in other places (notably similar assert statements)
+                assert!(position + span <= result.position + outer_span,
                         "Inner range exceeds span of outer range");
                 EphemeralPosition {
                     position,
