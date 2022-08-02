@@ -2,9 +2,7 @@ use std::cell::RefCell;
 use std::mem;
 use std::rc::Rc;
 
-use crate::EphemeralPosition;
-use crate::skeleton::{Node, Skeleton, Spacing};
-use crate::skeleton::index::{EphemeralIndex, Index};
+use crate::{Node, Skeleton, Spacing, EphemeralPosition, EphemeralIndex, Index};
 
 impl<S: Spacing, T> Skeleton<Node, S, T> {
     pub(crate) fn push(this: Rc<RefCell<Self>>, distance: S, element: T) -> EphemeralPosition<Node, S, T> {

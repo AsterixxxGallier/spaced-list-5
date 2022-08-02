@@ -7,9 +7,18 @@ use std::fmt::Debug;
 use itertools::Itertools;
 use maybe_owned::MaybeOwned;
 
-use crate::{BackwardsIter, ForwardsIter, Node, ParentData, Spacing};
-use crate::skeleton::{AllRangeKinds, Range, Skeleton};
-use crate::skeleton::index::{EphemeralIndex, HollowIndex, Index};
+use crate::{
+    BackwardsIter,
+    ForwardsIter,
+    Node,
+    ParentData,
+    Spacing,
+    AllRangeKinds,
+    Skeleton,
+    EphemeralIndex,
+    HollowIndex,
+    Index
+};
 
 pub(crate) struct EphemeralPosition<Kind, S: Spacing, T> {
     pub(crate) skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>,

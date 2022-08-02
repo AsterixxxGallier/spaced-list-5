@@ -5,12 +5,16 @@ use std::rc::{Rc, Weak};
 use nohash_hasher::IntMap;
 use num_traits::zero;
 
-use crate::Spacing;
-use crate::skeleton::index::{EphemeralIndex, Index};
+use crate::{Spacing, EphemeralIndex, Index};
 
 pub struct Node;
 
-pub trait AllRangeKinds {}
+mod seal {
+    pub trait Seal {}
+}
+pub trait AllRangeKinds : seal::Seal {}
+impl seal::Seal for Range {}
+impl seal::Seal for NestedRange {}
 impl AllRangeKinds for Range {}
 impl AllRangeKinds for NestedRange {}
 

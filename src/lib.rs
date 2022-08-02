@@ -29,10 +29,17 @@ pub(crate) use skeleton::position::EphemeralPosition;
 pub use skeleton::position::HollowPosition;
 #[doc(inline)]
 pub use skeleton::position::Position;
+pub(crate) use skeleton::index::EphemeralIndex;
+#[doc(inline)]
+pub use skeleton::index::HollowIndex;
+#[doc(inline)]
+pub use skeleton::index::Index;
 #[doc(inline)]
 pub use skeleton::Range;
 #[doc(inline)]
 pub use skeleton::NestedRange;
+#[doc(inline)]
+pub use skeleton::AllRangeKinds;
 pub(crate) use skeleton::Skeleton;
 pub(crate) use skeleton::traversal::iteration::BackwardsIter;
 pub(crate) use skeleton::traversal::iteration::ForwardsIter;
