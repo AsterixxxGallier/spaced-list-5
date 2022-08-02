@@ -228,7 +228,7 @@ impl<S: Spacing, T> ElementRef<Node, S, T> {
     }
 }
 
-impl<S: Spacing, T> ElementRef<Range, S, T> {
+impl<Kind: AllRangeKinds, S: Spacing, T> ElementRef<Kind, S, T> {
     pub fn borrow(&self) -> Ref<T> {
         Ref::map(self.skeleton.borrow(), |x| &x.elements[self.index / 2])
     }
