@@ -1,21 +1,14 @@
 use std::cmp::min;
+use std::collections::{HashMap, HashSet};
 use std::iter::Peekable;
-use std::ops::Add;
+use std::ops::{Add, RangeInclusive};
 use ansi_term::Color::{Blue, Green, Yellow};
 use indoc::indoc;
 use itertools::Itertools;
-use spaced_list_5::{HollowNestedRangeSpacedList, HollowRangeSpacedList, Position, Range, RangeSpacedList};
+use spaced_list_5::{HollowNestedRangeSpacedList, HollowRangeSpacedList, NestedRangeSpacedList, Position, Range, RangeSpacedList};
 
 fn main() {
     let source =
-        // indentation block from line 0 to line 6
-        // indentation block from line 1 to line 6
-        // indentation block from line 2 to line 5
-        // indentation block from line 2 to line 3
-        // indentation block from line 3 to line 3
-        //
-        //
-        //
         indoc! {r"
             foo:
                 bar:
@@ -156,50 +149,53 @@ fn main() {
     // endregion
 
     // region parse indented blocks
-    let mut indented_blocks = HollowNestedRangeSpacedList::new();
-    // let mut lines = lines.iter_ranges().peekable();
-    // TODO handle indentation of the entire source file
-    indented_blocks.insert(0, source.len());
+    let mut indented_blocks = NestedRangeSpacedList::new();
 
-    fn search_for_indented_block(
-        source: &str,
-        indented_blocks: &mut HollowNestedRangeSpacedList<usize>,
-        // lines: &mut Peekable<impl Iterator<Item=(Position<Range, usize, usize>, Position<Range, usize, usize>)>>,
-        lines: &RangeSpacedList<usize, usize>,
-        base_indentation: usize,
-        from: usize,
-        to: usize,
-    ) {
-        // Start of the search for indented blocks in this block
-        // let mut lines_iter = lines.iter_ranges().skip_while(|(start, _)| start.position() < from);
-        let mut lines_iter = lines.starting_at(from).unwrap().iter_next().tuples();
-        while let Some((line_start, line_end)) = lines_iter.next() {
-            if line_end.position() > to {
-                break;
+    let mut vec =
+        lines
+            .iter_ranges()
+            .map(|(start, end)| (start.position(), end.position()))
+            .collect_vec();
+
+    let mut map =
+        lines
+            .iter_ranges()
+            .enumerate()
+            .map(|(index, (start, _))| (*start.element().borrow(), index))
+            .into_grouping_map()
+            .collect::<Vec<_>>();
+
+    let mut indices_elimination = (0..vec.len()).collect_vec();
+
+    fn consecutive_ranges(data: &[usize]) -> impl Iterator<Item=RangeInclusive<usize>> + '_ {
+        let mut slice_start = 0;
+        (1..=data.len()).flat_map(move |i| {
+            if i == data.len() || data[i - 1] + 1 != data[i] {
+                let begin = slice_start;
+                slice_start = i;
+                Some(data[begin]..=data[i - 1])
+            } else {
+                None
             }
-            let indentation = *line_start.element().borrow();
-            if indentation > base_indentation {
-                // Start of an indented block
-                let start = line_start.position();
-                let mut end = line_end.position();
-                // let mut lines_iter_ = lines.starting_after(start).unwrap().iter_next().tuples();
-                while let Some((_, line_end)) = lines_iter.next() {
-                    let indentation = *line_end.element().borrow();
-                    if indentation <= base_indentation {
-                        indented_blocks.insert(start, end);
-                        break;
-                    }
-                    end = line_end.position();
+        })
+    }
+
+    for baseline in 0.. {
+        let indices_to_eliminate = map.remove(&baseline);
+        if let Some(indices_to_eliminate) = indices_to_eliminate {
+            for range in consecutive_ranges(indices_elimination.as_slice()) {
+                if indices_to_eliminate.iter().any(|it| range.contains(it)) {
+                    indented_blocks.insert(vec[*range.start()].0, vec[*range.end()].1, baseline);
                 }
-                if end == source.len() {
-                    indented_blocks.insert(start, end);
-                }
-                // The indented block has been closed
-                search_for_indented_block(source, indented_blocks, lines, indentation, start, end);
+            }
+            for index in &indices_to_eliminate {
+                indices_elimination.remove(indices_elimination.binary_search(index).unwrap());
+            }
+            if indices_elimination.is_empty() {
+                break;
             }
         }
     }
-    search_for_indented_block(source, &mut indented_blocks, &lines, 0, 0, source.len());
     // endregion
 
     /**/
