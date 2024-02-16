@@ -119,13 +119,13 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
     }
 }
 
-mod flate;
+pub mod flate;
 
-mod node;
+pub mod node;
 
-mod range;
+pub mod range;
 
-mod nested_range;
+pub mod nested_range;
 
 pub mod traversal;
 

@@ -1,8 +1,9 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::Spacing;
+use crate::{RangeInsertionError, Spacing};
 use crate::manager::hollow_range_spaced_list::HollowRangeLockedPosition;
+use crate::spaced_lists::SpacingError;
 
 use super::HollowRangeManager;
 
@@ -36,20 +37,20 @@ handle!(HollowRangeInsertionsHandle, insertions);
 // handle!(HollowRangeDeletionsHandle, deletions);
 
 impl<S: Spacing> HollowRangePositionsHandle<S> {
-    pub fn increase_spacing_after(&mut self, position: S, spacing: S) {
-        self.manager.borrow_mut().list.increase_spacing_after(position, spacing)
+    pub fn try_increase_spacing_after(&mut self, position: S, spacing: S) -> Result<(), SpacingError> {
+        self.manager.borrow_mut().list.try_increase_spacing_after(position, spacing)
     }
 
-    pub fn increase_spacing_before(&mut self, position: S, spacing: S) {
-        self.manager.borrow_mut().list.increase_spacing_before(position, spacing)
+    pub fn try_increase_spacing_before(&mut self, position: S, spacing: S) -> Result<(), SpacingError> {
+        self.manager.borrow_mut().list.try_increase_spacing_before(position, spacing)
     }
 
-    pub fn decrease_spacing_after(&mut self, position: S, spacing: S) {
-        self.manager.borrow_mut().list.decrease_spacing_after(position, spacing)
+    pub fn try_decrease_spacing_after(&mut self, position: S, spacing: S) -> Result<(), SpacingError> {
+        self.manager.borrow_mut().list.try_decrease_spacing_after(position, spacing)
     }
 
-    pub fn decrease_spacing_before(&mut self, position: S, spacing: S) {
-        self.manager.borrow_mut().list.decrease_spacing_before(position, spacing)
+    pub fn try_decrease_spacing_before(&mut self, position: S, spacing: S) -> Result<(), SpacingError> {
+        self.manager.borrow_mut().list.try_decrease_spacing_before(position, spacing)
     }
 }
 
@@ -58,11 +59,11 @@ impl<S: Spacing> HollowRangeInsertionsHandle<S> {
         HollowRangeManager::lock(self.manager.clone(), self.manager.borrow_mut().list.push(spacing, span))
     }
 
-    pub fn insert(&self, start: S, end: S) -> HollowRangeLockedPosition<S> {
-        HollowRangeManager::lock(self.manager.clone(), self.manager.borrow_mut().list.insert(start, end))
+    pub fn try_insert(&self, start: S, end: S) -> Result<HollowRangeLockedPosition<S>, RangeInsertionError> {
+        Ok(HollowRangeManager::lock(self.manager.clone(), self.manager.borrow_mut().list.try_insert(start, end)?))
     }
 
-    pub fn insert_with_span(&self, start: S, span: S) -> HollowRangeLockedPosition<S> {
-        HollowRangeManager::lock(self.manager.clone(), self.manager.borrow_mut().list.insert_with_span(start, span))
+    pub fn try_insert_with_span(&self, start: S, span: S) -> Result<HollowRangeLockedPosition<S>, RangeInsertionError> {
+        Ok(HollowRangeManager::lock(self.manager.clone(), self.manager.borrow_mut().list.try_insert_with_span(start, span)?))
     }
 }

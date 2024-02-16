@@ -2,7 +2,8 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use crate::manager::range_spaced_list::RangeLockedPosition;
-use crate::Spacing;
+use crate::spaced_lists::SpacingError;
+use crate::{RangeInsertionError, Spacing};
 
 use super::RangeManager;
 
@@ -37,20 +38,20 @@ handle!(RangeInsertionsHandle, insertions);
 handle!(RangeValuesHandle, values);
 
 impl<S: Spacing, T> RangePositionsHandle<S, T> {
-    pub fn increase_spacing_after(&mut self, position: S, spacing: S) {
-        self.manager.borrow_mut().list.increase_spacing_after(position, spacing)
+    pub fn try_increase_spacing_after(&mut self, position: S, spacing: S) -> Result<(), SpacingError> {
+        self.manager.borrow_mut().list.try_increase_spacing_after(position, spacing)
     }
 
-    pub fn increase_spacing_before(&mut self, position: S, spacing: S) {
-        self.manager.borrow_mut().list.increase_spacing_before(position, spacing)
+    pub fn try_increase_spacing_before(&mut self, position: S, spacing: S) -> Result<(), SpacingError> {
+        self.manager.borrow_mut().list.try_increase_spacing_before(position, spacing)
     }
 
-    pub fn decrease_spacing_after(&mut self, position: S, spacing: S) {
-        self.manager.borrow_mut().list.decrease_spacing_after(position, spacing)
+    pub fn try_decrease_spacing_after(&mut self, position: S, spacing: S) -> Result<(), SpacingError> {
+        self.manager.borrow_mut().list.try_decrease_spacing_after(position, spacing)
     }
 
-    pub fn decrease_spacing_before(&mut self, position: S, spacing: S) {
-        self.manager.borrow_mut().list.decrease_spacing_before(position, spacing)
+    pub fn try_decrease_spacing_before(&mut self, position: S, spacing: S) -> Result<(), SpacingError> {
+        self.manager.borrow_mut().list.try_decrease_spacing_before(position, spacing)
     }
 }
 
@@ -59,11 +60,11 @@ impl<S: Spacing, T> RangeInsertionsHandle<S, T> {
         RangeManager::lock(self.manager.clone(), self.manager.borrow_mut().list.push(spacing, span, value))
     }
 
-    pub fn insert(&self, start: S, end: S, value: T) -> RangeLockedPosition<S, T> {
-        RangeManager::lock(self.manager.clone(), self.manager.borrow_mut().list.insert(start, end, value))
+    pub fn try_insert(&self, start: S, end: S, value: T) -> Result<RangeLockedPosition<S, T>, RangeInsertionError> {
+        Ok(RangeManager::lock(self.manager.clone(), self.manager.borrow_mut().list.try_insert(start, end, value)?))
     }
 
-    pub fn insert_with_span(&self, start: S, span: S, value: T) -> RangeLockedPosition<S, T> {
-        RangeManager::lock(self.manager.clone(), self.manager.borrow_mut().list.insert_with_span(start, span, value))
+    pub fn try_insert_with_span(&self, start: S, span: S, value: T) -> Result<RangeLockedPosition<S, T>, RangeInsertionError> {
+        Ok(RangeManager::lock(self.manager.clone(), self.manager.borrow_mut().list.try_insert_with_span(start, span, value)?))
     }
 }

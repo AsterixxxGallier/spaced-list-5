@@ -33,6 +33,12 @@ pub use skeleton::position::Position;
 pub use skeleton::Range;
 #[doc(inline)]
 pub use skeleton::NestedRange;
+#[doc(inline)]
+pub use skeleton::range::RangeInsertionError;
+#[doc(inline)]
+pub use skeleton::nested_range::NestedRangeInsertionError;
+#[doc(inline)]
+pub use spaced_lists::SpacingError;
 pub(crate) use skeleton::Skeleton;
 pub(crate) use skeleton::traversal::iteration::BackwardsIter;
 pub(crate) use skeleton::traversal::iteration::ForwardsIter;

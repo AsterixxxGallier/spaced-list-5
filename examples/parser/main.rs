@@ -20,7 +20,7 @@ fn main() {
     let mut colons = HollowRangeSpacedList::new();
     for (index, char) in source.chars().enumerate() {
         if char == ':' {
-            colons.insert_with_span(index, 1);
+            colons.try_insert_with_span(index, 1).unwrap();
         }
     }
     // endregion
@@ -29,7 +29,7 @@ fn main() {
     let mut arrows = HollowRangeSpacedList::new();
     for (index, char) in source.chars().enumerate() {
         if char == '>' {
-            arrows.insert_with_span(index, 1);
+            arrows.try_insert_with_span(index, 1).unwrap();
         }
     }
     // endregion
@@ -38,7 +38,7 @@ fn main() {
     let mut line_breaks = HollowRangeSpacedList::new();
     for (index, char) in source.chars().enumerate() {
         if char == '\n' {
-            line_breaks.insert_with_span(index, 1);
+            line_breaks.try_insert_with_span(index, 1).unwrap();
         }
     }
     // endregion
@@ -58,7 +58,7 @@ fn main() {
                     break;
                 }
             }
-            whitespace.insert_with_span(start, span);
+            whitespace.try_insert_with_span(start, span).unwrap();
             start += span;
         } else {
             start += 1;
@@ -70,10 +70,10 @@ fn main() {
     let mut full_lines = HollowRangeSpacedList::new();
     let mut start = 0;
     for (line_end, line_start) in line_breaks.iter_ranges() {
-        full_lines.insert(start, line_end.position());
+        full_lines.try_insert(start, line_end.position()).unwrap();
         start = line_start.position()
     }
-    full_lines.insert(start, source.len());
+    full_lines.try_insert(start, source.len()).unwrap();
     // endregion
 
     // region parse lines
@@ -82,9 +82,9 @@ fn main() {
         let start = start.position();
         let end = end.position();
         if let Some(indentation) = whitespace.starting_at(start) {
-            lines.insert(start, end, indentation.span());
+            lines.try_insert(start, end, indentation.span()).unwrap();
         } else {
-            lines.insert(start, end, 0);
+            lines.try_insert(start, end, 0).unwrap();
         }
     }
     // endregion
@@ -101,7 +101,7 @@ fn main() {
             .ending_at(end.position())
             .map(|option| option.into_range().0.position())
             .unwrap_or(end.position());
-        trimmed_lines.insert(start, end, value);
+        trimmed_lines.try_insert(start, end, value).unwrap();
     }
     // endregion
 
@@ -139,7 +139,7 @@ fn main() {
                         .unwrap_or(arrow.position());
                 }
             }
-            text.insert(start, end);
+            text.try_insert(start, end).unwrap();
             start = end;
         }
     }
@@ -182,7 +182,7 @@ fn main() {
         if let Some(indices_to_eliminate) = indices_to_eliminate {
             for range in consecutive_ranges(indices_elimination.as_slice()) {
                 if indices_to_eliminate.iter().any(|it| range.contains(it)) {
-                    indented_blocks.insert(vec[*range.start()].0, vec[*range.end()].1, baseline);
+                    indented_blocks.try_insert(vec[*range.start()].0, vec[*range.end()].1, baseline).unwrap();
                 }
             }
             for index in &indices_to_eliminate {
