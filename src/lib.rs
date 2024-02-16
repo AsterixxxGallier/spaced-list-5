@@ -31,15 +31,21 @@ pub use skeleton::position::HollowPosition;
 pub use skeleton::position::Position;
 #[doc(inline)]
 pub use skeleton::Range;
+#[doc(inline)]
+pub use skeleton::NestedRange;
 pub(crate) use skeleton::Skeleton;
 pub(crate) use skeleton::traversal::iteration::BackwardsIter;
 pub(crate) use skeleton::traversal::iteration::ForwardsIter;
 #[doc(inline)]
 pub use spaced_lists::HollowRangeSpacedList;
 #[doc(inline)]
+pub use spaced_lists::HollowNestedRangeSpacedList;
+#[doc(inline)]
 pub use spaced_lists::HollowSpacedList;
 #[doc(inline)]
 pub use spaced_lists::RangeSpacedList;
+#[doc(inline)]
+pub use spaced_lists::NestedRangeSpacedList;
 #[doc(inline)]
 pub use spaced_lists::SpacedList;
 
