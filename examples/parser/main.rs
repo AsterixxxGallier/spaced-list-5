@@ -1,11 +1,8 @@
-use std::cmp::min;
-use std::collections::{HashMap, HashSet};
-use std::iter::Peekable;
-use std::ops::{Add, RangeInclusive};
+use std::ops::RangeInclusive;
 use ansi_term::Color::{Blue, Green, Yellow};
 use indoc::indoc;
 use itertools::Itertools;
-use spaced_list_5::{HollowNestedRangeSpacedList, HollowRangeSpacedList, NestedRangeSpacedList, Position, Range, RangeSpacedList};
+use spaced_list_5::{HollowRangeSpacedList, NestedRangeSpacedList, RangeSpacedList};
 
 fn main() {
     let source =
@@ -151,7 +148,7 @@ fn main() {
     // region parse indented blocks
     let mut indented_blocks = NestedRangeSpacedList::new();
 
-    let mut vec =
+    let vec =
         lines
             .iter_ranges()
             .map(|(start, end)| (start.position(), end.position()))

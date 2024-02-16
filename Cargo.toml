@@ -17,7 +17,7 @@ nohash-hasher = "0.2.0"
 rand = "0.8.5"
 criterion = "0.5.1"
 ansi_term = "0.12.1"
-indoc = "1.0"
+indoc = "2.0.4"
 
 [[bench]]
 name = "inflate"
