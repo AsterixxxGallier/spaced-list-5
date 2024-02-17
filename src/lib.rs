@@ -7,12 +7,15 @@
 //!    elements after it.
 //!
 //! There are several different types of lists in this crate:
-//! 1. SpacedList: A spaced list that stores values and the distance between them.
-//! 2. RangeSpacedList: A spaced list that stores elements as non-overlapping ranges.
-//! 3. HollowSpacedList: A spaced list that stores the relative position of empty nodes.
-//! 4. HollowRangeSpacedList: A spaced list that stores empty nodes as non-overlapping ranges.
+//! 1. `SpacedList`: A spaced list that stores values and the distance between them.
+//! 2. `RangeSpacedList`: A spaced list that stores elements as non-overlapping ranges.
+//! 3. `HollowSpacedList`: A spaced list that stores the relative position of empty nodes.
+//! 4. `HollowRangeSpacedList`: A spaced list that stores empty nodes as non-overlapping ranges.
+// TODO add NestedRange stuff when the manager module fully supports it
 
 #![feature(trait_alias)]
+// #![warn(clippy::pedantic)]
+// #![allow(clippy::needless_pass_by_value, clippy::missing_errors_doc, clippy::module_name_repetitions)]
 #![allow(dead_code)]
 
 use std::ops::{Add, AddAssign, Sub, SubAssign};

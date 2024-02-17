@@ -63,22 +63,27 @@ macro_rules! spacing_methods {
 
 macro_rules! trivial_accessors {
     () => {
+        #[must_use]
         pub fn size(&self) -> usize {
             self.size
         }
 
+        #[must_use]
         pub fn is_empty(&self) -> bool {
             self.size == 0
         }
 
+        #[must_use]
         pub fn length(&self) -> S {
             self.skeleton.borrow().length()
         }
 
+        #[must_use]
         pub fn start(&self) -> S {
             self.skeleton.borrow().offset()
         }
 
+        #[must_use]
         pub fn end(&self) -> S {
             self.skeleton.borrow().last_position()
         }
@@ -100,7 +105,8 @@ impl<S: Spacing, T> Default for SpacedList<S, T> {
 }
 
 impl<S: Spacing, T> SpacedList<S, T> {
-    pub fn new() -> Self {
+    #[must_use]
+     pub fn new() -> Self {
         Self::default()
     }
 
@@ -119,7 +125,8 @@ impl<S: Spacing, T> SpacedList<S, T> {
     spacing_methods!();
 
 
-    pub fn first(&self) -> Option<Position<Node, S, T>> {
+    #[must_use]
+     pub fn first(&self) -> Option<Position<Node, S, T>> {
         if self.is_empty() {
             None
         } else {
@@ -127,7 +134,8 @@ impl<S: Spacing, T> SpacedList<S, T> {
         }
     }
 
-    pub fn last(&self) -> Option<Position<Node, S, T>> {
+    #[must_use]
+     pub fn last(&self) -> Option<Position<Node, S, T>> {
         if self.is_empty() {
             None
         } else {
@@ -137,28 +145,23 @@ impl<S: Spacing, T> SpacedList<S, T> {
 
 
     pub fn before(&self, position: S) -> Option<Position<Node, S, T>> {
-        Skeleton::<Node, _, _>::before(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<Node, _, _>::before(self.skeleton.clone(), position).map(Into::into)
     }
 
     pub fn at_or_before(&self, position: S) -> Option<Position<Node, S, T>> {
-        Skeleton::<Node, _, _>::at_or_before(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<Node, _, _>::at_or_before(self.skeleton.clone(), position).map(Into::into)
     }
 
     pub fn at(&self, position: S) -> Option<Position<Node, S, T>> {
-        Skeleton::<Node, _, _>::at(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<Node, _, _>::at(self.skeleton.clone(), position).map(Into::into)
     }
 
     pub fn at_or_after(&self, position: S) -> Option<Position<Node, S, T>> {
-        Skeleton::<Node, _, _>::at_or_after(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<Node, _, _>::at_or_after(self.skeleton.clone(), position).map(Into::into)
     }
 
     pub fn after(&self, position: S) -> Option<Position<Node, S, T>> {
-        Skeleton::<Node, _, _>::after(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<Node, _, _>::after(self.skeleton.clone(), position).map(Into::into)
     }
 
 
@@ -196,7 +199,8 @@ impl<S: Spacing, T> Default for RangeSpacedList<S, T> {
 }
 
 impl<S: Spacing, T> RangeSpacedList<S, T> {
-    pub fn new() -> Self {
+    #[must_use]
+     pub fn new() -> Self {
         Self::default()
     }
 
@@ -218,7 +222,8 @@ impl<S: Spacing, T> RangeSpacedList<S, T> {
     spacing_methods!();
 
 
-    pub fn first(&self) -> Option<Position<Range, S, T>> {
+    #[must_use]
+     pub fn first(&self) -> Option<Position<Range, S, T>> {
         if self.is_empty() {
             None
         } else {
@@ -226,7 +231,8 @@ impl<S: Spacing, T> RangeSpacedList<S, T> {
         }
     }
 
-    pub fn last(&self) -> Option<Position<Range, S, T>> {
+    #[must_use]
+     pub fn last(&self) -> Option<Position<Range, S, T>> {
         if self.is_empty() {
             None
         } else {
@@ -236,80 +242,65 @@ impl<S: Spacing, T> RangeSpacedList<S, T> {
 
 
     pub fn starting_or_ending_before(&self, position: S) -> Option<Position<Range, S, T>> {
-        Skeleton::<Range, _, _>::before(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<Range, _, _>::before(self.skeleton.clone(), position).map(Into::into)
     }
 
     pub fn starting_or_ending_at_or_before(&self, position: S) -> Option<Position<Range, S, T>> {
-        Skeleton::<Range, _, _>::at_or_before(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<Range, _, _>::at_or_before(self.skeleton.clone(), position).map(Into::into)
     }
 
     pub fn starting_or_ending_at(&self, position: S) -> Option<Position<Range, S, T>> {
-        Skeleton::<Range, _, _>::at(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<Range, _, _>::at(self.skeleton.clone(), position).map(Into::into)
     }
 
     pub fn starting_or_ending_at_or_after(&self, position: S) -> Option<Position<Range, S, T>> {
-        Skeleton::<Range, _, _>::at_or_after(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<Range, _, _>::at_or_after(self.skeleton.clone(), position).map(Into::into)
     }
 
     pub fn starting_or_ending_after(&self, position: S) -> Option<Position<Range, S, T>> {
-        Skeleton::<Range, _, _>::after(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<Range, _, _>::after(self.skeleton.clone(), position).map(Into::into)
     }
 
 
     pub fn starting_before(&self, position: S) -> Option<Position<Range, S, T>> {
-        Skeleton::<Range, _, _>::starting_before(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<Range, _, _>::starting_before(self.skeleton.clone(), position).map(Into::into)
     }
 
     pub fn starting_at_or_before(&self, position: S) -> Option<Position<Range, S, T>> {
-        Skeleton::<Range, _, _>::starting_at_or_before(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<Range, _, _>::starting_at_or_before(self.skeleton.clone(), position).map(Into::into)
     }
 
     pub fn starting_at(&self, position: S) -> Option<Position<Range, S, T>> {
-        Skeleton::<Range, _, _>::starting_at(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<Range, _, _>::starting_at(self.skeleton.clone(), position).map(Into::into)
     }
 
     pub fn starting_at_or_after(&self, position: S) -> Option<Position<Range, S, T>> {
-        Skeleton::<Range, _, _>::starting_at_or_after(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<Range, _, _>::starting_at_or_after(self.skeleton.clone(), position).map(Into::into)
     }
 
     pub fn starting_after(&self, position: S) -> Option<Position<Range, S, T>> {
-        Skeleton::<Range, _, _>::starting_after(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<Range, _, _>::starting_after(self.skeleton.clone(), position).map(Into::into)
     }
 
 
     pub fn ending_before(&self, position: S) -> Option<Position<Range, S, T>> {
-        Skeleton::<Range, _, _>::ending_before(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<Range, _, _>::ending_before(self.skeleton.clone(), position).map(Into::into)
     }
 
     pub fn ending_at_or_before(&self, position: S) -> Option<Position<Range, S, T>> {
-        Skeleton::<Range, _, _>::ending_at_or_before(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<Range, _, _>::ending_at_or_before(self.skeleton.clone(), position).map(Into::into)
     }
 
     pub fn ending_at(&self, position: S) -> Option<Position<Range, S, T>> {
-        Skeleton::<Range, _, _>::ending_at(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<Range, _, _>::ending_at(self.skeleton.clone(), position).map(Into::into)
     }
 
     pub fn ending_at_or_after(&self, position: S) -> Option<Position<Range, S, T>> {
-        Skeleton::<Range, _, _>::ending_at_or_after(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<Range, _, _>::ending_at_or_after(self.skeleton.clone(), position).map(Into::into)
     }
 
     pub fn ending_after(&self, position: S) -> Option<Position<Range, S, T>> {
-        Skeleton::<Range, _, _>::ending_after(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<Range, _, _>::ending_after(self.skeleton.clone(), position).map(Into::into)
     }
 
 
@@ -364,7 +355,8 @@ impl<S: Spacing, T> Default for NestedRangeSpacedList<S, T> {
 }
 
 impl<S: Spacing, T> NestedRangeSpacedList<S, T> {
-    pub fn new() -> Self {
+    #[must_use]
+     pub fn new() -> Self {
         Self::default()
     }
 
@@ -386,7 +378,8 @@ impl<S: Spacing, T> NestedRangeSpacedList<S, T> {
     spacing_methods!();
 
 
-    pub fn first(&self) -> Option<Position<NestedRange, S, T>> {
+    #[must_use]
+     pub fn first(&self) -> Option<Position<NestedRange, S, T>> {
         if self.is_empty() {
             None
         } else {
@@ -394,7 +387,8 @@ impl<S: Spacing, T> NestedRangeSpacedList<S, T> {
         }
     }
 
-    pub fn last(&self) -> Option<Position<NestedRange, S, T>> {
+    #[must_use]
+     pub fn last(&self) -> Option<Position<NestedRange, S, T>> {
         if self.is_empty() {
             None
         } else {
@@ -404,28 +398,23 @@ impl<S: Spacing, T> NestedRangeSpacedList<S, T> {
 
 
     pub fn starting_or_ending_before(&self, position: S) -> Option<Position<NestedRange, S, T>> {
-        Skeleton::<NestedRange, _, _>::before(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<NestedRange, _, _>::before(self.skeleton.clone(), position).map(Into::into)
     }
 
     pub fn starting_or_ending_at_or_before(&self, position: S) -> Option<Position<NestedRange, S, T>> {
-        Skeleton::<NestedRange, _, _>::at_or_before(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<NestedRange, _, _>::at_or_before(self.skeleton.clone(), position).map(Into::into)
     }
 
     pub fn starting_or_ending_at(&self, position: S) -> Option<Position<NestedRange, S, T>> {
-        Skeleton::<NestedRange, _, _>::at(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<NestedRange, _, _>::at(self.skeleton.clone(), position).map(Into::into)
     }
 
     pub fn starting_or_ending_at_or_after(&self, position: S) -> Option<Position<NestedRange, S, T>> {
-        Skeleton::<NestedRange, _, _>::at_or_after(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<NestedRange, _, _>::at_or_after(self.skeleton.clone(), position).map(Into::into)
     }
 
     pub fn starting_or_ending_after(&self, position: S) -> Option<Position<NestedRange, S, T>> {
-        Skeleton::<NestedRange, _, _>::after(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<NestedRange, _, _>::after(self.skeleton.clone(), position).map(Into::into)
     }
 
 
@@ -532,7 +521,8 @@ impl<S: Spacing> Default for HollowSpacedList<S> {
 }
 
 impl<S: Spacing> HollowSpacedList<S> {
-    pub fn new() -> Self {
+    #[must_use]
+     pub fn new() -> Self {
         Self::default()
     }
 
@@ -555,7 +545,8 @@ impl<S: Spacing> HollowSpacedList<S> {
     spacing_methods!();
 
 
-    pub fn first(&self) -> Option<HollowPosition<Node, S>> {
+    #[must_use]
+     pub fn first(&self) -> Option<HollowPosition<Node, S>> {
         if self.is_empty() {
             None
         } else {
@@ -563,7 +554,8 @@ impl<S: Spacing> HollowSpacedList<S> {
         }
     }
 
-    pub fn last(&self) -> Option<HollowPosition<Node, S>> {
+    #[must_use]
+     pub fn last(&self) -> Option<HollowPosition<Node, S>> {
         if self.is_empty() {
             None
         } else {
@@ -647,7 +639,8 @@ impl<S: Spacing> Default for HollowRangeSpacedList<S> {
 }
 
 impl<S: Spacing> HollowRangeSpacedList<S> {
-    pub fn new() -> Self {
+    #[must_use]
+     pub fn new() -> Self {
         Self::default()
     }
 
@@ -673,7 +666,8 @@ impl<S: Spacing> HollowRangeSpacedList<S> {
     spacing_methods!();
 
 
-    pub fn first(&self) -> Option<HollowPosition<Range, S>> {
+    #[must_use]
+     pub fn first(&self) -> Option<HollowPosition<Range, S>> {
         if self.is_empty() {
             None
         } else {
@@ -681,7 +675,8 @@ impl<S: Spacing> HollowRangeSpacedList<S> {
         }
     }
 
-    pub fn last(&self) -> Option<HollowPosition<Range, S>> {
+    #[must_use]
+     pub fn last(&self) -> Option<HollowPosition<Range, S>> {
         if self.is_empty() {
             None
         } else {
@@ -864,7 +859,8 @@ impl<S: Spacing> Default for HollowNestedRangeSpacedList<S> {
 }
 
 impl<S: Spacing> HollowNestedRangeSpacedList<S> {
-    pub fn new() -> Self {
+    #[must_use]
+     pub fn new() -> Self {
         Self::default()
     }
 
@@ -890,7 +886,8 @@ impl<S: Spacing> HollowNestedRangeSpacedList<S> {
     spacing_methods!();
 
 
-    pub fn first(&self) -> Option<HollowPosition<NestedRange, S>> {
+    #[must_use]
+     pub fn first(&self) -> Option<HollowPosition<NestedRange, S>> {
         if self.is_empty() {
             None
         } else {
@@ -898,7 +895,8 @@ impl<S: Spacing> HollowNestedRangeSpacedList<S> {
         }
     }
 
-    pub fn last(&self) -> Option<HollowPosition<NestedRange, S>> {
+    #[must_use]
+     pub fn last(&self) -> Option<HollowPosition<NestedRange, S>> {
         if self.is_empty() {
             None
         } else {

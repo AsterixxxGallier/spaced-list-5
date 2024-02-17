@@ -35,7 +35,8 @@ pub struct HollowRangeManager<S: Spacing> {
 }
 
 impl<S: Spacing> HollowRangeManager<S> {
-    pub fn new(list: HollowRangeSpacedList<S>) -> Rc<RefCell<Self>> {
+    #[must_use]
+     pub fn new(list: HollowRangeSpacedList<S>) -> Rc<RefCell<Self>> {
         Rc::new(RefCell::new(Self {
             list,
             locks: HollowRangeLocks::default(),

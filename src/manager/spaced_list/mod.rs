@@ -39,7 +39,8 @@ pub struct Manager<S: Spacing, T> {
 }
 
 impl<S: Spacing, T> Manager<S, T> {
-    pub fn new(list: SpacedList<S, T>) -> Rc<RefCell<Self>> {
+    #[must_use]
+     pub fn new(list: SpacedList<S, T>) -> Rc<RefCell<Self>> {
         Rc::new(RefCell::new(Self {
             list,
             locks: Locks::default(),

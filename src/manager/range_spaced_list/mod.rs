@@ -39,7 +39,8 @@ pub struct RangeManager<S: Spacing, T> {
 }
 
 impl<S: Spacing, T> RangeManager<S, T> {
-    pub fn new(list: RangeSpacedList<S, T>) -> Rc<RefCell<Self>> {
+    #[must_use]
+     pub fn new(list: RangeSpacedList<S, T>) -> Rc<RefCell<Self>> {
         Rc::new(RefCell::new(Self {
             list,
             locks: RangeLocks::default(),
