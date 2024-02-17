@@ -4,20 +4,20 @@ use std::rc::{Rc, Weak};
 
 use nohash_hasher::IntMap;
 use num_traits::zero;
+use ephemeral_index::EphemeralIndex;
 
-use crate::Spacing;
-use crate::skeleton::index::{EphemeralIndex, Index};
+use crate::{Spacing, Index};
 
 pub struct Node;
 
-pub trait AllRangeKinds {}
-impl AllRangeKinds for Range {}
-impl AllRangeKinds for NestedRange {}
+pub trait RangeKind {}
+impl RangeKind for Range {}
+impl RangeKind for NestedRange {}
 
 pub struct Range;
 
-// works like Range, but when a range is inserted inside of another range, then it's put in a sublist, such that even
-//  indices are still start indices and odd indices are end indices (genius!)
+// works like Range, but when a range is inserted inside of another range, then it's put in a
+// sublist, such that even indices are still start indices and odd indices are end indices (genius!)
 pub struct NestedRange;
 
 pub(crate) struct ParentData<Parent> {
@@ -122,17 +122,13 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
 }
 
 pub mod flate;
-
 pub mod node;
-
 pub mod range;
-
 pub mod nested_range;
-
 pub mod traversal;
-
-pub mod position;
-
 pub mod index;
-
+pub mod ephemeral_index;
+pub mod position;
+pub mod ephemeral_position;
+pub mod bound_type;
 pub mod element_ref;

@@ -1,10 +1,9 @@
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
-use crate::{HollowPosition, HollowSpacedList, Node, Spacing};
-
-use self::handles::{HollowInsertionsHandle, HollowPositionsHandle};
-use self::locks::{HollowInsertionsLock, HollowPositionsLock};
+use crate::{Node, HollowPosition, Spacing, HollowSpacedList};
+use crate::manager::{HollowInsertionsHandle, HollowPositionsHandle,
+                     HollowInsertionsLock, HollowPositionsLock};
 
 pub mod locks;
 pub mod handles;

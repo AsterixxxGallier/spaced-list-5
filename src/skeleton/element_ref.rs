@@ -4,8 +4,7 @@ use std::ops::{Deref, DerefMut};
 
 use ouroboros::self_referencing;
 
-use crate::{Node, Spacing};
-use crate::skeleton::{AllRangeKinds, Skeleton};
+use crate::{Node, Spacing, RangeKind, Skeleton};
 
 /// The spaced list that the referenced element is contained in cannot be mutated for the lifetime
 /// of the [`ElementRef`]. If you run into problems with this, consider storing a [`Position`] or
@@ -38,7 +37,7 @@ impl<S: Spacing, T> Deref for ElementRef<Node, S, T> {
     }
 }
 
-impl<Kind: AllRangeKinds, S: Spacing, T> Deref for ElementRef<Kind, S, T> {
+impl<Kind: RangeKind, S: Spacing, T> Deref for ElementRef<Kind, S, T> {
     type Target = T;
 
     fn deref(&self) -> &T {
@@ -79,7 +78,7 @@ impl<S: Spacing, T> Deref for ElementRefMut<Node, S, T> {
     }
 }
 
-impl<Kind: AllRangeKinds, S: Spacing, T> Deref for ElementRefMut<Kind, S, T> {
+impl<Kind: RangeKind, S: Spacing, T> Deref for ElementRefMut<Kind, S, T> {
     type Target = T;
 
     fn deref(&self) -> &T {
@@ -94,7 +93,7 @@ impl<S: Spacing, T> DerefMut for ElementRefMut<Node, S, T> {
     }
 }
 
-impl<Kind: AllRangeKinds, S: Spacing, T> DerefMut for ElementRefMut<Kind, S, T> {
+impl<Kind: RangeKind, S: Spacing, T> DerefMut for ElementRefMut<Kind, S, T> {
     fn deref_mut(&mut self) -> &mut T {
         let index = self.borrow_index() / 2;
         self.with_skeleton_ref_mut(|skeleton_ref| &mut skeleton_ref.elements[index])

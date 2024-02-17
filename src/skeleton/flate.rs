@@ -3,8 +3,8 @@ use std::rc::Rc;
 
 use num_traits::zero;
 
-use crate::skeleton::{link_index, relative_depth, Skeleton};
-use crate::Spacing;
+use crate::{Spacing, Skeleton};
+use crate::skeleton::{link_index, relative_depth};
 
 #[derive(Debug)]
 pub enum FlateError {

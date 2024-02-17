@@ -2,15 +2,15 @@ use std::ops::RangeInclusive;
 use ansi_term::Color::{Blue, Green, Yellow};
 use indoc::indoc;
 use itertools::Itertools;
-use spaced_list_5::{HollowRangeSpacedList, NestedRangeSpacedList, RangeSpacedList, SpacedList};
+use spaced_list_5::{SpacedList, RangeSpacedList, NestedRangeSpacedList, HollowRangeSpacedList};
 
 fn main() {
-    let mut list = SpacedList::new();
-    let position = list.try_push(2, 42).unwrap();
-    let mut element_ref = position.element_mut();
-    *element_ref += 3;
-    list.insert(1, 43);
-    println!("{}", *element_ref);
+    // let mut list = SpacedList::new();
+    // let position = list.try_push(2, 42).unwrap();
+    // let mut element_ref = position.element_mut();
+    // *element_ref += 3;
+    // list.insert(1, 43);
+    // println!("{}", *element_ref);
 
     let source =
         indoc! {r"

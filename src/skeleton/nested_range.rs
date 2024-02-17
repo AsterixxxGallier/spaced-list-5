@@ -3,10 +3,7 @@ use std::cmp::Ordering;
 use std::mem;
 use std::rc::Rc;
 
-use crate::EphemeralPosition;
-use crate::skeleton::{NestedRange, Skeleton, Spacing};
-use crate::skeleton::index::{EphemeralIndex, Index};
-use crate::skeleton::position::BoundType;
+use crate::{BoundType, EphemeralIndex, EphemeralPosition, Index, NestedRange, Skeleton, Spacing};
 
 #[derive(Debug)]
 pub enum NestedRangePushError {

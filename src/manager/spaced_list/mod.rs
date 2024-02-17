@@ -1,10 +1,9 @@
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
-use crate::{Node, Position, SpacedList, Spacing};
-
-use self::handles::{InsertionsHandle, PositionsHandle, ValuesHandle};
-use self::locks::{InsertionsLock, PositionsLock, ValuesLock};
+use crate::{Node, Position, Spacing, SpacedList};
+use crate::manager::{InsertionsHandle, PositionsHandle, ValuesHandle,
+                     InsertionsLock, PositionsLock, ValuesLock};
 
 pub mod locks;
 pub mod handles;

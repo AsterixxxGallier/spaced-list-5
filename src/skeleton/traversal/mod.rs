@@ -4,7 +4,8 @@ use std::rc::Rc;
 use paste::paste;
 use crate::NestedRange;
 
-use crate::skeleton::{link_index, ParentData, position::EphemeralPosition, Range, Skeleton, Spacing};
+use crate::{EphemeralPosition, ParentData, Range, Skeleton, Spacing};
+use crate::skeleton::link_index;
 
 macro_rules! traverse {
     // region loop

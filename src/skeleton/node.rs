@@ -2,9 +2,7 @@ use std::cell::RefCell;
 use std::mem;
 use std::rc::Rc;
 
-use crate::EphemeralPosition;
-use crate::skeleton::{Node, Skeleton, Spacing};
-use crate::skeleton::index::{EphemeralIndex, Index};
+use crate::{EphemeralIndex, EphemeralPosition, Index, Node, Skeleton, Spacing};
 
 #[derive(Debug)]
 pub enum PushError {
@@ -119,7 +117,7 @@ impl<S: Spacing, T> Skeleton<Node, S, T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::SpacedList;
+    use crate::spaced_lists::spaced_list::SpacedList;
 
     #[test]
     fn test() {
@@ -128,9 +126,9 @@ mod tests {
         let c = list.insert(1, 'c');
         let a = list.insert(-1, 'a');
 
-        println!("{} at {}; {} in {:?}", a.element().borrow(), a.position, a.index, a.skeleton.borrow().elements);
-        println!("{} at {}; {} in {:?}", b.element().borrow(), b.position, b.index, b.skeleton.borrow().elements);
-        println!("{} at {}; {} in {:?}", c.element().borrow(), c.position, c.index, c.skeleton.borrow().elements);
+        println!("{} at {}; {} in {:?}", *a.element(), a.position, a.index, a.skeleton.borrow().elements);
+        println!("{} at {}; {} in {:?}", *b.element(), b.position, b.index, b.skeleton.borrow().elements);
+        println!("{} at {}; {} in {:?}", *c.element(), c.position, c.index, c.skeleton.borrow().elements);
 
         println!();
 

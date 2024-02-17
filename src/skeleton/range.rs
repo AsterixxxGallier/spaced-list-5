@@ -3,10 +3,7 @@ use std::cmp::Ordering;
 use std::mem;
 use std::rc::Rc;
 
-use crate::EphemeralPosition;
-use crate::skeleton::{Range, Skeleton, Spacing};
-use crate::skeleton::index::{EphemeralIndex, Index};
-use crate::skeleton::position::BoundType;
+use crate::{BoundType, EphemeralIndex, EphemeralPosition, Index, Range, Skeleton, Spacing};
 
 #[derive(Debug)]
 pub enum RangePushError {
@@ -201,7 +198,7 @@ impl<S: Spacing, T> Skeleton<Range, S, T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::RangeSpacedList;
+    use crate::spaced_lists::range_spaced_list::RangeSpacedList;
 
     #[test]
     fn test() {
@@ -210,9 +207,9 @@ mod tests {
         let c = list.try_insert(3, 4, 'c').unwrap();
         let a = list.try_insert(-2, -1, 'a').unwrap();
 
-        println!("{} at {}; {} in {:?}", a.element().borrow(), a.position, a.index, a.skeleton.borrow().elements);
-        println!("{} at {}; {} in {:?}", b.element().borrow(), b.position, b.index, b.skeleton.borrow().elements);
-        println!("{} at {}; {} in {:?}", c.element().borrow(), c.position, c.index, c.skeleton.borrow().elements);
+        println!("{} at {}; {} in {:?}", *a.element(), a.position, a.index, a.skeleton.borrow().elements);
+        println!("{} at {}; {} in {:?}", *b.element(), b.position, b.index, b.skeleton.borrow().elements);
+        println!("{} at {}; {} in {:?}", *c.element(), c.position, c.index, c.skeleton.borrow().elements);
 
         println!();
 
