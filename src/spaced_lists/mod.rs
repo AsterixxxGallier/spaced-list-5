@@ -2,6 +2,7 @@ use crate::skeleton::flate::FlateError;
 
 // TODO add conditional traversal methods (ones that will only return positions where the elements
 //  match a custom condition)
+// TODO panicking non-try versions of try_ functions
 
 // basically FlateError but more user-friendly (fit for public visibility)
 #[derive(Debug)]

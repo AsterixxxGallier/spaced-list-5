@@ -1,3 +1,5 @@
+// TODO managers for NestedRange-based spaced lists
+
 pub(crate) mod spaced_list;
 pub(crate) mod range_spaced_list;
 pub(crate) mod hollow_spaced_list;
