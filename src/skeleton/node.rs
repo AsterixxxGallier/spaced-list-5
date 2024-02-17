@@ -8,6 +8,7 @@ use crate::skeleton::index::{EphemeralIndex, Index};
 
 #[derive(Debug)]
 pub enum PushError {
+    // TODO replace distance terminology with "spacing" terminology of the public API
     /// "Cannot push at a negative distance from the end of a non-empty list"
     NegativeDistanceInNonEmptyList,
 }

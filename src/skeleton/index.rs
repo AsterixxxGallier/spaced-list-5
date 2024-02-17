@@ -5,6 +5,7 @@ use maybe_owned::MaybeOwned;
 
 use crate::{EphemeralPosition, HollowPosition, Node, ParentData, Position, Spacing};
 use crate::skeleton::{AllRangeKinds, Skeleton};
+use crate::skeleton::element_ref::{ElementRef, ElementRefMut};
 
 pub(crate) struct EphemeralIndex<Kind, S: Spacing, T> {
     pub(crate) skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>,
@@ -286,24 +287,15 @@ macro_rules! index {
 index!(Index; <Kind, S: Spacing, T>; Index<Kind, S, T>; Skeleton<Kind, S, T>);
 
 impl<Kind, S: Spacing, T> Index<Kind, S, T> {
-    /*pub fn element(&self) -> Ref<T> {
-        // self.ephemeral().element()
-        // let index = &self.skeleton.borrow().from_persistent[&self.index];
-        // index.element()
-        // Ref::map(RefCell::borrow(&index.skeleton),
-        //          |skeleton| &skeleton.elements[index.index])
-        // Ref::map(RefCell::borrow(&self.skeleton),
-        //          |skeleton| {
-        //              let index = skeleton.from_persistent[&self.index];
-        //              &index.element()
-                     // &Ref::map(RefCell::borrow(&index.skeleton),
-                     //          |skeleton| &skeleton.elements[index.index])
-                 // })
+    pub fn element(&self) -> ElementRef<Kind, S, T> {
+        let ephemeral = self.ephemeral();
+        ElementRef::new_(ephemeral.skeleton.clone(), ephemeral.index)
     }
 
-    pub fn element_mut(&self) -> RefMut<T> {
-        self.ephemeral().element_mut()
-    }*/
+    pub fn element_mut(&self) -> ElementRefMut<Kind, S, T> {
+        let ephemeral = self.ephemeral();
+        ElementRefMut::new_(ephemeral.skeleton.clone(), ephemeral.index)
+    }
 
     pub(crate) fn ephemeral(&self) -> EphemeralIndex<Kind, S, T> {
         self.skeleton.borrow().from_persistent.get(&self.index).cloned()

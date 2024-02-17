@@ -9,6 +9,7 @@ use maybe_owned::MaybeOwned;
 
 use crate::{BackwardsIter, ForwardsIter, Node, ParentData, Spacing};
 use crate::skeleton::{AllRangeKinds, Skeleton};
+use crate::skeleton::element_ref::{ElementRef, ElementRefMut};
 use crate::skeleton::index::{EphemeralIndex, HollowIndex, Index};
 
 pub(crate) struct EphemeralPosition<Kind, S: Spacing, T> {
@@ -75,7 +76,7 @@ impl<Kind, S: Spacing, T> EphemeralPosition<Kind, S, T> {
     pub(crate) fn into_next(self) -> Option<Self> {
         if self.index == self.skeleton.borrow().links.len() {
             if let Some(ParentData { parent, index_in_parent }) =
-            &self.skeleton.clone().borrow().parent_data {
+                &self.skeleton.clone().borrow().parent_data {
                 let parent = parent.upgrade().unwrap();
                 let position = self.position
                     - self.skeleton.borrow().last_position()
@@ -89,7 +90,7 @@ impl<Kind, S: Spacing, T> EphemeralPosition<Kind, S, T> {
                 None
             }
         } else if let Some(sub) =
-        self.skeleton.clone().borrow().sub(self.index) {
+            self.skeleton.clone().borrow().sub(self.index) {
             let position = self.position + sub.borrow().offset;
             Some(Self {
                 skeleton: sub,
@@ -109,7 +110,7 @@ impl<Kind, S: Spacing, T> EphemeralPosition<Kind, S, T> {
     pub(crate) fn into_previous(self) -> Option<Self> {
         if self.index == 0 {
             if let Some(ParentData { parent, index_in_parent }) =
-            &self.skeleton.clone().borrow().parent_data {
+                &self.skeleton.clone().borrow().parent_data {
                 let parent = parent.upgrade().unwrap();
                 let position = self.position - self.skeleton.borrow().offset();
                 Some(Self {
@@ -121,7 +122,7 @@ impl<Kind, S: Spacing, T> EphemeralPosition<Kind, S, T> {
                 None
             }
         } else if let Some(sub) =
-        self.skeleton.clone().borrow().sub(self.index - 1) {
+            self.skeleton.clone().borrow().sub(self.index - 1) {
             let position = self.position
                 - self.skeleton.borrow().link(self.index - 1)
                 + sub.borrow().last_position();
@@ -142,7 +143,7 @@ impl<Kind, S: Spacing, T> EphemeralPosition<Kind, S, T> {
     }
 }
 
-impl <S: Spacing, T> EphemeralPosition<Node, S, T> {
+impl<S: Spacing, T> EphemeralPosition<Node, S, T> {
     pub(crate) fn element(&self) -> Ref<T> {
         Ref::map(RefCell::borrow(&self.skeleton),
                  |skeleton| &skeleton.elements[self.index])
@@ -209,44 +210,6 @@ impl<Kind: AllRangeKinds, S: Spacing, T> EphemeralPosition<Kind, S, T> {
                 (start.into(), self.into())
             }
         }
-    }
-}
-
-/// The skeleton this refers to may NOT be mutated for the lifetime of this struct.
-/// This is important because this struct stores an ephemeral index.
-/// Mutating the referenced skeleton may lead to the wrong element being referenced.
-// TODO keep a Ref to the Skeleton so it cannot be mutated for the lifetime of this struct
-pub struct ElementRef<Kind, S: Spacing, T> {
-    skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>,
-    index: usize,
-}
-
-impl<Kind, S: Spacing, T> ElementRef<Kind, S, T> {
-    fn new(skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>, index: usize) -> Self {
-        Self {
-            skeleton,
-            index,
-        }
-    }
-}
-
-impl<S: Spacing, T> ElementRef<Node, S, T> {
-    pub fn borrow(&self) -> Ref<T> {
-        Ref::map(self.skeleton.borrow(), |x| &x.elements[self.index])
-    }
-
-    pub fn borrow_mut(&self) -> RefMut<T> {
-        RefMut::map(self.skeleton.borrow_mut(), |x| &mut x.elements[self.index])
-    }
-}
-
-impl<Kind: AllRangeKinds, S: Spacing, T> ElementRef<Kind, S, T> {
-    pub fn borrow(&self) -> Ref<T> {
-        Ref::map(self.skeleton.borrow(), |x| &x.elements[self.index / 2])
-    }
-
-    pub fn borrow_mut(&self) -> RefMut<T> {
-        RefMut::map(self.skeleton.borrow_mut(), |x| &mut x.elements[self.index / 2])
     }
 }
 
@@ -398,14 +361,13 @@ position!(Position; <Kind, S: Spacing, T>; Position<Kind, S, T>; Skeleton<Kind, 
 
 impl<Kind, S: Spacing, T> Position<Kind, S, T> {
     pub fn element(&self) -> ElementRef<Kind, S, T> {
-        match self.skeleton.borrow().from_persistent.get(&self.index) {
-            Some(EphemeralIndex { skeleton, index }) => {
-                ElementRef::new(skeleton.clone(), *index)
-            }
-            None => {
-                ElementRef::new(self.skeleton.clone(), self.index as usize)
-            }
-        }
+        let ephemeral = self.ephemeral();
+        ElementRef::new_(ephemeral.skeleton.clone(), ephemeral.index)
+    }
+
+    pub fn element_mut(&self) -> ElementRefMut<Kind, S, T> {
+        let ephemeral = self.ephemeral();
+        ElementRefMut::new_(ephemeral.skeleton.clone(), ephemeral.index)
     }
 
     pub(crate) fn ephemeral(&self) -> EphemeralPosition<Kind, S, T> {

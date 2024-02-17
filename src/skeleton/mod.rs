@@ -134,3 +134,5 @@ pub mod traversal;
 pub mod position;
 
 pub mod index;
+
+pub mod element_ref;

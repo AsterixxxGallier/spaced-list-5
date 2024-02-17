@@ -2,9 +2,16 @@ use std::ops::RangeInclusive;
 use ansi_term::Color::{Blue, Green, Yellow};
 use indoc::indoc;
 use itertools::Itertools;
-use spaced_list_5::{HollowRangeSpacedList, NestedRangeSpacedList, RangeSpacedList};
+use spaced_list_5::{HollowRangeSpacedList, NestedRangeSpacedList, RangeSpacedList, SpacedList};
 
 fn main() {
+    let mut list = SpacedList::new();
+    let position = list.try_push(2, 42).unwrap();
+    let mut element_ref = position.element_mut();
+    *element_ref += 3;
+    list.insert(1, 43);
+    println!("{}", *element_ref);
+
     let source =
         indoc! {r"
             foo:
@@ -92,7 +99,7 @@ fn main() {
     // region parse trimmed lines
     let mut trimmed_lines = RangeSpacedList::new();
     for (start, end) in lines.iter_ranges() {
-        let value = *start.element().borrow();
+        let value = *start.element();
         let start = whitespace
             .starting_at(start.position())
             .map(|option| option.into_range().1.position())
@@ -158,7 +165,7 @@ fn main() {
         lines
             .iter_ranges()
             .enumerate()
-            .map(|(index, (start, _))| (*start.element().borrow(), index))
+            .map(|(index, (start, _))| (*start.element(), index))
             .into_grouping_map()
             .collect::<Vec<_>>();
 
