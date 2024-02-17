@@ -3,7 +3,7 @@ use std::rc::Rc;
 
 use itertools::Itertools;
 
-use crate::{BackwardsIter, ForwardsIter, HollowPosition, NestedRange, NestedRangeInsertionError, RangeInsertionError, Spacing};
+use crate::{BackwardsIter, ForwardsIter, HollowPosition, NestedRange, NestedRangeInsertionError, NestedRangePushError, PushError, RangeInsertionError, RangePushError, Spacing};
 use crate::skeleton::{Node, Range, Skeleton};
 use crate::skeleton::flate::FlateError;
 use crate::skeleton::position::Position;
@@ -104,10 +104,9 @@ impl<S: Spacing, T> SpacedList<S, T> {
         Self::default()
     }
 
-    // cannot fail
-    pub fn push(&mut self, spacing: S, value: T) -> Position<Node, S, T> {
+    pub fn try_push(&mut self, spacing: S, value: T) -> Result<Position<Node, S, T>, PushError> {
         self.size += 1;
-        Skeleton::<Node, _, _>::push(self.skeleton.clone(), spacing, value).into()
+        Ok(Skeleton::<Node, _, _>::try_push(self.skeleton.clone(), spacing, value)?.into())
     }
 
     // cannot fail
@@ -201,10 +200,9 @@ impl<S: Spacing, T> RangeSpacedList<S, T> {
         Self::default()
     }
 
-    // cannot fail
-    pub fn push(&mut self, spacing: S, span: S, value: T) -> Position<Range, S, T> {
+    pub fn try_push(&mut self, spacing: S, span: S, value: T) -> Result<Position<Range, S, T>, RangePushError> {
         self.size += 1;
-        Skeleton::<Range, _, _>::push(self.skeleton.clone(), spacing, span, value).into()
+        Ok(Skeleton::<Range, _, _>::try_push(self.skeleton.clone(), spacing, span, value)?.into())
     }
 
     pub fn try_insert(&mut self, start: S, end: S, value: T) -> Result<Position<Range, S, T>, RangeInsertionError> {
@@ -370,10 +368,9 @@ impl<S: Spacing, T> NestedRangeSpacedList<S, T> {
         Self::default()
     }
 
-    // cannot fail
-    pub fn push(&mut self, spacing: S, span: S, value: T) -> Position<NestedRange, S, T> {
+    pub fn try_push(&mut self, spacing: S, span: S, value: T) -> Result<Position<NestedRange, S, T>, NestedRangePushError> {
         self.size += 1;
-        Skeleton::<NestedRange, _, _>::push(self.skeleton.clone(), spacing, span, value).into()
+        Ok(Skeleton::<NestedRange, _, _>::try_push(self.skeleton.clone(), spacing, span, value)?.into())
     }
 
     pub fn try_insert(&mut self, start: S, end: S, value: T) -> Result<Position<NestedRange, S, T>, NestedRangeInsertionError> {
@@ -539,12 +536,11 @@ impl<S: Spacing> HollowSpacedList<S> {
         Self::default()
     }
 
-    // cannot fail
-    pub fn push(&mut self, spacing: S) -> HollowPosition<Node, S> {
+    pub fn try_push(&mut self, spacing: S) -> Result<HollowPosition<Node, S>, PushError> {
         self.size += 1;
         let position: Position<Node, S, ()> =
-            Skeleton::<Node, _, _>::push(self.skeleton.clone(), spacing, ()).into();
-        position.into()
+            Skeleton::<Node, _, _>::try_push(self.skeleton.clone(), spacing, ())?.into();
+        Ok(position.into())
     }
 
     // cannot fail
@@ -655,12 +651,11 @@ impl<S: Spacing> HollowRangeSpacedList<S> {
         Self::default()
     }
 
-    // cannot fail
-    pub fn push(&mut self, spacing: S, span: S) -> HollowPosition<Range, S> {
+    pub fn try_push(&mut self, spacing: S, span: S) -> Result<HollowPosition<Range, S>, RangePushError> {
         self.size += 1;
         let position: Position<Range, S, ()> =
-            Skeleton::<Range, _, _>::push(self.skeleton.clone(), spacing, span, ()).into();
-        position.into()
+            Skeleton::<Range, _, _>::try_push(self.skeleton.clone(), spacing, span, ())?.into();
+        Ok(position.into())
     }
 
     pub fn try_insert(&mut self, start: S, end: S) -> Result<HollowPosition<Range, S>, RangeInsertionError> {
@@ -873,12 +868,11 @@ impl<S: Spacing> HollowNestedRangeSpacedList<S> {
         Self::default()
     }
 
-    // cannot fail
-    pub fn push(&mut self, spacing: S, span: S) -> HollowPosition<NestedRange, S> {
+    pub fn try_push(&mut self, spacing: S, span: S) -> Result<HollowPosition<NestedRange, S>, NestedRangePushError> {
         self.size += 1;
         let position: Position<NestedRange, S, ()> =
-            Skeleton::<NestedRange, _, _>::push(self.skeleton.clone(), spacing, span, ()).into();
-        position.into()
+            Skeleton::<NestedRange, _, _>::try_push(self.skeleton.clone(), spacing, span, ())?.into();
+        Ok(position.into())
     }
 
     pub fn try_insert(&mut self, start: S, end: S) -> Result<HollowPosition<NestedRange, S>, NestedRangeInsertionError> {

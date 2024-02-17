@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::Spacing;
+use crate::{PushError, Spacing};
 use crate::manager::hollow_spaced_list::HollowLockedPosition;
 use crate::spaced_lists::SpacingError;
 
@@ -55,8 +55,8 @@ impl<S: Spacing> HollowPositionsHandle<S> {
 }
 
 impl<S: Spacing> HollowInsertionsHandle<S> {
-    pub fn push(&self, spacing: S) -> HollowLockedPosition<S> {
-        HollowManager::lock(self.manager.clone(), self.manager.borrow_mut().list.push(spacing))
+    pub fn try_push(&self, spacing: S) -> Result<HollowLockedPosition<S>, PushError> {
+        Ok(HollowManager::lock(self.manager.clone(), self.manager.borrow_mut().list.try_push(spacing)?))
     }
 
     pub fn insert(&self, position: S) -> HollowLockedPosition<S> {

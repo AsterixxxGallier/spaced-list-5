@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::{RangeInsertionError, Spacing};
+use crate::{RangeInsertionError, RangePushError, Spacing};
 use crate::manager::hollow_range_spaced_list::HollowRangeLockedPosition;
 use crate::spaced_lists::SpacingError;
 
@@ -55,8 +55,8 @@ impl<S: Spacing> HollowRangePositionsHandle<S> {
 }
 
 impl<S: Spacing> HollowRangeInsertionsHandle<S> {
-    pub fn push(&self, spacing: S, span: S) -> HollowRangeLockedPosition<S> {
-        HollowRangeManager::lock(self.manager.clone(), self.manager.borrow_mut().list.push(spacing, span))
+    pub fn try_push(&self, spacing: S, span: S) -> Result<HollowRangeLockedPosition<S>, RangePushError> {
+        Ok(HollowRangeManager::lock(self.manager.clone(), self.manager.borrow_mut().list.try_push(spacing, span)?))
     }
 
     pub fn try_insert(&self, start: S, end: S) -> Result<HollowRangeLockedPosition<S>, RangeInsertionError> {

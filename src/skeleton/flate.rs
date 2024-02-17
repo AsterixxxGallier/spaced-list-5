@@ -136,11 +136,27 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
         Ok(())
     }
 
-    pub fn try_inflate_after_offset(&mut self, amount: S) -> Result<(), FlateError> {
-        if !self.links.is_empty() {
-            self.try_inflate(0, amount)?;
-            if let Some(sub) = self.sub(0) {
+    pub fn try_inflate_after_index(&mut self, index: usize, amount: S) -> Result<(), FlateError> {
+        if amount < zero() {
+            return Err(FlateError::AmountNegative);
+        }
+        if self.link_index_is_in_bounds(index) {
+            self.try_inflate(index, amount)?;
+            if let Some(sub) = self.sub(index) {
                 sub.borrow_mut().offset += amount;
+            }
+        }
+        Ok(())
+    }
+
+    pub fn try_deflate_after_index(&mut self, index: usize, amount: S) -> Result<(), FlateError> {
+        if amount < zero() {
+            return Err(FlateError::AmountNegative);
+        }
+        if self.link_index_is_in_bounds(index) {
+            self.try_deflate(index, amount)?;
+            if let Some(sub) = self.sub(index) {
+                sub.borrow_mut().offset -= amount;
             }
         }
         Ok(())

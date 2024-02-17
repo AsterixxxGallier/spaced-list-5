@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::Spacing;
+use crate::{PushError, Spacing};
 use crate::manager::spaced_list::LockedPosition;
 use crate::spaced_lists::SpacingError;
 
@@ -56,8 +56,8 @@ impl<S: Spacing, T> PositionsHandle<S, T> {
 }
 
 impl<S: Spacing, T> InsertionsHandle<S, T> {
-    pub fn push(&self, spacing: S, value: T) -> LockedPosition<S, T> {
-        Manager::lock(self.manager.clone(), self.manager.borrow_mut().list.push(spacing, value))
+    pub fn try_push(&self, spacing: S, value: T) -> Result<LockedPosition<S, T>, PushError> {
+        Ok(Manager::lock(self.manager.clone(), self.manager.borrow_mut().list.try_push(spacing, value)?))
     }
 
     pub fn insert(&self, position: S, value: T) -> LockedPosition<S, T> {

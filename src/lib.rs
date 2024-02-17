@@ -13,7 +13,7 @@
 //! 4. HollowRangeSpacedList: A spaced list that stores empty nodes as non-overlapping ranges.
 
 #![feature(trait_alias)]
-#![allow(unused)]
+#![allow(dead_code)]
 
 use std::ops::{Add, AddAssign, Sub, SubAssign};
 
@@ -34,7 +34,13 @@ pub use skeleton::Range;
 #[doc(inline)]
 pub use skeleton::NestedRange;
 #[doc(inline)]
+pub use skeleton::node::PushError;
+#[doc(inline)]
+pub use skeleton::range::RangePushError;
+#[doc(inline)]
 pub use skeleton::range::RangeInsertionError;
+#[doc(inline)]
+pub use skeleton::nested_range::NestedRangePushError;
 #[doc(inline)]
 pub use skeleton::nested_range::NestedRangeInsertionError;
 #[doc(inline)]

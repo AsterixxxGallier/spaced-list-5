@@ -444,7 +444,7 @@ macro_rules! traversal_methods {
     };
 }
 
-#[allow(unused)]
+#[allow(dead_code)]
 impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
     traversal_methods!();
 
@@ -465,12 +465,12 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
     }
 }
 
-#[allow(unused)]
+#[allow(dead_code)]
 impl<S: Spacing, T> Skeleton<Range, S, T> {
     traversal_methods!(range);
 }
 
-#[allow(unused)]
+#[allow(dead_code)]
 impl<S: Spacing, T> Skeleton<NestedRange, S, T> {
     // TODO implement NestedRange traversal methods
 }

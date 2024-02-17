@@ -3,7 +3,7 @@ use std::rc::Rc;
 
 use crate::manager::range_spaced_list::RangeLockedPosition;
 use crate::spaced_lists::SpacingError;
-use crate::{RangeInsertionError, Spacing};
+use crate::{RangeInsertionError, RangePushError, Spacing};
 
 use super::RangeManager;
 
@@ -56,8 +56,8 @@ impl<S: Spacing, T> RangePositionsHandle<S, T> {
 }
 
 impl<S: Spacing, T> RangeInsertionsHandle<S, T> {
-    pub fn push(&self, spacing: S, span: S, value: T) -> RangeLockedPosition<S, T> {
-        RangeManager::lock(self.manager.clone(), self.manager.borrow_mut().list.push(spacing, span, value))
+    pub fn try_push(&self, spacing: S, span: S, value: T) -> Result<RangeLockedPosition<S, T>, RangePushError> {
+        Ok(RangeManager::lock(self.manager.clone(), self.manager.borrow_mut().list.try_push(spacing, span, value)?))
     }
 
     pub fn try_insert(&self, start: S, end: S, value: T) -> Result<RangeLockedPosition<S, T>, RangeInsertionError> {

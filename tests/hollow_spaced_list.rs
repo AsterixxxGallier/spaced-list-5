@@ -1,4 +1,4 @@
-#![allow(unused)]
+#![allow(dead_code)]
 
 use std::collections::BTreeSet;
 use std::time::Instant;
@@ -8,6 +8,7 @@ use rand::{random, Rng, SeedableRng};
 
 use spaced_list_5::HollowSpacedList;
 
+#[allow(unused_variables)]
 #[test]
 fn randomized() {
     let mut list: HollowSpacedList<i32> = HollowSpacedList::new();

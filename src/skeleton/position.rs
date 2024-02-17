@@ -8,7 +8,7 @@ use itertools::Itertools;
 use maybe_owned::MaybeOwned;
 
 use crate::{BackwardsIter, ForwardsIter, Node, ParentData, Spacing};
-use crate::skeleton::{AllRangeKinds, Range, Skeleton};
+use crate::skeleton::{AllRangeKinds, Skeleton};
 use crate::skeleton::index::{EphemeralIndex, HollowIndex, Index};
 
 pub(crate) struct EphemeralPosition<Kind, S: Spacing, T> {
@@ -70,16 +70,6 @@ impl<Kind, S: Spacing, T> EphemeralPosition<Kind, S, T> {
                 Position::new(self.skeleton.clone(), self.index as isize, self.position),
                 |index| Position::new(index.skeleton, index.index, self.position),
             )
-    }
-
-    pub(crate) fn element(&self) -> Ref<T> {
-        Ref::map(RefCell::borrow(&self.skeleton),
-                 |skeleton| &skeleton.elements[self.index])
-    }
-
-    pub(crate) fn element_mut(&self) -> RefMut<T> {
-        RefMut::map(RefCell::borrow_mut(&self.skeleton),
-                    |skeleton| &mut skeleton.elements[self.index])
     }
 
     pub(crate) fn into_next(self) -> Option<Self> {
@@ -152,7 +142,29 @@ impl<Kind, S: Spacing, T> EphemeralPosition<Kind, S, T> {
     }
 }
 
+impl <S: Spacing, T> EphemeralPosition<Node, S, T> {
+    pub(crate) fn element(&self) -> Ref<T> {
+        Ref::map(RefCell::borrow(&self.skeleton),
+                 |skeleton| &skeleton.elements[self.index])
+    }
+
+    pub(crate) fn element_mut(&self) -> RefMut<T> {
+        RefMut::map(RefCell::borrow_mut(&self.skeleton),
+                    |skeleton| &mut skeleton.elements[self.index])
+    }
+}
+
 impl<Kind: AllRangeKinds, S: Spacing, T> EphemeralPosition<Kind, S, T> {
+    pub(crate) fn element(&self) -> Ref<T> {
+        Ref::map(RefCell::borrow(&self.skeleton),
+                 |skeleton| &skeleton.elements[self.index / 2])
+    }
+
+    pub(crate) fn element_mut(&self) -> RefMut<T> {
+        RefMut::map(RefCell::borrow_mut(&self.skeleton),
+                    |skeleton| &mut skeleton.elements[self.index / 2])
+    }
+
     pub(crate) fn bound_type(&self) -> BoundType {
         BoundType::of(self.index.try_into().unwrap())
     }
