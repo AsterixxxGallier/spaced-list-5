@@ -22,7 +22,7 @@ macro_rules! for_all_traversals {
 }
 
 macro_rules! traversal_functions {
-    (@shallow $pos:ident: $cmp:tt) => {
+    (shallow $pos:ident: $cmp:tt) => {
         paste! {
             pub fn [<shallow_ $pos>](this: Rc<RefCell<Self>>, target: S)
                 -> Option<EphemeralPosition<Kind, S, T>> {
@@ -30,17 +30,17 @@ macro_rules! traversal_functions {
             }
         }
     };
-    (@deep $pos:ident: $cmp:tt) => {
+    (deep $pos:ident: $cmp:tt) => {
         pub fn $pos(this: Rc<RefCell<Self>>, target: S)
             -> Option<EphemeralPosition<Kind, S, T>> {
             traversal_function_body!(this; deep; $cmp target)
         }
     };
     () => {
-        for_all_traversals!(traversal_functions @shallow);
-        for_all_traversals!(traversal_functions @deep);
+        for_all_traversals!(traversal_functions shallow);
+        for_all_traversals!(traversal_functions deep);
     };
-    (@shallow $bound:ident $pos:ident: $cmp:tt) => {
+    (shallow $bound:ident $pos:ident: $cmp:tt) => {
         paste! {
             pub fn [<shallow_ $bound ing_ $pos>](this: Rc<RefCell<Self>>, target: S)
                 -> Option<EphemeralPosition<Range, S, T>> {
@@ -48,7 +48,7 @@ macro_rules! traversal_functions {
             }
         }
     };
-    (@deep $bound:ident $pos:ident: $cmp:tt) => {
+    (deep $bound:ident $pos:ident: $cmp:tt) => {
         paste! {
             pub fn [<$bound ing_ $pos>](this: Rc<RefCell<Self>>, target: S)
                 -> Option<EphemeralPosition<Range, S, T>> {
@@ -57,10 +57,10 @@ macro_rules! traversal_functions {
         }
     };
     (range) => {
-        for_all_traversals!(traversal_functions @shallow start);
-        for_all_traversals!(traversal_functions @shallow end);
-        for_all_traversals!(traversal_functions @deep start);
-        for_all_traversals!(traversal_functions @deep end);
+        for_all_traversals!(traversal_functions shallow start);
+        for_all_traversals!(traversal_functions shallow end);
+        for_all_traversals!(traversal_functions deep start);
+        for_all_traversals!(traversal_functions deep end);
     };
 }
 

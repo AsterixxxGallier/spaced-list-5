@@ -22,7 +22,7 @@ macro_rules! checked {
     };
 }
 
-/// Generates the body of a traversal function
+/// Generates the body of a traversal function.
 macro_rules! traversal_function_body {
     ($skeleton:ident; $depth:ident; $cmp:tt $target:ident) => {
         traversal_function_body!($skeleton; $depth; $cmp $target at any)

@@ -50,8 +50,9 @@ macro_rules! bound_type_conditional {
 
 /// In some cases, it is trivial to find the correct element. For example, the first element > 0
 /// in a list that starts at 4 is inadvertently the first element. However, if we're looking for
-/// the first element with an end > 0,   then it should be the successor of the first node...
-// TODO implement this (probably)
+/// the first element with an end > 0, the result is the second node. Finding it is non-trivial,
+/// so this macro doesn't handle that case.
+// it would be possible to handle it, but not worth the effort
 macro_rules! trivial_results {
     (<, $target:ident, $bound:ident; $skeleton:ident) => {
         bound_type_conditional!(if 1 is at bound ($bound) {
