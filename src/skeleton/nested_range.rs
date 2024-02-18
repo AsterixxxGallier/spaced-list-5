@@ -137,7 +137,7 @@ impl<S: Spacing, T> Skeleton<NestedRange, S, T> {
             return Ok(Self::try_push(this, distance, span, element).unwrap());
         } else {
             let result = Self::shallow_at_or_before(this.clone(), position).unwrap();
-            match BoundType::of(result.index.try_into().unwrap()) {
+            match BoundType::of(result.index) {
                 BoundType::Start => {
                     let outer_span = result.span();
                     let sub = Self::ensure_sub(this, result.index);

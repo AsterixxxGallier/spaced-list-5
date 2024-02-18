@@ -107,7 +107,7 @@ impl<S: Spacing> HollowNestedRangeSpacedList<S> {
     }
 
 
-    /*pub fn starting_before(&self, position: S) -> Option<HollowPosition<NestedRange, S>> {
+    pub fn starting_before(&self, position: S) -> Option<HollowPosition<NestedRange, S>> {
         Skeleton::<NestedRange, _, _>::starting_before(self.skeleton.clone(), position)
             .map(|position| {
                 let position: Position<NestedRange, S, ()> = position.into();
@@ -186,7 +186,7 @@ impl<S: Spacing> HollowNestedRangeSpacedList<S> {
                 let position: Position<NestedRange, S, ()> = position.into();
                 position.into()
             })
-    }*/
+    }
 
 
     pub fn iter(&self) -> impl Iterator<Item=HollowPosition<NestedRange, S>> {

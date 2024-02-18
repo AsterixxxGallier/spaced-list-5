@@ -88,7 +88,7 @@ macro_rules! position {
 
         impl<Kind: RangeKind, S: Spacing$(, $T)?> $name<Kind, S$(, $T)?> {
             pub fn bound_type(&self) -> BoundType {
-                BoundType::of(self.index.try_into().unwrap())
+                BoundType::of_signed(self.index)
             }
 
             pub fn span(&self) -> S {

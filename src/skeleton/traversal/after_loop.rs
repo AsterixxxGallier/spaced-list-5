@@ -74,10 +74,10 @@ macro_rules! previous {
 
 macro_rules! index_is_at_bound {
     (start; $index:expr) => {
-        $index & 1 == 0
+        BoundType::of($index) == BoundType::Start
     };
     (end; $index:expr) => {
-        $index & 1 == 1
+        BoundType::of($index) == BoundType::End
     };
 }
 
@@ -128,8 +128,22 @@ macro_rules! after_loop {
     ($depth:ident, <, $target:ident, $bound:ident;
         $skeleton:ident, $degree:ident, $index:ident, $position:ident) => {
         {
-            if !index_is_at_bound!($bound; $index) {
+            // assume $bound = end
+            // if the bound type of this index is "start"
+            while !index_is_at_bound!($bound; $index) {
+                // move to the last "end" index before this
+                // under the assumption that the list has the structure start end start end etc.,
+                // finding the previous bound suffices
                 previous!($depth; $skeleton, $index, $position).ok()?;
+                // however, if the list, for example, has the structure s e s [s e] e ([...] = sublist),
+                // and we're at the second s, we would need to backtrack all the way to the first e
+                // for lists that are structured like s [s [s [...] e] e] e, this is O(n)!
+                // we would want a faster way, but there is no way to tell if any given sublist has
+                // specifically an end bound before the target position (not 1000% sure about this)
+                // => give up and make it a loop
+                // it being a while loop instead of an if statement has no significant performance
+                // effect for s e s e s e ... structured lists (non-nested range lists), but very
+                // easily solves the problem for nested range lists
             }
             Some(EphemeralPosition::new($skeleton, $index, $position))
         }
@@ -137,7 +151,7 @@ macro_rules! after_loop {
     ($depth:ident, <=, $target:ident, $bound:ident;
         $skeleton:ident, $degree:ident, $index:ident, $position:ident) => {
         {
-            if !index_is_at_bound!($bound; $index) {
+            while !index_is_at_bound!($bound; $index) {
                 previous!($depth; $skeleton, $index, $position).ok()?;
             }
             Some(EphemeralPosition::new($skeleton, $index, $position))
@@ -157,7 +171,7 @@ macro_rules! after_loop {
             if $position < $target {
                 next!($depth; $skeleton, $index, $position).unwrap();
             }
-            if !index_is_at_bound!($bound; $index) {
+            while !index_is_at_bound!($bound; $index) {
                 next!($depth; $skeleton, $index, $position).ok()?;
             }
             Some(EphemeralPosition::new($skeleton, $index, $position))
@@ -167,7 +181,7 @@ macro_rules! after_loop {
         $skeleton:ident, $degree:ident, $index:ident, $position:ident) => {
         {
             next!($depth; $skeleton, $index, $position).unwrap();
-            if !index_is_at_bound!($bound; $index) {
+            while !index_is_at_bound!($bound; $index) {
                 next!($depth; $skeleton, $index, $position).ok()?;
             }
             Some(EphemeralPosition::new($skeleton, $index, $position))

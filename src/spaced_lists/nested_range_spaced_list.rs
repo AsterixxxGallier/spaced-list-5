@@ -82,7 +82,7 @@ impl<S: Spacing, T> NestedRangeSpacedList<S, T> {
     }
 
 
-    /*pub fn starting_before(&self, position: S) -> Option<Position<NestedRange, S, T>> {
+    pub fn starting_before(&self, position: S) -> Option<Position<NestedRange, S, T>> {
         Skeleton::<NestedRange, _, _>::starting_before(self.skeleton.clone(), position)
             .map(|ephemeral| ephemeral.into())
     }
@@ -131,7 +131,7 @@ impl<S: Spacing, T> NestedRangeSpacedList<S, T> {
     pub fn ending_after(&self, position: S) -> Option<Position<NestedRange, S, T>> {
         Skeleton::<NestedRange, _, _>::ending_after(self.skeleton.clone(), position)
             .map(|ephemeral| ephemeral.into())
-    }*/
+    }
 
 
     pub fn iter(&self) -> impl Iterator<Item=Position<NestedRange, S, T>> {
@@ -142,6 +142,7 @@ impl<S: Spacing, T> NestedRangeSpacedList<S, T> {
         ForwardsIter::from_start(self.skeleton)
     }
 
+    // TODO nested iter_ranges (for the hollow version too)
     /*pub fn iter_ranges(&self) -> impl Iterator<Item=(Position<NestedRange, S, T>, Position<NestedRange, S, T>)> {
         self.iter().tuples()
     }

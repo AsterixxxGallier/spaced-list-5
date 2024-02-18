@@ -179,7 +179,7 @@ impl<S: Spacing, T> Skeleton<Range, S, T> {
             Ok(Self::try_push(this, distance, span, element).unwrap())
         } else {
             let result = Self::shallow_at_or_before(this.clone(), position).unwrap();
-            if BoundType::of(result.index.try_into().unwrap()) == BoundType::Start {
+            if BoundType::of(result.index) == BoundType::Start {
                 return Err(RangeInsertionError::RangeStartsInsideExistingRange);
             }
             let space_between = this.borrow().link(result.index);

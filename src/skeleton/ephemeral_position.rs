@@ -159,7 +159,7 @@ impl<Kind: RangeKind, S: Spacing, T> EphemeralPosition<Kind, S, T> {
     }
 
     pub(crate) fn bound_type(&self) -> BoundType {
-        BoundType::of(self.index.try_into().unwrap())
+        BoundType::of(self.index)
     }
 
     pub(crate) fn span(&self) -> S {

@@ -128,7 +128,7 @@ impl<Kind: RangeKind, S: Spacing, T> EphemeralIndex<Kind, S, T> {
                     |skeleton| &mut skeleton.elements[self.index / 2])
     }
     pub(crate) fn bound_type(&self) -> BoundType {
-        BoundType::of(self.index.try_into().unwrap())
+        BoundType::of(self.index)
     }
 
     pub(crate) fn span(&self) -> S {

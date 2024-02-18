@@ -4,7 +4,7 @@ use std::rc::Rc;
 use paste::paste;
 use crate::NestedRange;
 
-use crate::{EphemeralPosition, ParentData, Range, Skeleton, Spacing};
+use crate::{EphemeralPosition, ParentData, Range, Skeleton, Spacing, BoundType};
 use crate::skeleton::link_index;
 use r#loop::*;
 use after_loop::*;
@@ -62,6 +62,28 @@ macro_rules! traversal_functions {
         for_all_traversals!(traversal_functions deep start);
         for_all_traversals!(traversal_functions deep end);
     };
+    (shallow nested $bound:ident $pos:ident: $cmp:tt) => {
+        paste! {
+            pub fn [<shallow_ $bound ing_ $pos>](this: Rc<RefCell<Self>>, target: S)
+                -> Option<EphemeralPosition<NestedRange, S, T>> {
+                traversal_function_body!(this; shallow; $cmp target at $bound)
+            }
+        }
+    };
+    (deep nested $bound:ident $pos:ident: $cmp:tt) => {
+        paste! {
+            pub fn [<$bound ing_ $pos>](this: Rc<RefCell<Self>>, target: S)
+                -> Option<EphemeralPosition<NestedRange, S, T>> {
+                traversal_function_body!(this; deep; $cmp target at $bound)
+            }
+        }
+    };
+    (nested range) => {
+        for_all_traversals!(traversal_functions shallow nested start);
+        for_all_traversals!(traversal_functions shallow nested end);
+        for_all_traversals!(traversal_functions deep nested start);
+        for_all_traversals!(traversal_functions deep nested end);
+    };
 }
 
 #[allow(dead_code)]
@@ -92,7 +114,7 @@ impl<S: Spacing, T> Skeleton<Range, S, T> {
 
 #[allow(dead_code)]
 impl<S: Spacing, T> Skeleton<NestedRange, S, T> {
-    // TODO implement NestedRange traversal functions
+    traversal_functions!(nested range);
 }
 
 pub mod iteration;
