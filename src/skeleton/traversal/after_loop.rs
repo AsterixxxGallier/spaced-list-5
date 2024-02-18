@@ -116,12 +116,12 @@ macro_rules! after_loop {
     // ends (= nodes with even/odd indices) are looked for.
 
     // region start/end
-    ($depth:ident, <, $target:ident, $condition:ident;
+    ($depth:ident, <, $target:ident, $condition:ident ($($args:tt),*);
         $skeleton:ident, $degree:ident, $index:ident, $position:ident) => {
         {
             // assume $bound = end
             // if the bound type of this index is "start"
-            while !$condition!($index) {
+            while !$condition!($index, $skeleton.clone(), $($args),*) {
                 // move to the last "end" index before this
                 // under the assumption that the list has the structure start end start end etc.,
                 // finding the previous bound suffices
@@ -139,40 +139,40 @@ macro_rules! after_loop {
             Some(EphemeralPosition::new($skeleton, $index, $position))
         }
     };
-    ($depth:ident, <=, $target:ident, $condition:ident;
+    ($depth:ident, <=, $target:ident, $condition:ident ($($args:tt),*);
         $skeleton:ident, $degree:ident, $index:ident, $position:ident) => {
         {
-            while !$condition!($index) {
+            while !$condition!($index, $skeleton.clone(), $($args),*) {
                 previous!($depth; $skeleton, $index, $position).ok()?;
             }
             Some(EphemeralPosition::new($skeleton, $index, $position))
         }
     };
-    ($depth:ident, ==, $target:ident, $condition:ident;
+    ($depth:ident, ==, $target:ident, $condition:ident ($($args:tt),*);
         $skeleton:ident, $degree:ident, $index:ident, $position:ident) => {
-        if $position == $target && $condition!($index) {
+        if $position == $target && $condition!($index, $skeleton.clone(), $($args),*) {
             Some(EphemeralPosition::new($skeleton, $index, $position))
         } else {
             None
         }
     };
-    ($depth:ident, >=, $target:ident, $condition:ident;
+    ($depth:ident, >=, $target:ident, $condition:ident ($($args:tt),*);
         $skeleton:ident, $degree:ident, $index:ident, $position:ident) => {
         {
             if $position < $target {
                 next!($depth; $skeleton, $index, $position).unwrap();
             }
-            while !$condition!($index) {
+            while !$condition!($index, $skeleton.clone(), $($args),*) {
                 next!($depth; $skeleton, $index, $position).ok()?;
             }
             Some(EphemeralPosition::new($skeleton, $index, $position))
         }
     };
-    ($depth:ident, >, $target:ident, $condition:ident;
+    ($depth:ident, >, $target:ident, $condition:ident ($($args:tt),*);
         $skeleton:ident, $degree:ident, $index:ident, $position:ident) => {
         {
             next!($depth; $skeleton, $index, $position).unwrap();
-            while !$condition!($index) {
+            while !$condition!($index, $skeleton.clone(), $($args),*) {
                 next!($depth; $skeleton, $index, $position).ok()?;
             }
             Some(EphemeralPosition::new($skeleton, $index, $position))

@@ -25,30 +25,30 @@ macro_rules! out_of_bounds_condition {
 /// list). Finding it is non-trivial, so this macro doesn't handle that case.
 // it would be possible to handle it (in a non-nested list), but not worth the effort
 macro_rules! trivial_results {
-    (<, $target:ident, $condition:ident; $skeleton:ident) => {
-        if $condition!($skeleton.borrow().links.len()) && $target > $skeleton.borrow().last_position() {
+    (<, $target:ident, $condition:ident ($($args:tt),*); $skeleton:ident) => {
+        if $condition!($skeleton.borrow().links.len(), $skeleton.clone(), $($args),*) && $target > $skeleton.borrow().last_position() {
             return Some(EphemeralPosition::at_end($skeleton));
         }
     };
-    (<=, $target:ident, $condition:ident; $skeleton:ident) => {
-        if $condition!($skeleton.borrow().links.len()) && $target >= $skeleton.borrow().last_position() {
+    (<=, $target:ident, $condition:ident ($($args:tt),*); $skeleton:ident) => {
+        if $condition!($skeleton.borrow().links.len(), $skeleton.clone(), $($args),*) && $target >= $skeleton.borrow().last_position() {
             return Some(EphemeralPosition::at_end($skeleton));
         }
     };
-    (==, $target:ident, $condition:ident; $skeleton:ident) => {
-        if $condition!(0) && $target == $skeleton.borrow().offset() {
+    (==, $target:ident, $condition:ident ($($args:tt),*); $skeleton:ident) => {
+        if $condition!(0, $skeleton.clone(), $($args),*) && $target == $skeleton.borrow().offset() {
             return Some(EphemeralPosition::at_start($skeleton));
-        } else if $condition!($skeleton.borrow().links.len()) && $target == $skeleton.borrow().last_position() {
+        } else if $condition!($skeleton.borrow().links.len(), $skeleton.clone(), $($args),*) && $target == $skeleton.borrow().last_position() {
             return Some(EphemeralPosition::at_end($skeleton));
         }
     };
-    (>=, $target:ident, $condition:ident; $skeleton:ident) => {
-        if $condition!(0) && $target <= $skeleton.borrow().offset() {
+    (>=, $target:ident, $condition:ident ($($args:tt),*); $skeleton:ident) => {
+        if $condition!(0, $skeleton.clone(), $($args),*) && $target <= $skeleton.borrow().offset() {
             return Some(EphemeralPosition::at_start($skeleton));
         }
     };
-    (>, $target:ident, $condition:ident; $skeleton:ident) => {
-        if $condition!(0) && $target < $skeleton.borrow().offset() {
+    (>, $target:ident, $condition:ident ($($args:tt),*); $skeleton:ident) => {
+        if $condition!(0, $skeleton.clone(), $($args),*) && $target < $skeleton.borrow().offset() {
             return Some(EphemeralPosition::at_start($skeleton));
         }
     };

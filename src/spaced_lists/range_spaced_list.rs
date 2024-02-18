@@ -1,5 +1,5 @@
 use std::rc::Rc;
-use std::cell::RefCell;
+use std::cell::{Ref, RefCell};
 use itertools::Itertools;
 use crate::{Skeleton, Range, Position, RangePushError, RangeInsertionError, SpacingError, Spacing,
             BackwardsIter, ForwardsIter};
@@ -122,6 +122,69 @@ impl<S: Spacing, T> RangeSpacedList<S, T> {
 
     pub fn ending_after(&self, position: S) -> Option<Position<Range, S, T>> {
         Skeleton::<Range, _, _>::ending_after(self.skeleton.clone(), position).map(Into::into)
+    }
+
+
+    pub fn conditional_starting_or_ending_before(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<Range, S, T>> {
+        Skeleton::<Range, _, _>::conditional_before(self.skeleton.clone(), position, condition).map(Into::into)
+    }
+
+    pub fn conditional_starting_or_ending_at_or_before(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<Range, S, T>> {
+        Skeleton::<Range, _, _>::conditional_at_or_before(self.skeleton.clone(), position, condition).map(Into::into)
+    }
+
+    pub fn conditional_starting_or_ending_at(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<Range, S, T>> {
+        Skeleton::<Range, _, _>::conditional_at(self.skeleton.clone(), position, condition).map(Into::into)
+    }
+
+    pub fn conditional_starting_or_ending_at_or_after(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<Range, S, T>> {
+        Skeleton::<Range, _, _>::conditional_at_or_after(self.skeleton.clone(), position, condition).map(Into::into)
+    }
+
+    pub fn conditional_starting_or_ending_after(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<Range, S, T>> {
+        Skeleton::<Range, _, _>::conditional_after(self.skeleton.clone(), position, condition).map(Into::into)
+    }
+
+
+    pub fn conditional_starting_before(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<Range, S, T>> {
+        Skeleton::<Range, _, _>::conditional_starting_before(self.skeleton.clone(), position, condition).map(Into::into)
+    }
+
+    pub fn conditional_starting_at_or_before(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<Range, S, T>> {
+        Skeleton::<Range, _, _>::conditional_starting_at_or_before(self.skeleton.clone(), position, condition).map(Into::into)
+    }
+
+    pub fn conditional_starting_at(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<Range, S, T>> {
+        Skeleton::<Range, _, _>::conditional_starting_at(self.skeleton.clone(), position, condition).map(Into::into)
+    }
+
+    pub fn conditional_starting_at_or_after(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<Range, S, T>> {
+        Skeleton::<Range, _, _>::conditional_starting_at_or_after(self.skeleton.clone(), position, condition).map(Into::into)
+    }
+
+    pub fn conditional_starting_after(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<Range, S, T>> {
+        Skeleton::<Range, _, _>::conditional_starting_after(self.skeleton.clone(), position, condition).map(Into::into)
+    }
+
+
+    pub fn conditional_ending_before(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<Range, S, T>> {
+        Skeleton::<Range, _, _>::conditional_ending_before(self.skeleton.clone(), position, condition).map(Into::into)
+    }
+
+    pub fn conditional_ending_at_or_before(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<Range, S, T>> {
+        Skeleton::<Range, _, _>::conditional_ending_at_or_before(self.skeleton.clone(), position, condition).map(Into::into)
+    }
+
+    pub fn conditional_ending_at(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<Range, S, T>> {
+        Skeleton::<Range, _, _>::conditional_ending_at(self.skeleton.clone(), position, condition).map(Into::into)
+    }
+
+    pub fn conditional_ending_at_or_after(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<Range, S, T>> {
+        Skeleton::<Range, _, _>::conditional_ending_at_or_after(self.skeleton.clone(), position, condition).map(Into::into)
+    }
+
+    pub fn conditional_ending_after(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<Range, S, T>> {
+        Skeleton::<Range, _, _>::conditional_ending_after(self.skeleton.clone(), position, condition).map(Into::into)
     }
 
 

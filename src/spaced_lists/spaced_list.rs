@@ -1,5 +1,5 @@
 use std::rc::Rc;
-use std::cell::RefCell;
+use std::cell::{Ref, RefCell};
 use crate::{Skeleton, Node, Position, PushError, SpacingError, Spacing, BackwardsIter,
             ForwardsIter};
 use crate::spaced_lists::{spacing_methods, trivial_accessors};
@@ -76,6 +76,27 @@ impl<S: Spacing, T> SpacedList<S, T> {
 
     pub fn after(&self, position: S) -> Option<Position<Node, S, T>> {
         Skeleton::<Node, _, _>::after(self.skeleton.clone(), position).map(Into::into)
+    }
+
+
+    pub fn conditional_before(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<Node, S, T>> {
+        Skeleton::<Node, _, _>::conditional_before(self.skeleton.clone(), position, condition).map(Into::into)
+    }
+
+    pub fn conditional_at_or_before(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<Node, S, T>> {
+        Skeleton::<Node, _, _>::conditional_at_or_before(self.skeleton.clone(), position, condition).map(Into::into)
+    }
+
+    pub fn conditional_at(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<Node, S, T>> {
+        Skeleton::<Node, _, _>::conditional_at(self.skeleton.clone(), position, condition).map(Into::into)
+    }
+
+    pub fn conditional_at_or_after(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<Node, S, T>> {
+        Skeleton::<Node, _, _>::conditional_at_or_after(self.skeleton.clone(), position, condition).map(Into::into)
+    }
+
+    pub fn conditional_after(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<Node, S, T>> {
+        Skeleton::<Node, _, _>::conditional_after(self.skeleton.clone(), position, condition).map(Into::into)
     }
 
 

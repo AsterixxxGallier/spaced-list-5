@@ -1,5 +1,5 @@
 use std::rc::Rc;
-use std::cell::RefCell;
+use std::cell::{Ref, RefCell};
 use crate::{Skeleton, NestedRange, Position, NestedRangePushError, NestedRangeInsertionError,
             SpacingError, Spacing, BackwardsIter, ForwardsIter};
 use crate::spaced_lists::{spacing_methods, trivial_accessors};
@@ -83,54 +83,107 @@ impl<S: Spacing, T> NestedRangeSpacedList<S, T> {
 
 
     pub fn starting_before(&self, position: S) -> Option<Position<NestedRange, S, T>> {
-        Skeleton::<NestedRange, _, _>::starting_before(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<NestedRange, _, _>::starting_before(self.skeleton.clone(), position).map(Into::into)
     }
 
     pub fn starting_at_or_before(&self, position: S) -> Option<Position<NestedRange, S, T>> {
-        Skeleton::<NestedRange, _, _>::starting_at_or_before(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<NestedRange, _, _>::starting_at_or_before(self.skeleton.clone(), position).map(Into::into)
     }
 
     pub fn starting_at(&self, position: S) -> Option<Position<NestedRange, S, T>> {
-        Skeleton::<NestedRange, _, _>::starting_at(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<NestedRange, _, _>::starting_at(self.skeleton.clone(), position).map(Into::into)
     }
 
     pub fn starting_at_or_after(&self, position: S) -> Option<Position<NestedRange, S, T>> {
-        Skeleton::<NestedRange, _, _>::starting_at_or_after(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<NestedRange, _, _>::starting_at_or_after(self.skeleton.clone(), position).map(Into::into)
     }
 
     pub fn starting_after(&self, position: S) -> Option<Position<NestedRange, S, T>> {
-        Skeleton::<NestedRange, _, _>::starting_after(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<NestedRange, _, _>::starting_after(self.skeleton.clone(), position).map(Into::into)
     }
 
 
     pub fn ending_before(&self, position: S) -> Option<Position<NestedRange, S, T>> {
-        Skeleton::<NestedRange, _, _>::ending_before(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<NestedRange, _, _>::ending_before(self.skeleton.clone(), position).map(Into::into)
     }
 
     pub fn ending_at_or_before(&self, position: S) -> Option<Position<NestedRange, S, T>> {
-        Skeleton::<NestedRange, _, _>::ending_at_or_before(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<NestedRange, _, _>::ending_at_or_before(self.skeleton.clone(), position).map(Into::into)
     }
 
     pub fn ending_at(&self, position: S) -> Option<Position<NestedRange, S, T>> {
-        Skeleton::<NestedRange, _, _>::ending_at(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<NestedRange, _, _>::ending_at(self.skeleton.clone(), position).map(Into::into)
     }
 
     pub fn ending_at_or_after(&self, position: S) -> Option<Position<NestedRange, S, T>> {
-        Skeleton::<NestedRange, _, _>::ending_at_or_after(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<NestedRange, _, _>::ending_at_or_after(self.skeleton.clone(), position).map(Into::into)
     }
 
     pub fn ending_after(&self, position: S) -> Option<Position<NestedRange, S, T>> {
-        Skeleton::<NestedRange, _, _>::ending_after(self.skeleton.clone(), position)
-            .map(|ephemeral| ephemeral.into())
+        Skeleton::<NestedRange, _, _>::ending_after(self.skeleton.clone(), position).map(Into::into)
+    }
+
+
+    pub fn conditional_starting_or_ending_before(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<NestedRange, S, T>> {
+        Skeleton::<NestedRange, _, _>::conditional_before(self.skeleton.clone(), position, condition).map(Into::into)
+    }
+
+    pub fn conditional_starting_or_ending_at_or_before(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<NestedRange, S, T>> {
+        Skeleton::<NestedRange, _, _>::conditional_at_or_before(self.skeleton.clone(), position, condition).map(Into::into)
+    }
+
+    pub fn conditional_starting_or_ending_at(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<NestedRange, S, T>> {
+        Skeleton::<NestedRange, _, _>::conditional_at(self.skeleton.clone(), position, condition).map(Into::into)
+    }
+
+    pub fn conditional_starting_or_ending_at_or_after(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<NestedRange, S, T>> {
+        Skeleton::<NestedRange, _, _>::conditional_at_or_after(self.skeleton.clone(), position, condition).map(Into::into)
+    }
+
+    pub fn conditional_starting_or_ending_after(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<NestedRange, S, T>> {
+        Skeleton::<NestedRange, _, _>::conditional_after(self.skeleton.clone(), position, condition).map(Into::into)
+    }
+
+
+    pub fn conditional_starting_before(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<NestedRange, S, T>> {
+        Skeleton::<NestedRange, _, _>::conditional_starting_before(self.skeleton.clone(), position, condition).map(Into::into)
+    }
+
+    pub fn conditional_starting_at_or_before(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<NestedRange, S, T>> {
+        Skeleton::<NestedRange, _, _>::conditional_starting_at_or_before(self.skeleton.clone(), position, condition).map(Into::into)
+    }
+
+    pub fn conditional_starting_at(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<NestedRange, S, T>> {
+        Skeleton::<NestedRange, _, _>::conditional_starting_at(self.skeleton.clone(), position, condition).map(Into::into)
+    }
+
+    pub fn conditional_starting_at_or_after(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<NestedRange, S, T>> {
+        Skeleton::<NestedRange, _, _>::conditional_starting_at_or_after(self.skeleton.clone(), position, condition).map(Into::into)
+    }
+
+    pub fn conditional_starting_after(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<NestedRange, S, T>> {
+        Skeleton::<NestedRange, _, _>::conditional_starting_after(self.skeleton.clone(), position, condition).map(Into::into)
+    }
+
+
+    pub fn conditional_ending_before(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<NestedRange, S, T>> {
+        Skeleton::<NestedRange, _, _>::conditional_ending_before(self.skeleton.clone(), position, condition).map(Into::into)
+    }
+
+    pub fn conditional_ending_at_or_before(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<NestedRange, S, T>> {
+        Skeleton::<NestedRange, _, _>::conditional_ending_at_or_before(self.skeleton.clone(), position, condition).map(Into::into)
+    }
+
+    pub fn conditional_ending_at(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<NestedRange, S, T>> {
+        Skeleton::<NestedRange, _, _>::conditional_ending_at(self.skeleton.clone(), position, condition).map(Into::into)
+    }
+
+    pub fn conditional_ending_at_or_after(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<NestedRange, S, T>> {
+        Skeleton::<NestedRange, _, _>::conditional_ending_at_or_after(self.skeleton.clone(), position, condition).map(Into::into)
+    }
+
+    pub fn conditional_ending_after(&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<Position<NestedRange, S, T>> {
+        Skeleton::<NestedRange, _, _>::conditional_ending_after(self.skeleton.clone(), position, condition).map(Into::into)
     }
 
 
