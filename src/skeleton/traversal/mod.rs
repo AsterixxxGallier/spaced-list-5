@@ -11,6 +11,22 @@ use after_loop::*;
 use checks::*;
 use traversal_function_body::*;
 
+macro_rules! index_is_at_start_condition {
+    ($index:expr) => {
+        BoundType::of($index) == BoundType::Start
+    };
+}
+
+macro_rules! index_is_at_end_condition {
+    ($index:expr) => {
+        BoundType::of($index) == BoundType::End
+    };
+}
+
+macro_rules! empty_condition {
+    ($index:expr) => { true };
+}
+
 macro_rules! for_all_traversals {
     ($macro:ident $($prefixes:tt)*) => {
         $macro!($($prefixes)*before: <);
@@ -26,14 +42,14 @@ macro_rules! traversal_functions {
         paste! {
             pub fn [<shallow_ $pos>](this: Rc<RefCell<Self>>, target: S)
                 -> Option<EphemeralPosition<Kind, S, T>> {
-                traversal_function_body!(this; shallow; $cmp target)
+                traversal_function_body!(this; shallow; $cmp target with empty_condition)
             }
         }
     };
     (deep $pos:ident: $cmp:tt) => {
         pub fn $pos(this: Rc<RefCell<Self>>, target: S)
             -> Option<EphemeralPosition<Kind, S, T>> {
-            traversal_function_body!(this; deep; $cmp target)
+            traversal_function_body!(this; deep; $cmp target with empty_condition)
         }
     };
     () => {
@@ -44,7 +60,7 @@ macro_rules! traversal_functions {
         paste! {
             pub fn [<shallow_ $bound ing_ $pos>](this: Rc<RefCell<Self>>, target: S)
                 -> Option<EphemeralPosition<Range, S, T>> {
-                traversal_function_body!(this; shallow; $cmp target at $bound)
+                traversal_function_body!(this; shallow; $cmp target with [<index_is_at_ $bound _condition>])
             }
         }
     };
@@ -52,7 +68,7 @@ macro_rules! traversal_functions {
         paste! {
             pub fn [<$bound ing_ $pos>](this: Rc<RefCell<Self>>, target: S)
                 -> Option<EphemeralPosition<Range, S, T>> {
-                traversal_function_body!(this; deep; $cmp target at $bound)
+                traversal_function_body!(this; deep; $cmp target with [<index_is_at_ $bound _condition>])
             }
         }
     };
@@ -66,7 +82,7 @@ macro_rules! traversal_functions {
         paste! {
             pub fn [<shallow_ $bound ing_ $pos>](this: Rc<RefCell<Self>>, target: S)
                 -> Option<EphemeralPosition<NestedRange, S, T>> {
-                traversal_function_body!(this; shallow; $cmp target at $bound)
+                traversal_function_body!(this; shallow; $cmp target with [<index_is_at_ $bound _condition>])
             }
         }
     };
@@ -74,7 +90,7 @@ macro_rules! traversal_functions {
         paste! {
             pub fn [<$bound ing_ $pos>](this: Rc<RefCell<Self>>, target: S)
                 -> Option<EphemeralPosition<NestedRange, S, T>> {
-                traversal_function_body!(this; deep; $cmp target at $bound)
+                traversal_function_body!(this; deep; $cmp target with [<index_is_at_ $bound _condition>])
             }
         }
     };

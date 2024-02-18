@@ -54,7 +54,7 @@ macro_rules! r#loop {
     };
     // endregion
 
-    ($depth:ident, $cmp:tt, $target:ident, $bound:ident;
+    ($depth:ident, $cmp:tt, $target:ident;
         $skeleton:ident, $degree:ident, $index:ident, $position:ident) => {
         loop {
             let link_index = link_index($index, $degree);

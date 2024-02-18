@@ -6,7 +6,7 @@ pub enum BoundType {
 
 impl BoundType {
     #[inline(always)]
-    pub(crate) fn of(index: usize) -> Self {
+    pub(crate) const fn of(index: usize) -> Self {
         match index & 1 {
             0 => Self::Start,
             1 => Self::End,
@@ -15,7 +15,7 @@ impl BoundType {
     }
 
     #[inline(always)]
-    pub(crate) fn of_signed(index: isize) -> Self {
+    pub(crate) const fn of_signed(index: isize) -> Self {
         match index & 1 {
             0 => Self::Start,
             1 => Self::End,
