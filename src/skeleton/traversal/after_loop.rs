@@ -1,6 +1,6 @@
 /// These fragments allow us to find the successor of an element. This is non-trivial in deep
-/// traversals, as we might have to move out of a sublist back into the containing list, or we
-/// might need to move into a sublist.
+/// traversals, as we might have to move out of a sub back into the containing list, or we
+/// might need to move into a sub.
 macro_rules! next {
     (shallow; $skeleton:ident, $index:ident, $position:ident) => {
         if $index == $skeleton.borrow().links.len() {
@@ -126,10 +126,10 @@ macro_rules! after_loop {
                 // under the assumption that the list has the structure start end start end etc.,
                 // finding the previous bound suffices
                 previous!($depth; $skeleton, $index, $position).ok()?;
-                // however, if the list, for example, has the structure s e s [s e] e ([...] = sublist),
+                // however, if the list, for example, has the structure s e s [s e] e ([...] = sub),
                 // and we're at the second s, we would need to backtrack all the way to the first e
                 // for lists that are structured like s [s [s [...] e] e] e, this is O(n)!
-                // we would want a faster way, but there is no way to tell if any given sublist has
+                // we would want a faster way, but there is no way to tell if any given sub has
                 // specifically an end bound before the target position (not 1000% sure about this)
                 // => give up and make it a loop
                 // it being a while loop instead of an if statement has no significant performance

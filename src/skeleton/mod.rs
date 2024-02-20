@@ -21,7 +21,7 @@ impl RangeKind for NestedRange {}
 pub struct Range;
 
 // works like Range, but when a range is inserted inside of another range, then it's put in a
-// sublist, such that even indices are still start indices and odd indices are end indices (genius!)
+// sub, such that even indices are still start indices and odd indices are end indices (genius!)
 pub struct NestedRange;
 
 pub(crate) struct ParentData<Parent> {
