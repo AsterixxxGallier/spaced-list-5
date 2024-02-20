@@ -29,6 +29,31 @@ pub(crate) struct ParentData<Parent> {
     pub(crate) index_in_parent: usize,
 }
 
+// TODO major optimization opportunity for big lists:
+//  source of problem: all links, elements and subs are stored in a singular Vec
+//  problem 1: When a power of two in size is crossed, allocating the larger array can take a long time, causing up to
+//             seconds-long freezes.
+//  problem 2: Traversal always starts by accessing a link in the second half of the list, and then moves through the
+//             skeleton in jumps of exponentially decaying distances. At the beginning, these distances are extremely
+//             large. This is bad news for the cache.
+//  solution: When a certain threshold in link Vec size is crossed (maybe 2^16 bytes) when pushing an element onto the
+//            skeleton, *don't* append it to this skeleton. Instead, create a new skeleton. Replace the old, "full"
+//            one with this new one in whatever position it was ("root" skeleton of a spaced list, or sub in a parent
+//            skeleton). Add the old skeleton as a sub at index zero to the new one. Create another sub at index one,
+//            and push the element onto that one. Make sure the spacing's all right.
+//            Let's call the new skeleton "hyperskeleton", or "hyper" for short. Hypers have no elements, and a sub at
+//            every index. Traversal through a hyper may never yield an index in the hyper itself, only one in a sub.
+//            This means that all subs of a hyper should have an offset of zero. Iteration through a hyper must
+//            behave like the conjoined iteration through each of its consecutive subs. In short, the existence of the
+//            hyper should be invisible to everyone using this crate, similarly to the existence of subs.
+//            It seems logical to introduce "Hyper" as a new skeleton Kind.
+//            When a skeleton "overflows" (as described above) that is already a sub in a hyper, add a sublist at its
+//            next free index; no need to create a new hyper. Using estimates of 2^12 to 2^16 bytes in a full skeleton,
+//            one hyper can be filled with 2^24 (16 million) to 2^32 (4 billion) bytes of links, and a hyper of
+//            hypers (also possible!) can be filled with 2^36 (69 billion) to 2^48 (281 trillion) link bytes. Safe to
+//            say, hypers don't need to be nested deeply at these sizes.
+//            This mechanism guarantees an upper bound not only on allocated array size, but also on jump distances,
+//            except when entering a sub. In this way, most of the really bad cache misses can be avoided.
 pub(crate) struct Skeleton<Kind, S: Spacing, T> {
     links: Vec<S>,
     elements: Vec<T>,
