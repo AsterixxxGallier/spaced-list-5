@@ -1,10 +1,8 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::Spacing;
-use crate::manager::spaced_list::LockedPosition;
-
-use super::Manager;
+use crate::{Spacing, PushError, SpacingError};
+use crate::manager::{Manager, LockedPosition};
 
 macro_rules! handle {
     ($name:ident, $lock_name:ident) => {
@@ -37,26 +35,26 @@ handle!(InsertionsHandle, insertions);
 handle!(ValuesHandle, values);
 
 impl<S: Spacing, T> PositionsHandle<S, T> {
-    pub fn increase_spacing_after(&mut self, position: S, spacing: S) {
-        self.manager.borrow_mut().list.increase_spacing_after(position, spacing)
+    pub fn try_increase_spacing_after(&mut self, position: S, spacing: S) -> Result<(), SpacingError> {
+        self.manager.borrow_mut().list.try_increase_spacing_after(position, spacing)
     }
 
-    pub fn increase_spacing_before(&mut self, position: S, spacing: S) {
-        self.manager.borrow_mut().list.increase_spacing_before(position, spacing)
+    pub fn try_increase_spacing_before(&mut self, position: S, spacing: S) -> Result<(), SpacingError> {
+        self.manager.borrow_mut().list.try_increase_spacing_before(position, spacing)
     }
 
-    pub fn decrease_spacing_after(&mut self, position: S, spacing: S) {
-        self.manager.borrow_mut().list.decrease_spacing_after(position, spacing)
+    pub fn try_decrease_spacing_after(&mut self, position: S, spacing: S) -> Result<(), SpacingError> {
+        self.manager.borrow_mut().list.try_decrease_spacing_after(position, spacing)
     }
 
-    pub fn decrease_spacing_before(&mut self, position: S, spacing: S) {
-        self.manager.borrow_mut().list.decrease_spacing_before(position, spacing)
+    pub fn try_decrease_spacing_before(&mut self, position: S, spacing: S) -> Result<(), SpacingError> {
+        self.manager.borrow_mut().list.try_decrease_spacing_before(position, spacing)
     }
 }
 
 impl<S: Spacing, T> InsertionsHandle<S, T> {
-    pub fn push(&self, spacing: S, value: T) -> LockedPosition<S, T> {
-        Manager::lock(self.manager.clone(), self.manager.borrow_mut().list.push(spacing, value))
+    pub fn try_push(&self, spacing: S, value: T) -> Result<LockedPosition<S, T>, PushError> {
+        Ok(Manager::lock(self.manager.clone(), self.manager.borrow_mut().list.try_push(spacing, value)?))
     }
 
     pub fn insert(&self, position: S, value: T) -> LockedPosition<S, T> {

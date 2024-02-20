@@ -2,8 +2,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use crate::Spacing;
-
-use super::Manager;
+use crate::manager::Manager;
 
 macro_rules! lock {
     ($name:ident, $lock_name:ident) => {

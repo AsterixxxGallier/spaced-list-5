@@ -4,6 +4,7 @@ use std::rc::Rc;
 use crate::{Position, Skeleton, Spacing};
 
 // TODO implement parallel iteration
+// TODO use IntoIterator and DoubleEndedIterator traits where applicable
 
 pub(crate) struct ForwardsIter<Kind, S: Spacing, T> {
     position: Option<Position<Kind, S, T>>,

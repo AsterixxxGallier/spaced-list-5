@@ -12,14 +12,16 @@ pub struct Node;
 mod seal {
     pub trait Seal {}
 }
-pub trait AllRangeKinds : seal::Seal {}
+pub trait RangeKind : seal::Seal {}
 impl seal::Seal for Range {}
 impl seal::Seal for NestedRange {}
-impl AllRangeKinds for Range {}
-impl AllRangeKinds for NestedRange {}
+impl RangeKind for Range {}
+impl RangeKind for NestedRange {}
 
 pub struct Range;
 
+// works like Range, but when a range is inserted inside of another range, then it's put in a
+// sublist, such that even indices are still start indices and odd indices are end indices (genius!)
 pub struct NestedRange;
 
 pub(crate) struct ParentData<Parent> {
@@ -123,16 +125,14 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
     }
 }
 
-mod flate;
-
-mod node;
-
-mod range;
-
-mod nested_range;
-
+pub mod flate;
+pub mod node;
+pub mod range;
+pub mod nested_range;
 pub mod traversal;
-
-pub mod position;
-
 pub mod index;
+pub mod ephemeral_index;
+pub mod position;
+pub mod ephemeral_position;
+pub mod bound_type;
+pub mod element_ref;

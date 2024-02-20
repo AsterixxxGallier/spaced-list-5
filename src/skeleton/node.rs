@@ -2,20 +2,31 @@ use std::cell::RefCell;
 use std::mem;
 use std::rc::Rc;
 
-use crate::{Node, Skeleton, Spacing, EphemeralPosition, EphemeralIndex, Index};
+use crate::{EphemeralIndex, EphemeralPosition, Index, Node, Skeleton, Spacing};
+
+#[derive(Debug)]
+pub enum PushError {
+    // TODO replace distance terminology with "spacing" terminology of the public API
+    /// "Cannot push at a negative distance from the end of a non-empty list"
+    NegativeDistanceInNonEmptyList,
+}
 
 impl<S: Spacing, T> Skeleton<Node, S, T> {
-    pub(crate) fn push(this: Rc<RefCell<Self>>, distance: S, element: T) -> EphemeralPosition<Node, S, T> {
+    pub(crate) fn try_push(this: Rc<RefCell<Self>>, distance: S, element: T)
+                           -> Result<EphemeralPosition<Node, S, T>, PushError> {
         if this.borrow().elements.is_empty() {
             this.borrow_mut().offset = distance;
             this.borrow_mut().elements.push(element);
-            // return Position::new(this, 0, distance);
-            return EphemeralPosition::new(this, 0, distance);
+            Ok(EphemeralPosition::new(this, 0, distance))
+        } else if distance < S::zero() {
+            Err(PushError::NegativeDistanceInNonEmptyList)
+        } else {
+            let index = this.borrow_mut().push_link();
+            // cannot fail because we would have returned with an Err already if distance were < 0
+            this.borrow_mut().try_inflate(index, distance).unwrap();
+            this.borrow_mut().elements.push(element);
+            Ok(EphemeralPosition::at_end(this))
         }
-        let index = this.borrow_mut().push_link();
-        this.borrow_mut().inflate(index, distance);
-        this.borrow_mut().elements.push(element);
-        EphemeralPosition::at_end(this)
     }
 
     //    ________8________
@@ -55,17 +66,18 @@ impl<S: Spacing, T> Skeleton<Node, S, T> {
     // ephemeral 0 => persistent -1
     // persistent -1 => ephemeral 0
     // persistent 0 => ephemeral sub/0
-    pub(crate) fn insert(this: Rc<RefCell<Self>>, position: S, element: T) -> EphemeralPosition<Node, S, T> {
+    pub(crate) fn insert(this: Rc<RefCell<Self>>, position: S, element: T)
+                         -> EphemeralPosition<Node, S, T> {
         if this.borrow().elements.is_empty() {
-            return Self::push(this, position, element);
-        }
-        // TODO for range too
-        if position < this.borrow().offset {
+            // cannot fail, because try_push can only fail when the list is non-empty, which it can't be in this branch
+            Self::try_push(this, position, element).unwrap()
+        } else if position < this.borrow().offset {
             let previous_first_position = this.borrow().offset;
             let previous_first_element =
                 mem::replace(&mut this.borrow_mut().elements[0], element);
 
-            this.borrow_mut().inflate_after_offset(previous_first_position - position);
+            // cannot fail, because we already established previous_first_position > position
+            this.borrow_mut().try_inflate_after_index(0, previous_first_position - position).unwrap();
             this.borrow_mut().offset = position;
 
             let insertion_index = Self::insert(
@@ -75,68 +87,37 @@ impl<S: Spacing, T> Skeleton<Node, S, T> {
             ).into_index();
 
             let first_persistent_index = this.borrow().first_persistent_index;
-
             this.borrow_mut().from_persistent.insert(first_persistent_index, insertion_index);
 
             this.borrow_mut().first_persistent_index -= 1;
+            let first_persistent_index = this.borrow().first_persistent_index;
 
-            let first_persistent_index = first_persistent_index - 1;
-
-            let first_index =
-                EphemeralIndex::new(this.clone(), 0);
+            let first_index = EphemeralIndex::new(this.clone(), 0);
             this.borrow_mut().from_persistent.insert(first_persistent_index, first_index);
 
-            let first_index =
-                Index::new(this.clone(), first_persistent_index);
+            let first_index = Index::new(this.clone(), first_persistent_index);
             this.borrow_mut().into_persistent.insert(0, first_index);
 
-            // let position = Position::new(this.clone(), first_persistent_index, previous_first_position);
-            // this.borrow_mut().into_persistent.insert(-first_persistent_index as usize, position);
-            // return EphemeralPosition::persistent_new(this, -1 /*TODO*/, position);
-            return EphemeralPosition::new(this, 0, position);
-        }
-        /*        if position < this.borrow().offset {
-                    let previous_first_position = this.borrow().offset;
-                    let previous_first_element =
-                        mem::replace(&mut this.borrow_mut().elements[0], element);
-                    this.borrow_mut().inflate_after_offset(previous_first_position - position);
-                    this.borrow_mut().offset = position;
-                    let pos = Self::insert(
-                        this.clone(),
-                        previous_first_position,
-                        previous_first_element,
-                    );
-                    let insertion_position = pos.position;
-                    // FIXME Problem:
-                    //        After the offset-swap-around maneuver, the first element will not be at the
-                    //        persistent index 0, but at a negative one!
-        
-                    // TODO for range too
-                    let first_persistent_index = this.borrow().first_persistent_index;
-                    this.borrow_mut().from_persistent.insert(first_persistent_index, pos);
-                    this.borrow_mut().first_persistent_index -= 1;
-                    let position = Position::new(this.clone(), this.borrow().first_persistent_index, insertion_position);
-                    this.borrow_mut().into_persistent.insert(-first_persistent_index as usize, position);
-                    // return EphemeralPosition::persistent_new(this, -1 /*TODO*/, position);
-                    return EphemeralPosition::new(this, 0, insertion_position);
-                }
-        */        if position >= this.borrow().last_position() {
+            EphemeralPosition::new(this, 0, position)
+        } else if position >= this.borrow().last_position() {
             let distance = position - this.borrow().last_position();
-            return Self::push(this, distance, element);
-        }
-        let result =
-            Self::shallow_at_or_before(this.clone(), position).unwrap();
-        let sub = Self::ensure_sub(this, result.index);
-        EphemeralPosition {
-            position,
-            ..Self::insert(sub, position - result.position, element)
+            // cannot fail, because distance cannot be non-negative (by definition and the condition of this branch)
+            return Self::try_push(this, distance, element).unwrap();
+        } else {
+            // cannot be None (medium confidence)
+            let result = Self::shallow_at_or_before(this.clone(), position).unwrap();
+            let sub = Self::ensure_sub(this, result.index);
+            EphemeralPosition {
+                position,
+                ..Self::insert(sub, position - result.position, element)
+            }
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::SpacedList;
+    use crate::spaced_lists::spaced_list::SpacedList;
 
     #[test]
     fn test() {
@@ -145,9 +126,9 @@ mod tests {
         let c = list.insert(1, 'c');
         let a = list.insert(-1, 'a');
 
-        println!("{} at {}; {} in {:?}", a.ephemeral().element(), a.position, a.index, a.skeleton.borrow().elements);
-        println!("{} at {}; {} in {:?}", b.ephemeral().element(), b.position, b.index, b.skeleton.borrow().elements);
-        println!("{} at {}; {} in {:?}", c.ephemeral().element(), c.position, c.index, c.skeleton.borrow().elements);
+        println!("{} at {}; {} in {:?}", *a.element(), a.position, a.index, a.skeleton.borrow().elements);
+        println!("{} at {}; {} in {:?}", *b.element(), b.position, b.index, b.skeleton.borrow().elements);
+        println!("{} at {}; {} in {:?}", *c.element(), c.position, c.index, c.skeleton.borrow().elements);
 
         println!();
 

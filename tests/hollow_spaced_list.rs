@@ -1,4 +1,4 @@
-#![allow(unused)]
+#![allow(dead_code)]
 
 use std::collections::BTreeSet;
 use std::time::Instant;
@@ -8,6 +8,7 @@ use rand::{random, Rng, SeedableRng};
 
 use spaced_list_5::HollowSpacedList;
 
+#[allow(unused_variables)]
 #[test]
 fn randomized() {
     let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
@@ -111,24 +112,24 @@ fn change_spacing() {
     list.insert(5);
     list.insert(14);
     list.insert(13);
-    list.increase_spacing_after(5, 3);
+    list.try_increase_spacing_after(5, 3).unwrap();
     assert_eq!(list.at(5).unwrap().position(), 5);
     assert!(list.at(13).is_none());
     assert_eq!(list.at(16).unwrap().position(), 16);
     assert_eq!(list.at(17).unwrap().position(), 17);
     assert_eq!(list.after(20).unwrap().position(), 50);
-    list.increase_spacing_after(0, 100);
+    list.try_increase_spacing_after(0, 100).unwrap();
     assert_eq!(list.at(105).unwrap().position(), 105);
     assert_eq!(list.at(117).unwrap().position(), 117);
     assert_eq!(list.at(150).unwrap().position(), 150);
-    list.decrease_spacing_after(105, 10);
+    list.try_decrease_spacing_after(105, 10).unwrap();
     assert_eq!(list.at(105).unwrap().position(), 105);
     assert_eq!(list.at(107).unwrap().position(), 107);
     assert_eq!(list.at(140).unwrap().position(), 140);
-    list.increase_spacing_before(105, 20);
+    list.try_increase_spacing_before(105, 20).unwrap();
     assert_eq!(list.at(125).unwrap().position(), 125);
     assert_eq!(list.at(160).unwrap().position(), 160);
-    list.decrease_spacing_before(130, 10);
+    list.try_decrease_spacing_before(130, 10).unwrap();
     assert_eq!(list.at(125).unwrap().position(), 125);
     assert_eq!(list.at(150).unwrap().position(), 150);
 }

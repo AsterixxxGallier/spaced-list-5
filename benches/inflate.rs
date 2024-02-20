@@ -1,6 +1,6 @@
 use criterion::{black_box, Criterion, criterion_group, criterion_main};
 
-fn old_(n: u32) -> u32 {
+fn _old(n: u32) -> u32 {
     let mut link_index = n;
     for degree in 0..16 {
         let bit = 1 << degree;

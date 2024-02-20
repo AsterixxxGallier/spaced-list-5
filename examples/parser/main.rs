@@ -1,13 +1,17 @@
-use std::cmp::min;
-use std::collections::{HashMap, HashSet};
-use std::iter::Peekable;
-use std::ops::{Add, RangeInclusive};
+use std::ops::RangeInclusive;
 use ansi_term::Color::{Blue, Green, Yellow};
 use indoc::indoc;
 use itertools::Itertools;
-use spaced_list_5::{AllRangeKinds, HollowIndex, HollowNestedRangeSpacedList, HollowRangeSpacedList, Index, NestedRange, NestedRangeSpacedList, Position, Range, RangeSpacedList};
+use spaced_list_5::{SpacedList, RangeSpacedList, NestedRangeSpacedList, HollowRangeSpacedList};
 
 fn main() {
+    // let mut list = SpacedList::new();
+    // let position = list.try_push(2, 42).unwrap();
+    // let mut element_ref = position.element_mut();
+    // *element_ref += 3;
+    // list.insert(1, 43);
+    // println!("{}", *element_ref);
+
     let source =
         indoc! {r"
             foo:
@@ -23,7 +27,7 @@ fn main() {
     let mut colons = HollowRangeSpacedList::<usize>::new();
     for (index, char) in source.chars().enumerate() {
         if char == ':' {
-            colons.insert_with_span(index, 1);
+            colons.try_insert_with_span(index, 1).unwrap();
         }
     }
     // endregion
@@ -32,7 +36,7 @@ fn main() {
     let mut arrows = HollowRangeSpacedList::<usize>::new();
     for (index, char) in source.chars().enumerate() {
         if char == '>' {
-            arrows.insert_with_span(index, 1);
+            arrows.try_insert_with_span(index, 1).unwrap();
         }
     }
     // endregion
@@ -41,7 +45,7 @@ fn main() {
     let mut slashes = HollowRangeSpacedList::<usize>::new();
     for (index, char) in source.chars().enumerate() {
         if char == '/' {
-            slashes.insert_with_span(index, 1);
+            slashes.try_insert_with_span(index, 1);
         }
     }
     // endregion
@@ -50,7 +54,7 @@ fn main() {
     let mut line_breaks = HollowRangeSpacedList::<usize>::new();
     for (index, char) in source.chars().enumerate() {
         if char == '\n' {
-            line_breaks.insert_with_span(index, 1);
+            line_breaks.try_insert_with_span(index, 1).unwrap();
         }
     }
     // endregion
@@ -70,7 +74,7 @@ fn main() {
                     break;
                 }
             }
-            whitespace.insert_with_span(start, span);
+            whitespace.try_insert_with_span(start, span).unwrap();
             start += span;
         } else {
             start += 1;
@@ -82,10 +86,10 @@ fn main() {
     let mut full_lines = HollowRangeSpacedList::new();
     let mut start = 0;
     for (line_end, line_start) in line_breaks.iter_ranges() {
-        full_lines.insert(start, line_end.position());
+        full_lines.try_insert(start, line_end.position()).unwrap();
         start = line_start.position()
     }
-    full_lines.insert(start, source.len());
+    full_lines.try_insert(start, source.len()).unwrap();
     // endregion
 
     // region parse lines
@@ -94,9 +98,9 @@ fn main() {
         let start = start.position();
         let end = end.position();
         if let Some(indentation) = whitespace.starting_at(start) {
-            lines.insert(start, end, indentation.span());
+            lines.try_insert(start, end, indentation.span()).unwrap();
         } else {
-            lines.insert(start, end, 0);
+            lines.try_insert(start, end, 0).unwrap();
         }
     }
     // endregion
@@ -104,7 +108,7 @@ fn main() {
     // region parse trimmed lines
     let mut trimmed_lines = RangeSpacedList::new();
     for (start, end) in lines.iter_ranges() {
-        let value = *start.element().borrow();
+        let value = *start.element();
         let start = whitespace
             .starting_at(start.position())
             .map(|option| option.into_range().1.position())
@@ -113,7 +117,7 @@ fn main() {
             .ending_at(end.position())
             .map(|option| option.into_range().0.position())
             .unwrap_or(end.position());
-        trimmed_lines.insert(start, end, value);
+        trimmed_lines.try_insert(start, end, value).unwrap();
     }
     // endregion
 
@@ -166,12 +170,12 @@ fn main() {
                         .unwrap_or(slash.position());
                 }
             }
-            let position = text.insert(start, end);
+            let position = text.try_insert(start, end).unwrap();
             let inline_value = InlineExpression::Text(Text {
                 range: position.index().into_range()
             });
-            inline_expressions.insert(start, end, inline_value);
-            expressions.insert(start, end, Expression::Inline(inline_value));
+            inline_expressions.try_insert(start, end, inline_value).unwrap();
+            expressions.try_insert(start, end, Expression::Inline(inline_value)).unwrap();
             start = end;
         }
     }
@@ -306,7 +310,7 @@ fn main() {
     // region parse indented blocks
     let mut indented_blocks = NestedRangeSpacedList::new();
 
-    let mut vec =
+    let vec =
         lines
             .iter_ranges()
             .map(|(start, end)| (start.position(), end.position()))
@@ -316,7 +320,7 @@ fn main() {
         lines
             .iter_ranges()
             .enumerate()
-            .map(|(index, (start, _))| (*start.element().borrow(), index))
+            .map(|(index, (start, _))| (*start.element(), index))
             .into_grouping_map()
             .collect::<Vec<_>>();
 
@@ -340,7 +344,7 @@ fn main() {
         if let Some(indices_to_eliminate) = indices_to_eliminate {
             for range in consecutive_ranges(indices_elimination.as_slice()) {
                 if indices_to_eliminate.iter().any(|it| range.contains(it)) {
-                    indented_blocks.insert(vec[*range.start()].0, vec[*range.end()].1, baseline);
+                    indented_blocks.try_insert(vec[*range.start()].0, vec[*range.end()].1, baseline).unwrap();
                 }
             }
             for index in &indices_to_eliminate {

@@ -1,394 +1,49 @@
 use std::cell::RefCell;
+use std::cell::Ref;
 use std::rc::Rc;
 
 use paste::paste;
-use crate::NestedRange;
 
-use crate::skeleton::{link_index, ParentData, position::EphemeralPosition, Range, Skeleton, Spacing};
+use crate::{NestedRange, Node};
+use crate::{EphemeralPosition, EphemeralIndex, ParentData, Range, Skeleton, Spacing, BoundType};
+use crate::skeleton::link_index;
+use r#loop::*;
+use after_loop::*;
+use checks::*;
+use traversal_function_body::*;
 
-macro_rules! traverse {
-    // region loop
-    // region break if ==
-    (@break if ==(<, $target:ident; $position:ident)) => {};
-    (@break if ==(<=, $target:ident; $position:ident)) => {
-        if $position == $target {
-            break;
-        }
+macro_rules! index_is_at_start_condition {
+    ($index:expr, $($rest:tt)*) => {
+        BoundType::of($index) == BoundType::Start
     };
-    // endregion
+}
 
-    // region into sublist if deep
-    (@into sublist if deep(shallow, $($_rest:tt)*)) => {};
-    (@into sublist if deep(deep, $cmp:tt, $target:ident;
-        $skeleton:ident, $degree:ident, $index:ident, $position:ident)) => {
-        if let Some(sub) = $skeleton.clone().borrow().sub($index) {
-            let next_position = $position + sub.borrow().offset;
-            if next_position $cmp $target {
-                $degree = sub.borrow().depth.saturating_sub(1);
-                $index = 0;
-                $position = next_position;
-                $skeleton = sub;
-                continue;
-            }
-        }
+macro_rules! index_is_at_end_condition {
+    ($index:expr, $($rest:tt)*) => {
+        BoundType::of($index) == BoundType::End
     };
-    // endregion
+}
 
-    // region redirect loop cmp
-    (@loop($depth:ident, ==, $($rest:tt)*)) => {
-        traverse!(@loop($depth, <=, $($rest)*))
-    };
-    (@loop($depth:ident, >=, $($rest:tt)*)) => {
-        traverse!(@loop($depth, <=, $($rest)*))
-    };
-    (@loop($depth:ident, >, $($rest:tt)*)) => {
-        traverse!(@loop($depth, <=, $($rest)*))
-    };
-    // endregion
+macro_rules! empty_condition {
+    ($($rest:tt)*) => { true };
+}
 
-    (@loop($depth:ident, $cmp:tt, $target:ident, $bound:ident;
-        $skeleton:ident, $degree:ident, $index:ident, $position:ident)) => {
-        loop {
-            let link_index = link_index($index, $degree);
-            if !$skeleton.borrow().link_index_is_in_bounds(link_index) {
-                if $degree > 0 {
-                    $degree -= 1;
-                    continue;
-                } else {
-                    break;
-                }
-            }
+macro_rules! function_condition {
+    ($index:expr, $skeleton:expr, $condition:ident) => {
+        $condition(EphemeralIndex::new($skeleton, $index).element())
+    };
+}
 
-            let next_position = $position + $skeleton.borrow().links[link_index];
-            if next_position $cmp $target {
-                $position = next_position;
-                $index += 1 << $degree;
-                traverse!(@break if ==($cmp, $target; $position));
-            }
+macro_rules! index_is_at_start_and_function_condition {
+    ($index:expr, $skeleton:expr, $condition:ident) => {
+        (BoundType::of($index) == BoundType::Start && $condition(EphemeralIndex::new($skeleton, $index).element()))
+    };
+}
 
-            if $degree > 0 {
-                $degree -= 1;
-            } else {
-                traverse!(@into sublist if deep($depth, $cmp, $target;
-                    $skeleton, $degree, $index, $position));
-                break;
-            }
-        }
+macro_rules! index_is_at_end_and_function_condition {
+    ($index:expr, $skeleton:expr, $condition:ident) => {
+        (BoundType::of($index) == BoundType::End && $condition(EphemeralIndex::new($skeleton, $index).element()))
     };
-    // endregion
-
-    // region next
-    (@next(shallow; $skeleton:ident, $index:ident, $position:ident)) => {
-        if $index == $skeleton.borrow().links.len() {
-            Err("Tried to move to next element but it's already the end of the skeleton")
-        } else {
-            $position += $skeleton.borrow().link($index);
-            $index += 1;
-            Ok(())
-        }
-    };
-    (@next(deep; $skeleton:ident, $index:ident, $position:ident)) => {
-        if $index == $skeleton.borrow().links.len() {
-            if let Some(ParentData { parent, index_in_parent }) =
-                &$skeleton.clone().borrow().parent_data {
-                $position -= $skeleton.borrow().last_position();
-                $skeleton = parent.upgrade().unwrap();
-                $position += $skeleton.borrow().link(*index_in_parent);
-                $index = index_in_parent + 1;
-                Ok(())
-            } else {
-                Err("Tried to move to next element but it's already the end of the skeleton")
-            }
-        } else if let Some(sub) = $skeleton.clone().borrow().sub($index) {
-            $skeleton = sub;
-            $index = 0;
-            $position += $skeleton.borrow().offset;
-            Ok(())
-        } else {
-            $position += $skeleton.borrow().link($index);
-            $index += 1;
-            Ok(())
-        }
-    };
-    // endregion
-
-    // region previous
-    (@previous(shallow; $skeleton:ident, $index:ident, $position:ident)) => {
-        if $index == 0 {
-            Err("Tried to move to previous element but it's already the start of the skeleton")
-        } else {
-            $index -= 1;
-            $position -= $skeleton.borrow().link($index);
-            Ok(())
-        }
-    };
-    (@previous(deep; $skeleton:ident, $index:ident, $position:ident)) => {
-        if $index == 0 {
-            if let Some(ParentData { parent, index_in_parent }) =
-                &$skeleton.clone().borrow().parent_data {
-                $index = *index_in_parent;
-                $position -= $skeleton.borrow().offset;
-                $skeleton = parent.upgrade().unwrap();
-                Ok(())
-            } else {
-                Err("Tried to move to previous element but it's already the start of the skeleton")
-            }
-        } else if let Some(sub) = $skeleton.clone().borrow().sub($index - 1) {
-            $position -= $skeleton.borrow().link($index - 1);
-            $skeleton = sub;
-            $position += $skeleton.borrow().last_position();
-            $index = $skeleton.borrow().links.len();
-            Ok(())
-        } else {
-            $index -= 1;
-            $position -= $skeleton.borrow().link($index);
-            Ok(())
-        }
-    };
-    // endregion
-
-    // region after loop
-    // region any
-    (@after loop($depth:ident, <, $target:ident, any;
-        $skeleton:ident, $degree:ident, $index:ident, $position:ident)) => {
-        Some(EphemeralPosition::new($skeleton, $index, $position))
-    };
-    (@after loop($depth:ident, <=, $target:ident, any;
-        $skeleton:ident, $degree:ident, $index:ident, $position:ident)) => {
-        Some(EphemeralPosition::new($skeleton, $index, $position))
-    };
-    (@after loop($depth:ident, ==, $target:ident, any;
-        $skeleton:ident, $degree:ident, $index:ident, $position:ident)) => {
-        if $position == $target {
-            Some(EphemeralPosition::new($skeleton, $index, $position))
-        } else {
-            None
-        }
-    };
-    (@after loop($depth:ident, >=, $target:ident, any;
-        $skeleton:ident, $degree:ident, $index:ident, $position:ident)) => {
-        {
-            if $position < $target {
-                traverse!(@next($depth; $skeleton, $index, $position)).unwrap();
-            }
-            Some(EphemeralPosition::new($skeleton, $index, $position))
-        }
-    };
-    (@after loop($depth:ident, >, $target:ident, any;
-        $skeleton:ident, $degree:ident, $index:ident, $position:ident)) => {
-        {
-            traverse!(@next($depth; $skeleton, $index, $position)).unwrap();
-            Some(EphemeralPosition::new($skeleton, $index, $position))
-        }
-    };
-    // endregion
-
-    // region start/end
-    // region index is at bound
-    (@index is at bound(start; $index:expr)) => {
-        $index & 1 == 0
-    };
-    (@index is at bound(end; $index:expr)) => {
-        $index & 1 == 1
-    };
-    // endregion
-
-    (@after loop($depth:ident, <, $target:ident, $bound:ident;
-        $skeleton:ident, $degree:ident, $index:ident, $position:ident)) => {
-        {
-            if !traverse!(@index is at bound($bound; $index)) {
-                traverse!(@previous($depth; $skeleton, $index, $position)).ok()?;
-            }
-            Some(EphemeralPosition::new($skeleton, $index, $position))
-        }
-    };
-    (@after loop($depth:ident, <=, $target:ident, $bound:ident;
-        $skeleton:ident, $degree:ident, $index:ident, $position:ident)) => {
-        {
-            if !traverse!(@index is at bound($bound; $index)) {
-                traverse!(@previous($depth; $skeleton, $index, $position)).ok()?;
-            }
-            Some(EphemeralPosition::new($skeleton, $index, $position))
-        }
-    };
-    (@after loop($depth:ident, ==, $target:ident, $bound:ident;
-        $skeleton:ident, $degree:ident, $index:ident, $position:ident)) => {
-        if $position == $target && traverse!(@index is at bound($bound; $index)) {
-            Some(EphemeralPosition::new($skeleton, $index, $position))
-        } else {
-            None
-        }
-    };
-    (@after loop($depth:ident, >=, $target:ident, $bound:ident;
-        $skeleton:ident, $degree:ident, $index:ident, $position:ident)) => {
-        {
-            if $position < $target {
-                traverse!(@next($depth; $skeleton, $index, $position)).unwrap();
-            }
-            if !traverse!(@index is at bound($bound; $index)) {
-                traverse!(@next($depth; $skeleton, $index, $position)).ok()?;
-            }
-            Some(EphemeralPosition::new($skeleton, $index, $position))
-        }
-    };
-    (@after loop($depth:ident, >, $target:ident, $bound:ident;
-        $skeleton:ident, $degree:ident, $index:ident, $position:ident)) => {
-        {
-            traverse!(@next($depth; $skeleton, $index, $position)).unwrap();
-            if !traverse!(@index is at bound($bound; $index)) {
-                traverse!(@next($depth; $skeleton, $index, $position)).ok()?;
-            }
-            Some(EphemeralPosition::new($skeleton, $index, $position))
-        }
-    };
-    // endregion
-    // endregion
-
-    // region checked
-    (@checked(shallow, $cmp:tt, $target:ident, $bound:ident; $skeleton:ident)) => {
-        {
-            let mut degree = $skeleton.borrow().depth - 1;
-            let mut index = 0;
-            let mut position = $skeleton.borrow().offset;
-            traverse!(@loop(shallow, $cmp, $target, $bound;
-                $skeleton, degree, index, position));
-            traverse!(@after loop(shallow, $cmp, $target, $bound;
-                $skeleton, degree, index, position))
-        }
-    };
-    (@checked(deep, $cmp:tt, $target:ident, $bound:ident; $skeleton:ident)) => {
-        {
-            let mut skeleton = $skeleton;
-            let mut degree = skeleton.borrow().depth - 1;
-            let mut index = 0;
-            let mut position = skeleton.borrow().offset;
-            traverse!(@loop(deep, $cmp, $target, $bound;
-                skeleton, degree, index, position));
-            traverse!(@after loop(deep, $cmp, $target, $bound;
-                skeleton, degree, index, position))
-        }
-    };
-    // endregion
-
-    // region checks
-    // region out of bounds condition
-    (@out of bounds condition(<, $target:ident; $skeleton:ident)) => {
-        $target <= $skeleton.borrow().offset
-    };
-    (@out of bounds condition(<=, $target:ident; $skeleton:ident)) => {
-        $target < $skeleton.borrow().offset
-    };
-    (@out of bounds condition(==, $target:ident; $skeleton:ident)) => {
-        $target < $skeleton.borrow().offset ||
-            $target > $skeleton.borrow().last_position()
-    };
-    (@out of bounds condition(>=, $target:ident; $skeleton:ident)) => {
-        $target > $skeleton.borrow().last_position()
-    };
-    (@out of bounds condition(>, $target:ident; $skeleton:ident)) => {
-        $target >= $skeleton.borrow().last_position()
-    };
-    // endregion
-
-    // region if zero is at bound
-    (@if zero is at bound(any) { $($then:tt)* } else { $($else:tt)* }) => {
-        $($then)*
-    };
-    (@if zero is at bound(start) { $($then:tt)* } else { $($else:tt)* }) => {
-        $($then)*
-    };
-    (@if zero is at bound(end) { $($then:tt)* } else { $($else:tt)* }) => {
-        $($else)*
-    };
-    // endregion
-
-    // region if one is at bound
-    (@if one is at bound(any) { $($then:tt)* } else { $($else:tt)* }) => {
-        $($then)*
-    };
-    (@if one is at bound(start) { $($then:tt)* } else { $($else:tt)* }) => {
-        $($else)*
-    };
-    (@if one is at bound(end) { $($then:tt)* } else { $($else:tt)* }) => {
-        $($then)*
-    };
-    // endregion
-
-    // region trivial edge cases
-    (@trivial edge cases(<, $target:ident, $bound:ident; $skeleton:ident)) => {
-        traverse!(@if one is at bound($bound) {
-            if $target > $skeleton.borrow().last_position() {
-                return Some(EphemeralPosition::at_end($skeleton));
-            }
-        } else {});
-    };
-    (@trivial edge cases(<=, $target:ident, $bound:ident; $skeleton:ident)) => {
-        traverse!(@if one is at bound($bound) {
-            if $target >= $skeleton.borrow().last_position() {
-                return Some(EphemeralPosition::at_end($skeleton));
-            }
-        } else {});
-    };
-    (@trivial edge cases(==, $target:ident, $bound:ident; $skeleton:ident)) => {
-        {
-            traverse!(@if zero is at bound($bound) {
-                if $target == $skeleton.borrow().offset() {
-                    return Some(EphemeralPosition::at_start($skeleton));
-                }
-            } else {});
-            traverse!(@if one is at bound($bound) {
-                if $target == $skeleton.borrow().last_position() {
-                    return Some(EphemeralPosition::at_end($skeleton));
-                }
-            } else {});
-        }
-    };
-    (@trivial edge cases(>=, $target:ident, $bound:ident; $skeleton:ident)) => {
-        traverse!(@if zero is at bound($bound) {
-            if $target <= $skeleton.borrow().offset() {
-                return Some(EphemeralPosition::at_start($skeleton));
-            }
-        } else {});
-    };
-    (@trivial edge cases(>, $target:ident, $bound:ident; $skeleton:ident)) => {
-        traverse!(@if zero is at bound($bound) {
-            if $target < $skeleton.borrow().offset() {
-                return Some(EphemeralPosition::at_start($skeleton));
-            }
-        } else {});
-    };
-    // endregion
-
-    (@($depth:ident, $cmp:tt, $target:ident, $bound:ident; $skeleton:ident)) => {
-        if $skeleton.borrow().elements.is_empty() {
-            None
-        } else if traverse!(@out of bounds condition($cmp, $target; $skeleton)) {
-            None
-        } else if $skeleton.borrow().links.is_empty() {
-            traverse!(@if zero is at bound($bound) {
-                if $skeleton.borrow().offset $cmp $target {
-                    Some(EphemeralPosition::new($skeleton.clone(), 0, $skeleton.borrow().offset))
-                } else {
-                    None
-                }
-            } else {
-                None
-            })
-        } else {
-            traverse!(@trivial edge cases($cmp, $target, $bound; $skeleton));
-            traverse!(@checked($depth, $cmp, $target, $bound; $skeleton))
-        }
-    };
-    // endregion
-
-    // region public
-    ($skeleton:ident; $depth:ident; $cmp:tt $target:ident) => {
-        traverse!(@($depth, $cmp, $target, any; $skeleton))
-    };
-    ($skeleton:ident; $depth:ident; $cmp:tt $target:ident at $bound:ident) => {
-        traverse!(@($depth, $cmp, $target, $bound; $skeleton))
-    };
-    // endregion
 }
 
 macro_rules! for_all_traversals {
@@ -401,697 +56,133 @@ macro_rules! for_all_traversals {
     };
 }
 
-macro_rules! traversal_methods {
-    (@shallow $pos:ident: $cmp:tt) => {
+macro_rules! traversal_functions {
+    (shallow $pos:ident: $cmp:tt) => {
         paste! {
             pub fn [<shallow_ $pos>](this: Rc<RefCell<Self>>, target: S)
                 -> Option<EphemeralPosition<Kind, S, T>> {
-                traverse!(this; shallow; $cmp target)
+                traversal_function_body!(this; shallow; $cmp target with empty_condition ())
             }
         }
     };
-    (@deep $pos:ident: $cmp:tt) => {
+    (deep $pos:ident: $cmp:tt) => {
         pub fn $pos(this: Rc<RefCell<Self>>, target: S)
             -> Option<EphemeralPosition<Kind, S, T>> {
-            traverse!(this; deep; $cmp target)
+            traversal_function_body!(this; deep; $cmp target with empty_condition ())
+        }
+    };
+    ($kind:ident conditional shallow $pos:ident: $cmp:tt) => {
+        paste! {
+            pub fn [<conditional_ shallow_ $pos>](this: Rc<RefCell<Self>>, target: S, condition: fn(Ref<T>) -> bool)
+                -> Option<EphemeralPosition<$kind, S, T>> {
+                traversal_function_body!(this; shallow; $cmp target with function_condition (condition))
+            }
+        }
+    };
+    ($kind:ident conditional deep $pos:ident: $cmp:tt) => {
+        paste! {
+            pub fn [<conditional_ $pos>](this: Rc<RefCell<Self>>, target: S, condition: fn(Ref<T>) -> bool)
+                -> Option<EphemeralPosition<$kind, S, T>> {
+                traversal_function_body!(this; shallow; $cmp target with function_condition (condition))
+            }
         }
     };
     () => {
-        for_all_traversals!(traversal_methods @shallow);
-        for_all_traversals!(traversal_methods @deep);
+        for_all_traversals!(traversal_functions shallow);
+        for_all_traversals!(traversal_functions deep);
     };
-    (@shallow $range_kind:ident $bound:ident $pos:ident: $cmp:tt) => {
+    (conditional $kind:ident) => {
+        for_all_traversals!(traversal_functions $kind conditional shallow);
+        for_all_traversals!(traversal_functions $kind conditional deep);
+    };
+    (shallow $bound:ident $pos:ident: $cmp:tt) => {
         paste! {
             pub fn [<shallow_ $bound ing_ $pos>](this: Rc<RefCell<Self>>, target: S)
-                -> Option<EphemeralPosition<$range_kind, S, T>> {
-                traverse!(this; shallow; $cmp target at $bound)
+                -> Option<EphemeralPosition<Range, S, T>> {
+                traversal_function_body!(this; shallow; $cmp target with [<index_is_at_ $bound _condition>] ())
             }
         }
     };
-    (@deep $range_kind:ident $bound:ident $pos:ident: $cmp:tt) => {
+    (deep $bound:ident $pos:ident: $cmp:tt) => {
         paste! {
             pub fn [<$bound ing_ $pos>](this: Rc<RefCell<Self>>, target: S)
-                -> Option<EphemeralPosition<$range_kind, S, T>> {
-                traverse!(this; deep; $cmp target at $bound)
+                -> Option<EphemeralPosition<Range, S, T>> {
+                traversal_function_body!(this; deep; $cmp target with [<index_is_at_ $bound _condition>] ())
             }
         }
     };
-    (range) => {
-        for_all_traversals!(traversal_methods @shallow Range start);
-        for_all_traversals!(traversal_methods @shallow Range end);
-        for_all_traversals!(traversal_methods @deep Range start);
-        for_all_traversals!(traversal_methods @deep Range end);
+    (conditional shallow $bound:ident $pos:ident: $cmp:tt) => {
+        paste! {
+            pub fn [<conditional_ shallow_ $bound ing_ $pos>](this: Rc<RefCell<Self>>, target: S, condition: fn(Ref<T>) -> bool)
+                -> Option<EphemeralPosition<Range, S, T>> {
+                traversal_function_body!(this; shallow; $cmp target with [<index_is_at_ $bound _and_function_condition>] (condition))
+            }
+        }
     };
-    (nested range) => {
-        traversal_methods!(@shallow NestedRange start at: ==);
-        traversal_methods!(@shallow NestedRange end at: ==);
-        traversal_methods!(@deep NestedRange start at: ==);
-        traversal_methods!(@deep NestedRange end at: ==);
+    (conditional deep $bound:ident $pos:ident: $cmp:tt) => {
+        paste! {
+            pub fn [<conditional_ $bound ing_ $pos>](this: Rc<RefCell<Self>>, target: S, condition: fn(Ref<T>) -> bool)
+                -> Option<EphemeralPosition<Range, S, T>> {
+                traversal_function_body!(this; deep; $cmp target with [<index_is_at_ $bound _and_function_condition>] (condition))
+            }
+        }
+    };
+    (@range) => {
+        for_all_traversals!(traversal_functions shallow start);
+        for_all_traversals!(traversal_functions shallow end);
+        for_all_traversals!(traversal_functions deep start);
+        for_all_traversals!(traversal_functions deep end);
+        for_all_traversals!(traversal_functions conditional shallow start);
+        for_all_traversals!(traversal_functions conditional shallow end);
+        for_all_traversals!(traversal_functions conditional deep start);
+        for_all_traversals!(traversal_functions conditional deep end);
+    };
+    (shallow nested $bound:ident $pos:ident: $cmp:tt) => {
+        paste! {
+            pub fn [<shallow_ $bound ing_ $pos>](this: Rc<RefCell<Self>>, target: S)
+                -> Option<EphemeralPosition<NestedRange, S, T>> {
+                traversal_function_body!(this; shallow; $cmp target with [<index_is_at_ $bound _condition>] ())
+            }
+        }
+    };
+    (deep nested $bound:ident $pos:ident: $cmp:tt) => {
+        paste! {
+            pub fn [<$bound ing_ $pos>](this: Rc<RefCell<Self>>, target: S)
+                -> Option<EphemeralPosition<NestedRange, S, T>> {
+                traversal_function_body!(this; deep; $cmp target with [<index_is_at_ $bound _condition>] ())
+            }
+        }
+    };
+    (conditional shallow nested $bound:ident $pos:ident: $cmp:tt) => {
+        paste! {
+            pub fn [<conditional_ shallow_ $bound ing_ $pos>](this: Rc<RefCell<Self>>, target: S, condition: fn(Ref<T>) -> bool)
+                -> Option<EphemeralPosition<NestedRange, S, T>> {
+                traversal_function_body!(this; shallow; $cmp target with [<index_is_at_ $bound _and_function_condition>] (condition))
+            }
+        }
+    };
+    (conditional deep nested $bound:ident $pos:ident: $cmp:tt) => {
+        paste! {
+            pub fn [<conditional_ $bound ing_ $pos>](this: Rc<RefCell<Self>>, target: S, condition: fn(Ref<T>) -> bool)
+                -> Option<EphemeralPosition<NestedRange, S, T>> {
+                traversal_function_body!(this; deep; $cmp target with [<index_is_at_ $bound _and_function_condition>] (condition))
+            }
+        }
+    };
+    (@nested range) => {
+        for_all_traversals!(traversal_functions shallow nested start);
+        for_all_traversals!(traversal_functions shallow nested end);
+        for_all_traversals!(traversal_functions deep nested start);
+        for_all_traversals!(traversal_functions deep nested end);
+        for_all_traversals!(traversal_functions conditional shallow nested start);
+        for_all_traversals!(traversal_functions conditional shallow nested end);
+        for_all_traversals!(traversal_functions conditional deep nested start);
+        for_all_traversals!(traversal_functions conditional deep nested end);
     };
 }
 
-#[allow(unused)]
+#[allow(dead_code)]
 impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
-    // traversal_methods!();
-
-    pub fn shallow_before(this: Rc<RefCell<Self>>, target: S)
-                          -> Option<EphemeralPosition<Kind, S, T>> {
-        if this.borrow().elements.is_empty() {
-            None
-        } else if target <= this.borrow().offset {
-            None
-        } else if this.borrow().links.is_empty() {
-            if this.borrow().offset < target {
-                Some(EphemeralPosition::new(this.clone(), 0, this.borrow().offset))
-            } else {
-                None
-            }
-        } else {
-            if target > this.borrow().last_position() {
-                return Some(EphemeralPosition::at_end(this));
-            }
-            {
-                let mut degree = this.borrow().depth - 1;
-                let mut index = 0;
-                let mut position = this.borrow().offset;
-                loop {
-                    let link_index = link_index(index, degree);
-                    if !this.borrow().link_index_is_in_bounds(link_index) {
-                        if degree > 0 {
-                            degree -= 1;
-                            continue;
-                        } else {
-                            break;
-                        }
-                    }
-
-                    let next_position = position + this.borrow().links[link_index];
-                    if next_position < target {
-                        position = next_position;
-                        index += 1 << degree;
-                    }
-
-                    if degree > 0 {
-                        degree -= 1;
-                    } else {
-                        break;
-                    }
-                }
-                Some(EphemeralPosition::new(this, index, position))
-            }
-        }
-    }
-    pub fn shallow_at_or_before(this: Rc<RefCell<Self>>, target: S)
-                                -> Option<EphemeralPosition<Kind, S, T>> {
-        if this.borrow().elements.is_empty() {
-            None
-        } else if target < this.borrow().offset {
-            None
-        } else if this.borrow().links.is_empty() {
-            if this.borrow().offset <= target {
-                Some(EphemeralPosition::new(this.clone(), 0, this.borrow().offset))
-            } else {
-                None
-            }
-        } else {
-            if target >= this.borrow().last_position() {
-                return Some(EphemeralPosition::at_end(this));
-            }
-            {
-                let mut degree = this.borrow().depth - 1;
-                let mut index = 0;
-                let mut position = this.borrow().offset;
-                loop {
-                    let link_index = link_index(index, degree);
-                    if !this.borrow().link_index_is_in_bounds(link_index) {
-                        if degree > 0 {
-                            degree -= 1;
-                            continue;
-                        } else {
-                            break;
-                        }
-                    }
-
-                    let next_position = position + this.borrow().links[link_index];
-                    if next_position <= target {
-                        position = next_position;
-                        index += 1 << degree;
-                        if position == target {
-                            break;
-                        }
-                    }
-
-                    if degree > 0 {
-                        degree -= 1;
-                    } else {
-                        break;
-                    }
-                }
-                Some(EphemeralPosition::new(this, index, position))
-            }
-        }
-    }
-    pub fn shallow_at(this: Rc<RefCell<Self>>, target: S)
-                      -> Option<EphemeralPosition<Kind, S, T>> {
-        if this.borrow().elements.is_empty() {
-            None
-        } else if target < this.borrow().offset ||
-            target > this.borrow().last_position() {
-            None
-        } else if this.borrow().links.is_empty() {
-            if this.borrow().offset == target {
-                Some(EphemeralPosition::new(this.clone(), 0, this.borrow().offset))
-            } else {
-                None
-            }
-        } else {
-            {
-                if target == this.borrow().offset() {
-                    return Some(EphemeralPosition::at_start(this));
-                }
-                if target == this.borrow().last_position() {
-                    return Some(EphemeralPosition::at_end(this));
-                }
-            }
-            {
-                let mut degree = this.borrow().depth - 1;
-                let mut index = 0;
-                let mut position = this.borrow().offset;
-                loop {
-                    let link_index = link_index(index, degree);
-                    if !this.borrow().link_index_is_in_bounds(link_index) {
-                        if degree > 0 {
-                            degree -= 1;
-                            continue;
-                        } else {
-                            break;
-                        }
-                    }
-
-                    let next_position = position + this.borrow().links[link_index];
-                    if next_position <= target {
-                        position = next_position;
-                        index += 1 << degree;
-                        if position == target {
-                            break;
-                        }
-                    }
-
-                    if degree > 0 {
-                        degree -= 1;
-                    } else {
-                        break;
-                    }
-                }
-                if position == target {
-                    Some(EphemeralPosition::new(this, index, position))
-                } else {
-                    None
-                }
-            }
-        }
-    }
-    pub fn shallow_at_or_after(this: Rc<RefCell<Self>>, target: S)
-                               -> Option<EphemeralPosition<Kind, S, T>> {
-        if this.borrow().elements.is_empty() {
-            None
-        } else if target > this.borrow().last_position() {
-            None
-        } else if this.borrow().links.is_empty() {
-            if this.borrow().offset >= target {
-                Some(EphemeralPosition::new(this.clone(), 0, this.borrow().offset))
-            } else {
-                None
-            }
-        } else {
-            if target <= this.borrow().offset() {
-                return Some(EphemeralPosition::at_start(this));
-            }
-            {
-                let mut degree = this.borrow().depth - 1;
-                let mut index = 0;
-                let mut position = this.borrow().offset;
-                loop {
-                    let link_index = link_index(index, degree);
-                    if !this.borrow().link_index_is_in_bounds(link_index) {
-                        if degree > 0 {
-                            degree -= 1;
-                            continue;
-                        } else {
-                            break;
-                        }
-                    }
-
-                    let next_position = position + this.borrow().links[link_index];
-                    if next_position <= target {
-                        position = next_position;
-                        index += 1 << degree;
-                        if position == target {
-                            break;
-                        }
-                    }
-
-                    if degree > 0 {
-                        degree -= 1;
-                    } else {
-                        break;
-                    }
-                }
-                {
-                    if position < target {
-                        if index == this.borrow().links.len() {
-                            Err("Tried to move to next element but it's already the end of the skeleton")
-                        } else {
-                            position += this.borrow().link(index);
-                            index += 1;
-                            Ok(())
-                        }.unwrap();
-                    }
-                    Some(EphemeralPosition::new(this, index, position))
-                }
-            }
-        }
-    }
-    pub fn shallow_after(this: Rc<RefCell<Self>>, target: S)
-                         -> Option<EphemeralPosition<Kind, S, T>> {
-        if this.borrow().elements.is_empty() {
-            None
-        } else if target >= this.borrow().last_position() {
-            None
-        } else if this.borrow().links.is_empty() {
-            if this.borrow().offset > target {
-                Some(EphemeralPosition::new(this.clone(), 0, this.borrow().offset))
-            } else {
-                None
-            }
-        } else {
-            if target < this.borrow().offset() {
-                return Some(EphemeralPosition::at_start(this));
-            }
-            {
-                let mut degree = this.borrow().depth - 1;
-                let mut index = 0;
-                let mut position = this.borrow().offset;
-                loop {
-                    let link_index = link_index(index, degree);
-                    if !this.borrow().link_index_is_in_bounds(link_index) {
-                        if degree > 0 {
-                            degree -= 1;
-                            continue;
-                        } else {
-                            break;
-                        }
-                    }
-
-                    let next_position = position + this.borrow().links[link_index];
-                    if next_position <= target {
-                        position = next_position;
-                        index += 1 << degree;
-                        if position == target {
-                            break;
-                        }
-                    }
-
-                    if degree > 0 {
-                        degree -= 1;
-                    } else {
-                        break;
-                    }
-                }
-                {
-                    if index == this.borrow().links.len() {
-                        Err("Tried to move to next element but it's already the end of the skeleton")
-                    } else {
-                        position += this.borrow().link(index);
-                        index += 1;
-                        Ok(())
-                    }.unwrap();
-                    Some(EphemeralPosition::new(this, index, position))
-                }
-            }
-        }
-    }
-    pub fn before(this: Rc<RefCell<Self>>, target: S)
-                  -> Option<EphemeralPosition<Kind, S, T>> {
-        if this.borrow().elements.is_empty() {
-            None
-        } else if target <= this.borrow().offset {
-            None
-        } else if this.borrow().links.is_empty() {
-            if this.borrow().offset < target {
-                Some(EphemeralPosition::new(this.clone(), 0, this.borrow().offset))
-            } else {
-                None
-            }
-        } else {
-            if target > this.borrow().last_position() {
-                return Some(EphemeralPosition::at_end(this));
-            }
-            {
-                let mut skeleton = this;
-                let mut degree = skeleton.borrow().depth - 1;
-                let mut index = 0;
-                let mut position = skeleton.borrow().offset;
-                loop {
-                    let link_index = link_index(index, degree);
-                    if !skeleton.borrow().link_index_is_in_bounds(link_index) {
-                        if degree > 0 {
-                            degree -= 1;
-                            continue;
-                        } else {
-                            break;
-                        }
-                    }
-
-                    let next_position = position + skeleton.borrow().links[link_index];
-                    if next_position < target {
-                        position = next_position;
-                        index += 1 << degree;
-                    }
-
-                    if degree > 0 {
-                        degree -= 1;
-                    } else {
-                        if let Some(sub) = skeleton.clone().borrow().sub(index) {
-                            let next_position = position + sub.borrow().offset;
-                            if next_position < target {
-                                degree = sub.borrow().depth.saturating_sub(1);
-                                index = 0;
-                                position = next_position;
-                                skeleton = sub;
-                                continue;
-                            }
-                        }
-                        break;
-                    }
-                }
-                Some(EphemeralPosition::new(skeleton, index, position))
-            }
-        }
-    }
-    pub fn at_or_before(this: Rc<RefCell<Self>>, target: S)
-                        -> Option<EphemeralPosition<Kind, S, T>> {
-        if this.borrow().elements.is_empty() {
-            None
-        } else if target < this.borrow().offset {
-            None
-        } else if this.borrow().links.is_empty() {
-            if this.borrow().offset <= target {
-                Some(EphemeralPosition::new(this.clone(), 0, this.borrow().offset))
-            } else {
-                None
-            }
-        } else {
-            if target >= this.borrow().last_position() {
-                return Some(EphemeralPosition::at_end(this));
-            }
-            {
-                let mut skeleton = this;
-                let mut degree = skeleton.borrow().depth - 1;
-                let mut index = 0;
-                let mut position = skeleton.borrow().offset;
-                loop {
-                    let link_index = link_index(index, degree);
-                    if !skeleton.borrow().link_index_is_in_bounds(link_index) {
-                        if degree > 0 {
-                            degree -= 1;
-                            continue;
-                        } else {
-                            break;
-                        }
-                    }
-
-                    let next_position = position + skeleton.borrow().links[link_index];
-                    if next_position <= target {
-                        position = next_position;
-                        index += 1 << degree;
-                        if position == target {
-                            break;
-                        }
-                    }
-
-                    if degree > 0 {
-                        degree -= 1;
-                    } else {
-                        if let Some(sub) = skeleton.clone().borrow().sub(index) {
-                            let next_position = position + sub.borrow().offset;
-                            if next_position <= target {
-                                degree = sub.borrow().depth.saturating_sub(1);
-                                index = 0;
-                                position = next_position;
-                                skeleton = sub;
-                                continue;
-                            }
-                        }
-                        break;
-                    }
-                }
-                Some(EphemeralPosition::new(skeleton, index, position))
-            }
-        }
-    }
-    pub fn at(this: Rc<RefCell<Self>>, target: S)
-              -> Option<EphemeralPosition<Kind, S, T>> {
-        if this.borrow().elements.is_empty() {
-            None
-        } else if target < this.borrow().offset ||
-            target > this.borrow().last_position() {
-            None
-        } else if this.borrow().links.is_empty() {
-            if this.borrow().offset == target {
-                Some(EphemeralPosition::new(this.clone(), 0, this.borrow().offset))
-            } else {
-                None
-            }
-        } else {
-            {
-                if target == this.borrow().offset() {
-                    return Some(EphemeralPosition::at_start(this));
-                }
-                if target == this.borrow().last_position() {
-                    return Some(EphemeralPosition::at_end(this));
-                }
-            }
-            {
-                let mut skeleton = this;
-                let mut degree = skeleton.borrow().depth - 1;
-                let mut index = 0;
-                let mut position = skeleton.borrow().offset;
-                loop {
-                    let link_index = link_index(index, degree);
-                    if !skeleton.borrow().link_index_is_in_bounds(link_index) {
-                        if degree > 0 {
-                            degree -= 1;
-                            continue;
-                        } else {
-                            break;
-                        }
-                    }
-
-                    let next_position = position + skeleton.borrow().links[link_index];
-                    if next_position <= target {
-                        position = next_position;
-                        index += 1 << degree;
-                        if position == target {
-                            break;
-                        }
-                    }
-
-                    if degree > 0 {
-                        degree -= 1;
-                    } else {
-                        if let Some(sub) = skeleton.clone().borrow().sub(index) {
-                            let next_position = position + sub.borrow().offset;
-                            if next_position <= target {
-                                degree = sub.borrow().depth.saturating_sub(1);
-                                index = 0;
-                                position = next_position;
-                                skeleton = sub;
-                                continue;
-                            }
-                        }
-                        break;
-                    }
-                }
-                if position == target {
-                    Some(EphemeralPosition::new(skeleton, index, position))
-                } else {
-                    None
-                }
-            }
-        }
-    }
-    pub fn at_or_after(this: Rc<RefCell<Self>>, target: S)
-                       -> Option<EphemeralPosition<Kind, S, T>> {
-        if this.borrow().elements.is_empty() {
-            None
-        } else if target > this.borrow().last_position() {
-            None
-        } else if this.borrow().links.is_empty() {
-            if this.borrow().offset >= target {
-                Some(EphemeralPosition::new(this.clone(), 0, this.borrow().offset))
-            } else {
-                None
-            }
-        } else {
-            if target <= this.borrow().offset() {
-                return Some(EphemeralPosition::at_start(this));
-            }
-            {
-                let mut skeleton = this;
-                let mut degree = skeleton.borrow().depth - 1;
-                let mut index = 0;
-                let mut position = skeleton.borrow().offset;
-                loop {
-                    let link_index = link_index(index, degree);
-                    if !skeleton.borrow().link_index_is_in_bounds(link_index) {
-                        if degree > 0 {
-                            degree -= 1;
-                            continue;
-                        } else {
-                            break;
-                        }
-                    }
-
-                    let next_position = position + skeleton.borrow().links[link_index];
-                    if next_position <= target {
-                        position = next_position;
-                        index += 1 << degree;
-                        if position == target {
-                            break;
-                        }
-                    }
-
-                    if degree > 0 {
-                        degree -= 1;
-                    } else {
-                        if let Some(sub) = skeleton.clone().borrow().sub(index) {
-                            let next_position = position + sub.borrow().offset;
-                            if next_position <= target {
-                                degree = sub.borrow().depth.saturating_sub(1);
-                                index = 0;
-                                position = next_position;
-                                skeleton = sub;
-                                continue;
-                            }
-                        }
-                        break;
-                    }
-                }
-                {
-                    if position < target {
-                        if index == skeleton.borrow().links.len() {
-                            if let Some(ParentData { parent, index_in_parent }) =
-                            &skeleton.clone().borrow().parent_data {
-                                position -= skeleton.borrow().last_position();
-                                skeleton = parent.upgrade().unwrap();
-                                position += skeleton.borrow().link(*index_in_parent);
-                                index = index_in_parent + 1;
-                                Ok(())
-                            } else {
-                                Err("Tried to move to next element but it's already the end of the skeleton")
-                            }
-                        } else if let Some(sub) = skeleton.clone().borrow().sub(index) {
-                            skeleton = sub;
-                            index = 0;
-                            position += skeleton.borrow().offset;
-                            Ok(())
-                        } else {
-                            position += skeleton.borrow().link(index);
-                            index += 1;
-                            Ok(())
-                        }.unwrap();
-                    }
-                    Some(EphemeralPosition::new(skeleton, index, position))
-                }
-            }
-        }
-    }
-    pub fn after(this: Rc<RefCell<Self>>, target: S)
-                 -> Option<EphemeralPosition<Kind, S, T>> {
-        if this.borrow().elements.is_empty() {
-            None
-        } else if target >= this.borrow().last_position() {
-            None
-        } else if this.borrow().links.is_empty() {
-            if this.borrow().offset > target {
-                Some(EphemeralPosition::new(this.clone(), 0, this.borrow().offset))
-            } else {
-                None
-            }
-        } else {
-            if target < this.borrow().offset() {
-                return Some(EphemeralPosition::at_start(this));
-            }
-            {
-                let mut skeleton = this;
-                let mut degree = skeleton.borrow().depth - 1;
-                let mut index = 0;
-                let mut position = skeleton.borrow().offset;
-                loop {
-                    let link_index = link_index(index, degree);
-                    if !skeleton.borrow().link_index_is_in_bounds(link_index) {
-                        if degree > 0 {
-                            degree -= 1;
-                            continue;
-                        } else {
-                            break;
-                        }
-                    }
-
-                    let next_position = position + skeleton.borrow().links[link_index];
-                    if next_position <= target {
-                        position = next_position;
-                        index += 1 << degree;
-                        if position == target {
-                            break;
-                        }
-                    }
-
-                    if degree > 0 {
-                        degree -= 1;
-                    } else {
-                        if let Some(sub) = skeleton.clone().borrow().sub(index) {
-                            let next_position = position + sub.borrow().offset;
-                            if next_position <= target {
-                                degree = sub.borrow().depth.saturating_sub(1);
-                                index = 0;
-                                position = next_position;
-                                skeleton = sub;
-                                continue;
-                            }
-                        }
-                        break;
-                    }
-                }
-                {
-                    if index == skeleton.borrow().links.len() {
-                        if let Some(ParentData { parent, index_in_parent }) =
-                        &skeleton.clone().borrow().parent_data {
-                            position -= skeleton.borrow().last_position();
-                            skeleton = parent.upgrade().unwrap();
-                            position += skeleton.borrow().link(*index_in_parent);
-                            index = index_in_parent + 1;
-                            Ok(())
-                        } else {
-                            Err("Tried to move to next element but it's already the end of the skeleton")
-                        }
-                    } else if let Some(sub) = skeleton.clone().borrow().sub(index) {
-                        skeleton = sub;
-                        index = 0;
-                        position += skeleton.borrow().offset;
-                        Ok(())
-                    } else {
-                        position += skeleton.borrow().link(index);
-                        index += 1;
-                        Ok(())
-                    }.unwrap();
-                    Some(EphemeralPosition::new(skeleton, index, position))
-                }
-            }
-        }
-    }
-
     pub fn at_index(this: Rc<RefCell<Self>>, index: usize) -> Option<EphemeralPosition<Kind, S, T>> {
         if index > this.borrow().links.len() {
             return None;
@@ -1109,15 +200,32 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
     }
 }
 
-#[allow(unused)]
-impl<S: Spacing, T> Skeleton<Range, S, T> {
-    traversal_methods!(range);
+#[allow(dead_code)]
+impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
+    traversal_functions!();
 }
 
-#[allow(unused)]
+#[allow(dead_code)]
+impl<S: Spacing, T> Skeleton<Node, S, T> {
+    traversal_functions!(conditional Node);
+}
+
+#[allow(dead_code)]
+impl<S: Spacing, T> Skeleton<Range, S, T> {
+    traversal_functions!(conditional Range);
+
+    traversal_functions!(@range);
+}
+
+#[allow(dead_code)]
 impl<S: Spacing, T> Skeleton<NestedRange, S, T> {
-    // TODO implement more NestedRange traversal methods
-    traversal_methods!(nested range);
+    traversal_functions!(conditional NestedRange);
+
+    traversal_functions!(@nested range);
 }
 
 pub mod iteration;
+mod r#loop;
+mod after_loop;
+mod checks;
+mod traversal_function_body;
