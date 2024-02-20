@@ -1,8 +1,11 @@
+// this example is unfinished, but that's okay for now
+#![allow(dead_code, unused_variables)]
+
 use std::ops::RangeInclusive;
 use ansi_term::Color::{Blue, Green, Yellow};
 use indoc::indoc;
 use itertools::Itertools;
-use spaced_list_5::{SpacedList, RangeSpacedList, NestedRangeSpacedList, HollowRangeSpacedList};
+use spaced_list_5::{RangeSpacedList, NestedRangeSpacedList, HollowRangeSpacedList, HollowIndex, Index, Range, NestedRange};
 
 fn main() {
     // let mut list = SpacedList::new();
@@ -45,7 +48,7 @@ fn main() {
     let mut slashes = HollowRangeSpacedList::<usize>::new();
     for (index, char) in source.chars().enumerate() {
         if char == '/' {
-            slashes.try_insert_with_span(index, 1);
+            slashes.try_insert_with_span(index, 1).unwrap();
         }
     }
     // endregion
@@ -174,7 +177,7 @@ fn main() {
             let inline_value = InlineExpression::Text(Text {
                 range: position.index().into_range()
             });
-            inline_expressions.try_insert(start, end, inline_value).unwrap();
+            inline_expressions.try_insert(start, end, inline_value.clone()).unwrap();
             expressions.try_insert(start, end, Expression::Inline(inline_value)).unwrap();
             start = end;
         }
@@ -205,7 +208,7 @@ fn main() {
      */
 
     let paths = NestedRangeSpacedList::<usize, (InlineExpression, InlineExpression)>::new();
-    let expected_inline_expression_before_slash_errors = HollowRangeSpacedList::new();
+    let mut expected_inline_expression_before_slash_errors = HollowRangeSpacedList::new();
 
     for (start, end) in slashes.iter_ranges() {
         let left_position = whitespace
@@ -219,7 +222,7 @@ fn main() {
         let left =
             inline_expressions
                 .ending_at(left_position)
-                .map(|position| position.element().borrow().clone())
+                .map(|position| position.element().clone())
                 .unwrap_or_else(|| {
                     // let error_start = left_position - 1;
                     let previous_whitespace =
@@ -252,18 +255,18 @@ fn main() {
                                 }
                             }
                         };
-                    let position = expected_inline_expression_before_slash_errors.insert(start, end);
+                    let position = expected_inline_expression_before_slash_errors.try_insert(start, end).unwrap();
                     let inline_value = InlineExpression::Error(Error::ExpectedInlineExpressionBeforeSlash {
                         range: position.index().into_range()
                     });
-                    inline_expressions.insert(start, end, inline_value);
-                    expressions.insert(start, end, Expression::Inline(inline_value));
+                    inline_expressions.try_insert(start, end, inline_value.clone()).unwrap();
+                    expressions.try_insert(start, end, Expression::Inline(inline_value.clone())).unwrap();
                     inline_value
                 });
         let right =
             inline_expressions
                 .ending_at(left_position)
-                .map(|position| position.element().borrow().clone())
+                .map(|position| position.element().clone())
                 .unwrap_or_else(|| {
                     // let error_start = left_position - 1;
                     let previous_whitespace =
@@ -296,12 +299,12 @@ fn main() {
                                 }
                             }
                         };
-                    let position = expected_inline_expression_before_slash_errors.insert(start, end);
+                    let position = expected_inline_expression_before_slash_errors.try_insert(start, end).unwrap();
                     let inline_value = InlineExpression::Error(Error::ExpectedInlineExpressionBeforeSlash {
                         range: position.index().into_range()
                     });
-                    inline_expressions.insert(start, end, inline_value);
-                    expressions.insert(start, end, Expression::Inline(inline_value));
+                    inline_expressions.try_insert(start, end, inline_value.clone()).unwrap();
+                    expressions.try_insert(start, end, Expression::Inline(inline_value.clone())).unwrap();
                     inline_value
                 });
     }

@@ -2,7 +2,6 @@ use std::rc::Rc;
 use std::cell::{Ref, RefCell};
 use crate::{Skeleton, NestedRange, Position, NestedRangePushError, NestedRangeInsertionError,
             SpacingError, Spacing, BackwardsIter, ForwardsIter};
-use crate::spaced_lists::{spacing_methods, trivial_accessors};
 
 pub struct NestedRangeSpacedList<S: Spacing, T> {
     skeleton: Rc<RefCell<Skeleton<NestedRange, S, T>>>,

@@ -3,7 +3,6 @@ use std::cell::RefCell;
 use itertools::Itertools;
 use crate::{Skeleton, Range, Position, HollowPosition, RangePushError, RangeInsertionError,
             SpacingError, Spacing, BackwardsIter, ForwardsIter};
-use crate::spaced_lists::{spacing_methods, trivial_accessors};
 
 pub struct HollowRangeSpacedList<S: Spacing> {
     skeleton: Rc<RefCell<Skeleton<Range, S, ()>>>,

@@ -2,7 +2,6 @@ use std::rc::Rc;
 use std::cell::{Ref, RefCell};
 use crate::{Skeleton, Node, Position, PushError, SpacingError, Spacing, BackwardsIter,
             ForwardsIter};
-use crate::spaced_lists::{spacing_methods, trivial_accessors};
 
 pub struct SpacedList<S: Spacing, T> {
     skeleton: Rc<RefCell<Skeleton<Node, S, T>>>,

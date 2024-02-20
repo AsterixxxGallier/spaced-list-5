@@ -190,12 +190,6 @@ impl<Kind, S: Spacing, T> From<EphemeralPosition<Kind, S, T>> for Position<Kind,
     }
 }
 
-impl<Kind, S: Spacing, T> From<Position<Kind, S, T>> for EphemeralPosition<Kind, S, T> {
-    fn from(persistent: Position<Kind, S, T>) -> Self {
-        persistent.ephemeral()
-    }
-}
-
 position!(HollowPosition; <Kind, S: Spacing>; HollowPosition<Kind, S>; Skeleton<Kind, S, ()>);
 
 impl<Kind, S: Spacing> HollowPosition<Kind, S> {

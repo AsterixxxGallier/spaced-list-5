@@ -95,36 +95,35 @@ fn node_index_trailing_ones(n: u32) -> u32 {
 }
 
 fn criterion_benchmark(c: &mut Criterion) {
-    println!("{}", old(23));
-    println!("{}", trailing_ones(23));
-    println!("{}", trailing_ones(23));
-    // let mut counter: u16 = 0;
-    // let mut group = c.benchmark_group("links_above");
-    // group.bench_function("old", |b| b.iter(|| {
-    //     black_box(old(black_box(counter as u32)));
-    //     counter += 1;
-    // }));
-    // group.bench_function("trailing_ones", |b| b.iter(|| {
-    //     black_box(trailing_ones(black_box(counter as u32)));
-    //     counter += 1;
-    // }));
-    // group.bench_function("node_index", |b| b.iter(|| {
-    //     black_box(node_index(black_box(counter as u32)));
-    //     counter += 1;
-    // }));
-    // group.bench_function("node_index_opt", |b| b.iter(|| {
-    //     black_box(node_index_opt(black_box(counter as u32)));
-    //     counter += 1;
-    // }));
-    // group.bench_function("node_index_opt_2", |b| b.iter(|| {
-    //     black_box(node_index_opt_2(black_box(counter as u32)));
-    //     counter += 1;
-    // }));
-    // group.bench_function("node_index_trailing_ones", |b| b.iter(|| {
-    //     black_box(node_index_trailing_ones(black_box(counter as u32)));
-    //     counter += 1;
-    // }));
-    // group.finish();
+    // println!("{}", old(23)); // = 65516
+    // println!("{}", trailing_ones(23)); // = 65516
+    let mut counter: u16 = 0;
+    let mut group = c.benchmark_group("links_above");
+    group.bench_function("old", |b| b.iter(|| {
+        black_box(old(black_box(counter as u32)));
+        counter += 1;
+    }));
+    group.bench_function("trailing_ones", |b| b.iter(|| {
+        black_box(trailing_ones(black_box(counter as u32)));
+        counter += 1;
+    }));
+    group.bench_function("node_index", |b| b.iter(|| {
+        black_box(node_index(black_box(counter as u32)));
+        counter += 1;
+    }));
+    group.bench_function("node_index_opt", |b| b.iter(|| {
+        black_box(node_index_opt(black_box(counter as u32)));
+        counter += 1;
+    }));
+    group.bench_function("node_index_opt_2", |b| b.iter(|| {
+        black_box(node_index_opt_2(black_box(counter as u32)));
+        counter += 1;
+    }));
+    group.bench_function("node_index_trailing_ones", |b| b.iter(|| {
+        black_box(node_index_trailing_ones(black_box(counter as u32)));
+        counter += 1;
+    }));
+    group.finish();
 }
 
 criterion_group!(benches, criterion_benchmark);

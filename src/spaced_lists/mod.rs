@@ -81,9 +81,6 @@ macro_rules! trivial_accessors {
     }
 }
 
-pub(crate) use spacing_methods;
-pub(crate) use trivial_accessors;
-
 pub mod spaced_list;
 pub mod range_spaced_list;
 pub mod nested_range_spaced_list;
