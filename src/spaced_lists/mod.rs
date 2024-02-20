@@ -407,14 +407,14 @@ impl<S: Spacing, T> NestedRangeSpacedList<S, T> {
     pub fn starting_at_or_before(&self, position: S) -> Option<Position<NestedRange, S, T>> {
         Skeleton::<NestedRange, _, _>::starting_at_or_before(self.skeleton.clone(), position)
             .map(|ephemeral| ephemeral.into())
-    }
+    }*/
 
     pub fn starting_at(&self, position: S) -> Option<Position<NestedRange, S, T>> {
         Skeleton::<NestedRange, _, _>::starting_at(self.skeleton.clone(), position)
             .map(|ephemeral| ephemeral.into())
     }
 
-    pub fn starting_at_or_after(&self, position: S) -> Option<Position<NestedRange, S, T>> {
+    /*pub fn starting_at_or_after(&self, position: S) -> Option<Position<NestedRange, S, T>> {
         Skeleton::<NestedRange, _, _>::starting_at_or_after(self.skeleton.clone(), position)
             .map(|ephemeral| ephemeral.into())
     }
@@ -433,14 +433,14 @@ impl<S: Spacing, T> NestedRangeSpacedList<S, T> {
     pub fn ending_at_or_before(&self, position: S) -> Option<Position<NestedRange, S, T>> {
         Skeleton::<NestedRange, _, _>::ending_at_or_before(self.skeleton.clone(), position)
             .map(|ephemeral| ephemeral.into())
-    }
+    }*/
 
     pub fn ending_at(&self, position: S) -> Option<Position<NestedRange, S, T>> {
         Skeleton::<NestedRange, _, _>::ending_at(self.skeleton.clone(), position)
             .map(|ephemeral| ephemeral.into())
     }
 
-    pub fn ending_at_or_after(&self, position: S) -> Option<Position<NestedRange, S, T>> {
+    /*pub fn ending_at_or_after(&self, position: S) -> Option<Position<NestedRange, S, T>> {
         Skeleton::<NestedRange, _, _>::ending_at_or_after(self.skeleton.clone(), position)
             .map(|ephemeral| ephemeral.into())
     }
@@ -935,7 +935,7 @@ impl<S: Spacing> HollowNestedRangeSpacedList<S> {
                 let position: Position<NestedRange, S, ()> = position.into();
                 position.into()
             })
-    }
+    }*/
 
     pub fn starting_at(&self, position: S) -> Option<HollowPosition<NestedRange, S>> {
         Skeleton::<NestedRange, _, _>::starting_at(self.skeleton.clone(), position)
@@ -945,7 +945,7 @@ impl<S: Spacing> HollowNestedRangeSpacedList<S> {
             })
     }
 
-    pub fn starting_at_or_after(&self, position: S) -> Option<HollowPosition<NestedRange, S>> {
+    /*pub fn starting_at_or_after(&self, position: S) -> Option<HollowPosition<NestedRange, S>> {
         Skeleton::<NestedRange, _, _>::starting_at_or_after(self.skeleton.clone(), position)
             .map(|position| {
                 let position: Position<NestedRange, S, ()> = position.into();
@@ -976,7 +976,7 @@ impl<S: Spacing> HollowNestedRangeSpacedList<S> {
                 let position: Position<NestedRange, S, ()> = position.into();
                 position.into()
             })
-    }
+    }*/
 
     pub fn ending_at(&self, position: S) -> Option<HollowPosition<NestedRange, S>> {
         Skeleton::<NestedRange, _, _>::ending_at(self.skeleton.clone(), position)
@@ -986,7 +986,7 @@ impl<S: Spacing> HollowNestedRangeSpacedList<S> {
             })
     }
 
-    pub fn ending_at_or_after(&self, position: S) -> Option<HollowPosition<NestedRange, S>> {
+    /*pub fn ending_at_or_after(&self, position: S) -> Option<HollowPosition<NestedRange, S>> {
         Skeleton::<NestedRange, _, _>::ending_at_or_after(self.skeleton.clone(), position)
             .map(|position| {
                 let position: Position<NestedRange, S, ()> = position.into();

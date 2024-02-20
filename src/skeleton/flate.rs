@@ -2,6 +2,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use num_traits::zero;
+// use rayon::prelude::*;
 
 use crate::skeleton::{link_index, relative_depth, Skeleton};
 use crate::Spacing;
@@ -81,11 +82,13 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
 
     pub fn inflate_unchecked(&mut self, index: usize, amount: S) {
         for degree in 0..relative_depth(index, self.links.len()) {
+        // (0..relative_depth(index, self.links.len())).into_par_iter().for_each(|degree| {
             if index >> degree & 1 == 0 {
                 self.links[link_index(index, degree)] += amount;
             }
         }
-        self.length += amount
+        // });
+        self.length += amount;
     }
 
     pub fn inflate(&mut self, index: usize, amount: S) {

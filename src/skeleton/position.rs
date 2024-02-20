@@ -413,11 +413,11 @@ impl<Kind, S: Spacing, T> Position<Kind, S, T> {
             )
     }
 
-    pub(crate) fn into_index(self) -> Index<Kind, S, T> {
+    pub fn into_index(self) -> Index<Kind, S, T> {
         Index::new(self.skeleton, self.index)
     }
 
-    pub(crate) fn index(&self) -> Index<Kind, S, T> {
+    pub fn index(&self) -> Index<Kind, S, T> {
         Index::new(self.skeleton.clone(), self.index)
     }
 }
@@ -442,11 +442,11 @@ impl<Kind, S: Spacing> HollowPosition<Kind, S> {
         position.ephemeral()
     }
 
-    pub(crate) fn into_index(self) -> HollowIndex<Kind, S> {
+    pub fn into_index(self) -> HollowIndex<Kind, S> {
         HollowIndex::new(self.skeleton, self.index)
     }
 
-    pub(crate) fn index(&self) -> HollowIndex<Kind, S> {
+    pub fn index(&self) -> HollowIndex<Kind, S> {
         HollowIndex::new(self.skeleton.clone(), self.index)
     }
 }

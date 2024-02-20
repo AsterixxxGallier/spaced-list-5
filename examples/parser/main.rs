@@ -5,7 +5,7 @@ use std::ops::{Add, RangeInclusive};
 use ansi_term::Color::{Blue, Green, Yellow};
 use indoc::indoc;
 use itertools::Itertools;
-use spaced_list_5::{HollowNestedRangeSpacedList, HollowRangeSpacedList, NestedRangeSpacedList, Position, Range, RangeSpacedList};
+use spaced_list_5::{AllRangeKinds, HollowIndex, HollowNestedRangeSpacedList, HollowRangeSpacedList, Index, NestedRange, NestedRangeSpacedList, Position, Range, RangeSpacedList};
 
 fn main() {
     let source =
@@ -20,7 +20,7 @@ fn main() {
         };
 
     // region parse colons
-    let mut colons = HollowRangeSpacedList::new();
+    let mut colons = HollowRangeSpacedList::<usize>::new();
     for (index, char) in source.chars().enumerate() {
         if char == ':' {
             colons.insert_with_span(index, 1);
@@ -29,7 +29,7 @@ fn main() {
     // endregion
 
     // region parse arrows
-    let mut arrows = HollowRangeSpacedList::new();
+    let mut arrows = HollowRangeSpacedList::<usize>::new();
     for (index, char) in source.chars().enumerate() {
         if char == '>' {
             arrows.insert_with_span(index, 1);
@@ -37,8 +37,17 @@ fn main() {
     }
     // endregion
 
+    // region parse slashes
+    let mut slashes = HollowRangeSpacedList::<usize>::new();
+    for (index, char) in source.chars().enumerate() {
+        if char == '/' {
+            slashes.insert_with_span(index, 1);
+        }
+    }
+    // endregion
+
     // region parse line breaks
-    let mut line_breaks = HollowRangeSpacedList::new();
+    let mut line_breaks = HollowRangeSpacedList::<usize>::new();
     for (index, char) in source.chars().enumerate() {
         if char == '\n' {
             line_breaks.insert_with_span(index, 1);
@@ -47,7 +56,7 @@ fn main() {
     // endregion
 
     // region parse whitespace
-    let mut whitespace = HollowRangeSpacedList::new();
+    let mut whitespace = HollowRangeSpacedList::<usize>::new();
     let mut chars = source.chars().peekable();
     let mut start = 0;
     while let Some(char) = chars.next() {
@@ -108,6 +117,9 @@ fn main() {
     }
     // endregion
 
+    let mut inline_expressions = NestedRangeSpacedList::<usize, InlineExpression>::new();
+    let mut expressions = NestedRangeSpacedList::<usize, Expression>::new();
+
     // region parse text
     let mut text = HollowRangeSpacedList::new();
     for (start, end) in trimmed_lines.iter_ranges() {
@@ -119,6 +131,10 @@ fn main() {
             }
             if let Some(arrow) = arrows.starting_at(start) {
                 start += arrow.span();
+                continue;
+            }
+            if let Some(slash) = slashes.starting_at(start) {
+                start += slash.span();
                 continue;
             }
             if let Some(whitespace) = whitespace.starting_at(start) {
@@ -142,9 +158,148 @@ fn main() {
                         .unwrap_or(arrow.position());
                 }
             }
-            text.insert(start, end);
+            if let Some(slash) = slashes.starting_after(start) {
+                if slash.position() < end {
+                    end = whitespace
+                        .ending_at(slash.position())
+                        .map(|option| option.into_range().0.position())
+                        .unwrap_or(slash.position());
+                }
+            }
+            let position = text.insert(start, end);
+            let inline_value = InlineExpression::Text(Text {
+                range: position.index().into_range()
+            });
+            inline_expressions.insert(start, end, inline_value);
+            expressions.insert(start, end, Expression::Inline(inline_value));
             start = end;
         }
+    }
+    // endregion
+
+    // region parse paths
+    /*
+    foo/bar/baz
+    foo/bar/>baz
+    foo/>bar/baz
+    foo/>bar/>baz
+    >foo/bar/baz
+    >foo/bar/>baz
+    >foo/>bar/baz
+    >foo/>bar/>baz
+
+    (foo/bar)/baz
+    (foo/bar)/>baz
+    foo/>(bar/baz)
+    foo/>(bar/>baz)
+    >((foo/bar)/baz)
+    >((foo/bar)/>baz)
+    >(foo/>(bar/baz))
+    >(foo/>(bar/>baz))
+
+    from left to right iterating over all slashes
+     */
+
+    let paths = NestedRangeSpacedList::<usize, (InlineExpression, InlineExpression)>::new();
+    let expected_inline_expression_before_slash_errors = HollowRangeSpacedList::new();
+
+    for (start, end) in slashes.iter_ranges() {
+        let left_position = whitespace
+            .ending_at(start.position())
+            .map(|option| option.into_range().0.position())
+            .unwrap_or(start.position());
+        let right_position = whitespace
+            .starting_at(end.position())
+            .map(|option| option.into_range().1.position())
+            .unwrap_or(end.position());
+        let left =
+            inline_expressions
+                .ending_at(left_position)
+                .map(|position| position.element().borrow().clone())
+                .unwrap_or_else(|| {
+                    // let error_start = left_position - 1;
+                    let previous_whitespace =
+                        whitespace
+                            .ending_before(left_position)
+                            .map(|position| position.position());
+                    let line_start = trimmed_lines
+                        // TODO long term Here, an "at or before but if at then return None" could
+                        //  have been useful maybe, consider when rewriting SpacedList
+                        .starting_at_or_before(left_position)
+                        .unwrap().position();
+                        // .map(|position| position.position())
+                        // .filter(|position| *position < left_position);
+                    let (start, end) =
+                        match previous_whitespace {
+                            None => {
+                                if line_start == left_position {
+                                    (left_position, left_position + 1)
+                                } else {
+                                    (line_start, left_position)
+                                }
+                            }
+                            Some(previous_whitespace) => {
+                                if previous_whitespace >= line_start {
+                                    (previous_whitespace, left_position)
+                                } else if line_start == left_position {
+                                    (left_position, left_position + 1)
+                                } else {
+                                    (line_start, left_position)
+                                }
+                            }
+                        };
+                    let position = expected_inline_expression_before_slash_errors.insert(start, end);
+                    let inline_value = InlineExpression::Error(Error::ExpectedInlineExpressionBeforeSlash {
+                        range: position.index().into_range()
+                    });
+                    inline_expressions.insert(start, end, inline_value);
+                    expressions.insert(start, end, Expression::Inline(inline_value));
+                    inline_value
+                });
+        let right =
+            inline_expressions
+                .ending_at(left_position)
+                .map(|position| position.element().borrow().clone())
+                .unwrap_or_else(|| {
+                    // let error_start = left_position - 1;
+                    let previous_whitespace =
+                        whitespace
+                            .ending_before(left_position)
+                            .map(|position| position.position());
+                    let line_start = trimmed_lines
+                        // TODO long term Here, an "at or before but if at then return None" could
+                        //  have been useful maybe, consider when rewriting SpacedList
+                        .starting_at_or_before(left_position)
+                        .unwrap().position();
+                        // .map(|position| position.position())
+                        // .filter(|position| *position < left_position);
+                    let (start, end) =
+                        match previous_whitespace {
+                            None => {
+                                if line_start == left_position {
+                                    (left_position, left_position + 1)
+                                } else {
+                                    (line_start, left_position)
+                                }
+                            }
+                            Some(previous_whitespace) => {
+                                if previous_whitespace >= line_start {
+                                    (previous_whitespace, left_position)
+                                } else if line_start == left_position {
+                                    (left_position, left_position + 1)
+                                } else {
+                                    (line_start, left_position)
+                                }
+                            }
+                        };
+                    let position = expected_inline_expression_before_slash_errors.insert(start, end);
+                    let inline_value = InlineExpression::Error(Error::ExpectedInlineExpressionBeforeSlash {
+                        range: position.index().into_range()
+                    });
+                    inline_expressions.insert(start, end, inline_value);
+                    expressions.insert(start, end, Expression::Inline(inline_value));
+                    inline_value
+                });
     }
     // endregion
 
@@ -238,4 +393,62 @@ fn main() {
     println!("{}", colored_source);
     // endregion
     /**/
+}
+
+#[derive(Clone)]
+enum Expression {
+    Inline(InlineExpression),
+    Scope(Scope),
+    ScopeExtendedInline(ScopeExtendedInline),
+}
+
+#[derive(Clone)]
+enum InlineExpression {
+    Text(Text),
+    Path(Path),
+    Reference(Reference),
+    Error(Error),
+}
+
+#[derive(Clone)]
+enum Error {
+    ExpectedInlineExpressionBeforeSlash {
+        range: (HollowIndex<Range, usize>, HollowIndex<Range, usize>)
+    }
+}
+
+#[derive(Clone)]
+struct Text {
+    range: (HollowIndex<Range, usize>, HollowIndex<Range, usize>),
+}
+
+#[derive(Clone)]
+struct Path {
+    range: (HollowIndex<Range, usize>, HollowIndex<Range, usize>),
+    left: Box<InlineExpression>,
+    right: Box<InlineExpression>,
+}
+
+#[derive(Clone)]
+struct Reference {
+    range: (HollowIndex<Range, usize>, HollowIndex<Range, usize>),
+    path: Box<InlineExpression>,
+}
+
+#[derive(Clone)]
+struct Scope {
+    range: (Index<NestedRange, usize, usize>, Index<NestedRange, usize, usize>),
+    associations: Vec<Association>,
+}
+
+#[derive(Clone)]
+struct Association {
+    left: Option<InlineExpression>,
+    right: Expression,
+}
+
+#[derive(Clone)]
+struct ScopeExtendedInline {
+    inline: InlineExpression,
+    scope: Scope,
 }
