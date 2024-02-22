@@ -21,7 +21,7 @@ ansi_term = "0.12.1"
 indoc = "2.0.4"
 
 [[bench]]
-name = "inflate"
+name = "traverse"
 harness = false
 
 [profile.bench]

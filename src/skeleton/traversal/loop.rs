@@ -57,8 +57,8 @@ macro_rules! r#loop {
     ($depth:ident, $cmp:tt, $target:ident;
         $skeleton:ident, $degree:ident, $index:ident, $position:ident) => {
         loop {
-            let link_index = link_index($index, $degree);
-            if !$skeleton.borrow().link_index_is_in_bounds(link_index) {
+            let next_link_index = link_index($index, $degree);
+            if !$skeleton.borrow().link_index_is_in_bounds(next_link_index) {
                 if $degree > 0 {
                     $degree -= 1;
                     continue;
@@ -67,7 +67,32 @@ macro_rules! r#loop {
                 }
             }
 
-            let next_position = $position + $skeleton.borrow().links[link_index];
+            // this prefetching strategy leads to significant performance improvements (20-40%)
+            if $degree > 0 && $skeleton.borrow().link_index_is_in_bounds(link_index($index + (1 << $degree), $degree - 1)) {
+                // SAFETY: _mm_prefetch does not change the behaviour of the program, and the parameters are valid
+                unsafe {
+                    let reference = &$skeleton.borrow().links[link_index($index, $degree - 1)];
+                    prefetch_read_data(reference as *const S as *const i8, core::arch::x86_64::_MM_HINT_T0);
+                    let reference = &$skeleton.borrow().links[link_index($index + (1 << $degree), $degree - 1)];
+                    prefetch_read_data(reference as *const S as *const i8, core::arch::x86_64::_MM_HINT_T0);
+                }
+
+                // this seems to (mostly) make performance (much) worse, especially for small to medium sized skeletons
+                /*if $degree > 1 {
+                    unsafe {
+                        let reference = &$skeleton.borrow().links[link_index($index, $degree - 2)];
+                        prefetch_read_data(reference as *const S as *const i8, core::arch::x86_64::_MM_HINT_T0);
+                        let reference = &$skeleton.borrow().links[link_index($index + (1 << $degree), $degree - 2)];
+                        prefetch_read_data(reference as *const S as *const i8, core::arch::x86_64::_MM_HINT_T0);
+                        let reference = &$skeleton.borrow().links[link_index($index + (1 << ($degree - 1)), $degree - 2)];
+                        prefetch_read_data(reference as *const S as *const i8, core::arch::x86_64::_MM_HINT_T0);
+                        let reference = &$skeleton.borrow().links[link_index($index + (1 << $degree) + (1 << ($degree - 1)), $degree - 2)];
+                        prefetch_read_data(reference as *const S as *const i8, core::arch::x86_64::_MM_HINT_T0);
+                    }
+                }*/
+            }
+
+            let next_position = $position + $skeleton.borrow().links[next_link_index];
             if next_position $cmp $target {
                 $position = next_position;
                 $index += 1 << $degree;

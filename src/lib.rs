@@ -14,6 +14,11 @@
 // TODO add NestedRange stuff when the manager module fully supports it
 
 #![feature(trait_alias)]
+
+// used ONLY for the prefetch_read_data intrinsic, which is used in loop.rs for a significant performance gain
+#![allow(internal_features)]
+#![feature(core_intrinsics)]
+
 // #![warn(clippy::pedantic)]
 // #![allow(clippy::needless_pass_by_value, clippy::missing_errors_doc, clippy::module_name_repetitions)]
 #![allow(dead_code)]

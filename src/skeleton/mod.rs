@@ -54,8 +54,6 @@ pub(crate) struct ParentData<Parent> {
 //            say, hypers don't need to be nested deeply at these sizes.
 //            This mechanism guarantees an upper bound not only on allocated array size, but also on jump distances,
 //            except when entering a sub. In this way, most of the really bad cache misses can be avoided.
-// TODO optimize using prefetch intrinsic, compare https://stackoverflow.com/a/31688096 (at each traversal step,
-//  prefetch the spacings at the next 2 or 4 node indices that might be checked (which are easy to calculate))
 pub(crate) struct Skeleton<Kind, S: Spacing, T> {
     links: Vec<S>,
     elements: Vec<T>,
