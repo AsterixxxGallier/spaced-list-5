@@ -3,24 +3,25 @@ use std::cmp::Ordering;
 use std::mem;
 use std::rc::Rc;
 use num_traits::zero;
+use thiserror::Error;
 
 use crate::{BoundType, EphemeralIndex, EphemeralPosition, Index, Range, Skeleton, Spacing};
 
-#[derive(Debug)]
+#[derive(Error, Debug)]
 pub enum RangePushError {
-    /// "Cannot push range at a negative distance from the end of a non-empty list"
+    #[error("Cannot push range at a negative distance from the end of a non-empty list.")]
     NegativeDistanceInNonEmptyList,
-    /// "Cannot push range with negative span"
+    #[error("Cannot push range with negative span.")]
     NegativeSpan,
 }
 
-#[derive(Debug)]
+#[derive(Error, Debug)]
 pub enum RangeInsertionError {
-    /// "Cannot insert range that starts inside of another range"
+    #[error("Cannot insert range that starts inside of another range.")]
     RangeStartsInsideExistingRange,
-    /// "Cannot insert range that intersects another range"
+    #[error("Cannot insert range that intersects another range.")]
     RangeIntersectsExistingRange,
-    /// "Cannot insert range with negative span"
+    #[error("Cannot insert range with negative span.")]
     NegativeSpan,
 }
 
@@ -204,9 +205,9 @@ mod tests {
     #[test]
     fn test() {
         let mut list: RangeSpacedList<i32, char> = RangeSpacedList::new();
-        let b = list.try_insert(0, 2, 'b').unwrap();
-        let c = list.try_insert(3, 4, 'c').unwrap();
-        let a = list.try_insert(-2, -1, 'a').unwrap();
+        let b = list.insert(0, 2, 'b');
+        let c = list.insert(3, 4, 'c');
+        let a = list.insert(-2, -1, 'a');
 
         println!("{} at {}; {} in {:?}", *a.element(), a.position, a.index, a.skeleton.borrow().elements);
         println!("{} at {}; {} in {:?}", *b.element(), b.position, b.index, b.skeleton.borrow().elements);

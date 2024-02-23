@@ -13,7 +13,7 @@ fn criterion_benchmark(c: &mut Criterion) {
         let lists = repeat_with(|| {
             let mut list = HollowSpacedList::new();
             for _ in 0..n {
-                list.try_push(1).unwrap();
+                list.push(1);
             }
             list
         }).take(copies as usize).collect_vec();

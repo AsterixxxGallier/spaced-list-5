@@ -1,8 +1,7 @@
 use std::rc::Rc;
 use std::cell::RefCell;
 use itertools::Itertools;
-use crate::{Skeleton, NestedRange, Position, HollowPosition, NestedRangePushError,
-            NestedRangeInsertionError, SpacingError, Spacing, BackwardsIter, ForwardsIter};
+use crate::{Skeleton, NestedRange, Position, HollowPosition, NestedRangePushError, NestedRangeInsertionError, SpacingError, Spacing, BackwardsIter, ForwardsIter, display_unwrap};
 
 pub struct HollowNestedRangeSpacedList<S: Spacing> {
     skeleton: Rc<RefCell<Skeleton<NestedRange, S, ()>>>,
@@ -22,6 +21,19 @@ impl<S: Spacing> HollowNestedRangeSpacedList<S> {
     #[must_use]
     pub fn new() -> Self {
         Self::default()
+    }
+
+
+    pub fn push(&mut self, spacing: S, span: S) -> HollowPosition<NestedRange, S> {
+        display_unwrap!(self.try_push(spacing, span))
+    }
+
+    pub fn insert(&mut self, start: S, end: S) -> HollowPosition<NestedRange, S> {
+        display_unwrap!(self.try_insert(start, end))
+    }
+
+    pub fn insert_with_span(&mut self, start: S, span: S) -> HollowPosition<NestedRange, S> {
+        display_unwrap!(self.try_insert_with_span(start, span))
     }
 
     pub fn try_push(&mut self, spacing: S, span: S) -> Result<HollowPosition<NestedRange, S>, NestedRangePushError> {

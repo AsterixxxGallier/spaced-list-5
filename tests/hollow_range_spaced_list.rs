@@ -17,7 +17,7 @@ fn ranges() {
         println!("{:?}", ranges);
         let mut list: HollowRangeSpacedList<u64> = HollowRangeSpacedList::new();
         for (start, span) in ranges {
-            list.try_insert_with_span(start, span).unwrap();
+            list.insert_with_span(start, span);
         }
         print(list.iter_ranges());
 

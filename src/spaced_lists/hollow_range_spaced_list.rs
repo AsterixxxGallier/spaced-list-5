@@ -1,8 +1,7 @@
 use std::rc::Rc;
 use std::cell::RefCell;
 use itertools::Itertools;
-use crate::{Skeleton, Range, Position, HollowPosition, RangePushError, RangeInsertionError,
-            SpacingError, Spacing, BackwardsIter, ForwardsIter};
+use crate::{Skeleton, Range, Position, HollowPosition, RangePushError, RangeInsertionError, SpacingError, Spacing, BackwardsIter, ForwardsIter, display_unwrap};
 
 pub struct HollowRangeSpacedList<S: Spacing> {
     skeleton: Rc<RefCell<Skeleton<Range, S, ()>>>,
@@ -20,8 +19,21 @@ impl<S: Spacing> Default for HollowRangeSpacedList<S> {
 
 impl<S: Spacing> HollowRangeSpacedList<S> {
     #[must_use]
-     pub fn new() -> Self {
+    pub fn new() -> Self {
         Self::default()
+    }
+
+
+    pub fn push(&mut self, spacing: S, span: S) -> HollowPosition<Range, S> {
+        display_unwrap!(self.try_push(spacing, span))
+    }
+
+    pub fn insert(&mut self, start: S, end: S) -> HollowPosition<Range, S> {
+        display_unwrap!(self.try_insert(start, end))
+    }
+
+    pub fn insert_with_span(&mut self, start: S, span: S) -> HollowPosition<Range, S> {
+        display_unwrap!(self.try_insert_with_span(start, span))
     }
 
     pub fn try_push(&mut self, spacing: S, span: S) -> Result<HollowPosition<Range, S>, RangePushError> {
@@ -47,7 +59,7 @@ impl<S: Spacing> HollowRangeSpacedList<S> {
 
 
     #[must_use]
-     pub fn first(&self) -> Option<HollowPosition<Range, S>> {
+    pub fn first(&self) -> Option<HollowPosition<Range, S>> {
         if self.is_empty() {
             None
         } else {
@@ -56,7 +68,7 @@ impl<S: Spacing> HollowRangeSpacedList<S> {
     }
 
     #[must_use]
-     pub fn last(&self) -> Option<HollowPosition<Range, S>> {
+    pub fn last(&self) -> Option<HollowPosition<Range, S>> {
         if self.is_empty() {
             None
         } else {

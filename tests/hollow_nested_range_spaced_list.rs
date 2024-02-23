@@ -16,10 +16,10 @@ fn print<'a, S>(iter: impl Iterator<Item=HollowPosition<NestedRange, S>>)
 #[test]
 fn test() {
     let mut list = HollowNestedRangeSpacedList::new();
-    list.try_insert(0, 20).unwrap();
-    list.try_insert(5, 8).unwrap();
-    list.try_insert(12, 15).unwrap();
-    list.try_insert(13, 14).unwrap();
+    list.insert(0, 20);
+    list.insert(5, 8);
+    list.insert(12, 15);
+    list.insert(13, 14);
     print(list.iter());
     assert_eq!(list.starting_at_or_after(5).unwrap().position(), 5);
     assert_eq!(list.starting_at_or_after(6).unwrap().position(), 12);

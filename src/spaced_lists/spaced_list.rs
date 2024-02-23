@@ -1,7 +1,6 @@
 use std::rc::Rc;
 use std::cell::{Ref, RefCell};
-use crate::{Skeleton, Node, Position, PushError, SpacingError, Spacing, BackwardsIter,
-            ForwardsIter};
+use crate::{Skeleton, Node, Position, PushError, SpacingError, Spacing, BackwardsIter, ForwardsIter, display_unwrap};
 
 pub struct SpacedList<S: Spacing, T> {
     skeleton: Rc<RefCell<Skeleton<Node, S, T>>>,
@@ -23,15 +22,20 @@ impl<S: Spacing, T> SpacedList<S, T> {
         Self::default()
     }
 
-    pub fn try_push(&mut self, spacing: S, value: T) -> Result<Position<Node, S, T>, PushError> {
-        self.size += 1;
-        Ok(Skeleton::<Node, _, _>::try_push(self.skeleton.clone(), spacing, value)?.into())
+
+    pub fn push(&mut self, spacing: S, value: T) -> Position<Node, S, T> {
+        display_unwrap!(self.try_push(spacing, value))
     }
 
     // cannot fail
     pub fn insert(&mut self, position: S, value: T) -> Position<Node, S, T> {
         self.size += 1;
         Skeleton::<Node, _, _>::insert(self.skeleton.clone(), position, value).into()
+    }
+
+    pub fn try_push(&mut self, spacing: S, value: T) -> Result<Position<Node, S, T>, PushError> {
+        self.size += 1;
+        Ok(Skeleton::<Node, _, _>::try_push(self.skeleton.clone(), spacing, value)?.into())
     }
 
 

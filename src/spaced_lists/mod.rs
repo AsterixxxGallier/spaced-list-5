@@ -18,8 +18,6 @@ pub enum SpacingError<S: crate::Spacing> {
     },
 }
 
-// TODO more panicking non-try versions of try_ functions
-
 macro_rules! spacing_functions {
     () => {
         pub fn increase_spacing_after(&mut self, position: S, change: S) {

@@ -9,7 +9,7 @@ use spaced_list_5::{RangeSpacedList, NestedRangeSpacedList, HollowRangeSpacedLis
 
 fn main() {
     // let mut list = SpacedList::new();
-    // let position = list.try_push(2, 42).unwrap();
+    // let position = list.push(2, 4);
     // let mut element_ref = position.element_mut();
     // *element_ref += 3;
     // list.insert(1, 43);
@@ -30,7 +30,7 @@ fn main() {
     let mut colons = HollowRangeSpacedList::<usize>::new();
     for (index, char) in source.chars().enumerate() {
         if char == ':' {
-            colons.try_insert_with_span(index, 1).unwrap();
+            colons.insert_with_span(index, 1);
         }
     }
     // endregion
@@ -39,7 +39,7 @@ fn main() {
     let mut arrows = HollowRangeSpacedList::<usize>::new();
     for (index, char) in source.chars().enumerate() {
         if char == '>' {
-            arrows.try_insert_with_span(index, 1).unwrap();
+            arrows.insert_with_span(index, 1);
         }
     }
     // endregion
@@ -48,7 +48,7 @@ fn main() {
     let mut slashes = HollowRangeSpacedList::<usize>::new();
     for (index, char) in source.chars().enumerate() {
         if char == '/' {
-            slashes.try_insert_with_span(index, 1).unwrap();
+            slashes.insert_with_span(index, 1);
         }
     }
     // endregion
@@ -57,7 +57,7 @@ fn main() {
     let mut line_breaks = HollowRangeSpacedList::<usize>::new();
     for (index, char) in source.chars().enumerate() {
         if char == '\n' {
-            line_breaks.try_insert_with_span(index, 1).unwrap();
+            line_breaks.insert_with_span(index, 1);
         }
     }
     // endregion
@@ -77,7 +77,7 @@ fn main() {
                     break;
                 }
             }
-            whitespace.try_insert_with_span(start, span).unwrap();
+            whitespace.insert_with_span(start, span);
             start += span;
         } else {
             start += 1;
@@ -89,10 +89,10 @@ fn main() {
     let mut full_lines = HollowRangeSpacedList::new();
     let mut start = 0;
     for (line_end, line_start) in line_breaks.iter_ranges() {
-        full_lines.try_insert(start, line_end.position()).unwrap();
+        full_lines.insert(start, line_end.position());
         start = line_start.position()
     }
-    full_lines.try_insert(start, source.len()).unwrap();
+    full_lines.insert(start, source.len());
     // endregion
 
     // region parse lines
@@ -101,9 +101,9 @@ fn main() {
         let start = start.position();
         let end = end.position();
         if let Some(indentation) = whitespace.starting_at(start) {
-            lines.try_insert(start, end, indentation.span()).unwrap();
+            lines.insert(start, end, indentation.span());
         } else {
-            lines.try_insert(start, end, 0).unwrap();
+            lines.insert(start, end, 0);
         }
     }
     // endregion
@@ -120,7 +120,7 @@ fn main() {
             .ending_at(end.position())
             .map(|option| option.into_range().0.position())
             .unwrap_or(end.position());
-        trimmed_lines.try_insert(start, end, value).unwrap();
+        trimmed_lines.insert(start, end, value);
     }
     // endregion
 
@@ -173,12 +173,12 @@ fn main() {
                         .unwrap_or(slash.position());
                 }
             }
-            let position = text.try_insert(start, end).unwrap();
+            let position = text.insert(start, end);
             let inline_value = InlineExpression::Text(Text {
                 range: position.index().into_range()
             });
-            inline_expressions.try_insert(start, end, inline_value.clone()).unwrap();
-            expressions.try_insert(start, end, Expression::Inline(inline_value)).unwrap();
+            inline_expressions.insert(start, end, inline_value.clone());
+            expressions.insert(start, end, Expression::Inline(inline_value));
             start = end;
         }
     }
@@ -255,12 +255,12 @@ fn main() {
                                 }
                             }
                         };
-                    let position = expected_inline_expression_before_slash_errors.try_insert(start, end).unwrap();
+                    let position = expected_inline_expression_before_slash_errors.insert(start, end);
                     let inline_value = InlineExpression::Error(Error::ExpectedInlineExpressionBeforeSlash {
                         range: position.index().into_range()
                     });
-                    inline_expressions.try_insert(start, end, inline_value.clone()).unwrap();
-                    expressions.try_insert(start, end, Expression::Inline(inline_value.clone())).unwrap();
+                    inline_expressions.insert(start, end, inline_value.clone());
+                    expressions.insert(start, end, Expression::Inline(inline_value.clone()));
                     inline_value
                 });
         let right =
@@ -299,12 +299,12 @@ fn main() {
                                 }
                             }
                         };
-                    let position = expected_inline_expression_before_slash_errors.try_insert(start, end).unwrap();
+                    let position = expected_inline_expression_before_slash_errors.insert(start, end);
                     let inline_value = InlineExpression::Error(Error::ExpectedInlineExpressionBeforeSlash {
                         range: position.index().into_range()
                     });
-                    inline_expressions.try_insert(start, end, inline_value.clone()).unwrap();
-                    expressions.try_insert(start, end, Expression::Inline(inline_value.clone())).unwrap();
+                    inline_expressions.insert(start, end, inline_value.clone());
+                    expressions.insert(start, end, Expression::Inline(inline_value.clone()));
                     inline_value
                 });
     }
@@ -347,7 +347,7 @@ fn main() {
         if let Some(indices_to_eliminate) = indices_to_eliminate {
             for range in consecutive_ranges(indices_elimination.as_slice()) {
                 if indices_to_eliminate.iter().any(|it| range.contains(it)) {
-                    indented_blocks.try_insert(vec[*range.start()].0, vec[*range.end()].1, baseline).unwrap();
+                    indented_blocks.insert(vec[*range.start()].0, vec[*range.end()].1, baseline);
                 }
             }
             for index in &indices_to_eliminate {

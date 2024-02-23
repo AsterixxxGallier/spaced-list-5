@@ -2,13 +2,14 @@ use std::cell::RefCell;
 use std::mem;
 use std::rc::Rc;
 use num_traits::zero;
+use thiserror::Error;
 
 use crate::{EphemeralIndex, EphemeralPosition, Index, Node, Skeleton, Spacing};
 
-#[derive(Debug)]
+#[derive(Error, Debug)]
 pub enum PushError {
     // TODO replace distance terminology with "spacing" terminology of the public API
-    /// "Cannot push at a negative distance from the end of a non-empty list"
+    #[error("Cannot push at a negative distance from the end of a non-empty list.")]
     NegativeDistanceInNonEmptyList,
 }
 

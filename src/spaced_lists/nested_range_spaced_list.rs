@@ -1,7 +1,6 @@
 use std::rc::Rc;
 use std::cell::{Ref, RefCell};
-use crate::{Skeleton, NestedRange, Position, NestedRangePushError, NestedRangeInsertionError,
-            SpacingError, Spacing, BackwardsIter, ForwardsIter};
+use crate::{Skeleton, NestedRange, Position, NestedRangePushError, NestedRangeInsertionError, SpacingError, Spacing, BackwardsIter, ForwardsIter, display_unwrap};
 
 pub struct NestedRangeSpacedList<S: Spacing, T> {
     skeleton: Rc<RefCell<Skeleton<NestedRange, S, T>>>,
@@ -19,8 +18,21 @@ impl<S: Spacing, T> Default for NestedRangeSpacedList<S, T> {
 
 impl<S: Spacing, T> NestedRangeSpacedList<S, T> {
     #[must_use]
-     pub fn new() -> Self {
+    pub fn new() -> Self {
         Self::default()
+    }
+
+
+    pub fn push(&mut self, spacing: S, span: S, value: T) -> Position<NestedRange, S, T> {
+        display_unwrap!(self.try_push(spacing, span, value))
+    }
+
+    pub fn insert(&mut self, start: S, end: S, value: T) -> Position<NestedRange, S, T> {
+        display_unwrap!(self.try_insert(start, end, value))
+    }
+
+    pub fn insert_with_span(&mut self, start: S, span: S, value: T) -> Position<NestedRange, S, T> {
+        display_unwrap!(self.try_insert_with_span(start, span, value))
     }
 
     pub fn try_push(&mut self, spacing: S, span: S, value: T) -> Result<Position<NestedRange, S, T>, NestedRangePushError> {
@@ -42,7 +54,7 @@ impl<S: Spacing, T> NestedRangeSpacedList<S, T> {
 
 
     #[must_use]
-     pub fn first(&self) -> Option<Position<NestedRange, S, T>> {
+    pub fn first(&self) -> Option<Position<NestedRange, S, T>> {
         if self.is_empty() {
             None
         } else {
@@ -51,7 +63,7 @@ impl<S: Spacing, T> NestedRangeSpacedList<S, T> {
     }
 
     #[must_use]
-     pub fn last(&self) -> Option<Position<NestedRange, S, T>> {
+    pub fn last(&self) -> Option<Position<NestedRange, S, T>> {
         if self.is_empty() {
             None
         } else {

@@ -1,8 +1,7 @@
 use std::rc::Rc;
 use std::cell::{Ref, RefCell};
 use itertools::Itertools;
-use crate::{Skeleton, Range, Position, RangePushError, RangeInsertionError, SpacingError, Spacing,
-            BackwardsIter, ForwardsIter};
+use crate::{Skeleton, Range, Position, RangePushError, RangeInsertionError, SpacingError, Spacing, BackwardsIter, ForwardsIter, display_unwrap};
 
 pub struct RangeSpacedList<S: Spacing, T> {
     skeleton: Rc<RefCell<Skeleton<Range, S, T>>>,
@@ -20,8 +19,21 @@ impl<S: Spacing, T> Default for RangeSpacedList<S, T> {
 
 impl<S: Spacing, T> RangeSpacedList<S, T> {
     #[must_use]
-     pub fn new() -> Self {
+    pub fn new() -> Self {
         Self::default()
+    }
+
+
+    pub fn push(&mut self, spacing: S, span: S, value: T) -> Position<Range, S, T> {
+        display_unwrap!(self.try_push(spacing, span, value))
+    }
+
+    pub fn insert(&mut self, start: S, end: S, value: T) -> Position<Range, S, T> {
+        display_unwrap!(self.try_insert(start, end, value))
+    }
+
+    pub fn insert_with_span(&mut self, start: S, span: S, value: T) -> Position<Range, S, T> {
+        display_unwrap!(self.try_insert_with_span(start, span, value))
     }
 
     pub fn try_push(&mut self, spacing: S, span: S, value: T) -> Result<Position<Range, S, T>, RangePushError> {
@@ -43,7 +55,7 @@ impl<S: Spacing, T> RangeSpacedList<S, T> {
 
 
     #[must_use]
-     pub fn first(&self) -> Option<Position<Range, S, T>> {
+    pub fn first(&self) -> Option<Position<Range, S, T>> {
         if self.is_empty() {
             None
         } else {
@@ -52,7 +64,7 @@ impl<S: Spacing, T> RangeSpacedList<S, T> {
     }
 
     #[must_use]
-     pub fn last(&self) -> Option<Position<Range, S, T>> {
+    pub fn last(&self) -> Option<Position<Range, S, T>> {
         if self.is_empty() {
             None
         } else {

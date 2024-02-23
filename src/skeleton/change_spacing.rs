@@ -4,17 +4,8 @@ use std::rc::Rc;
 
 use num_traits::zero;
 
-use crate::{Spacing, Skeleton, SpacingError};
+use crate::{Spacing, Skeleton, SpacingError, display_unwrap};
 use crate::skeleton::{get_link_index, relative_depth};
-
-macro_rules! display_unwrap {
-    ($arg:expr) => {
-        match $arg {
-            Err(error) => panic!("{}", error),
-            Ok(value) => value
-        }
-    };
-}
 
 // NOTE FOR DUMMIES (LIKE ME): there are separate increase and decrease functions because S might be a non-negative type
 //  like usize, so increasing by a negative value is impossible, so we need extra decrease functions

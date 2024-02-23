@@ -1,8 +1,7 @@
 use std::rc::Rc;
 use std::cell::RefCell;
 use itertools::Itertools;
-use crate::{Skeleton, Node, Position, HollowPosition, PushError, SpacingError, Spacing,
-            BackwardsIter, ForwardsIter};
+use crate::{Skeleton, Node, Position, HollowPosition, PushError, SpacingError, Spacing, BackwardsIter, ForwardsIter, display_unwrap};
 
 pub struct HollowSpacedList<S: Spacing> {
     skeleton: Rc<RefCell<Skeleton<Node, S, ()>>>,
@@ -24,11 +23,9 @@ impl<S: Spacing> HollowSpacedList<S> {
         Self::default()
     }
 
-    pub fn try_push(&mut self, spacing: S) -> Result<HollowPosition<Node, S>, PushError> {
-        self.size += 1;
-        let position: Position<Node, S, ()> =
-            Skeleton::<Node, _, _>::try_push(self.skeleton.clone(), spacing, ())?.into();
-        Ok(position.into())
+
+    pub fn push(&mut self, spacing: S) -> HollowPosition<Node, S> {
+        display_unwrap!(self.try_push(spacing))
     }
 
     // cannot fail
@@ -37,6 +34,13 @@ impl<S: Spacing> HollowSpacedList<S> {
         let position: Position<Node, S, ()> =
             Skeleton::<Node, _, _>::insert(self.skeleton.clone(), position, ()).into();
         position.into()
+    }
+
+    pub fn try_push(&mut self, spacing: S) -> Result<HollowPosition<Node, S>, PushError> {
+        self.size += 1;
+        let position: Position<Node, S, ()> =
+            Skeleton::<Node, _, _>::try_push(self.skeleton.clone(), spacing, ())?.into();
+        Ok(position.into())
     }
 
 

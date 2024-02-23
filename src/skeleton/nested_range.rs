@@ -3,24 +3,25 @@ use std::cmp::Ordering;
 use std::mem;
 use std::rc::Rc;
 use num_traits::zero;
+use thiserror::Error;
 
 use crate::{BoundType, EphemeralIndex, EphemeralPosition, Index, NestedRange, Skeleton, Spacing};
 
-#[derive(Debug)]
+#[derive(Error, Debug)]
 pub enum NestedRangePushError {
-    /// "Cannot push range at a negative distance from the end of a non-empty list"
+    #[error("Cannot push range at a negative distance from the end of a non-empty list.")]
     NegativeDistanceInNonEmptyList,
-    /// "Cannot push range with negative span"
+    #[error("Cannot push range with negative span.")]
     NegativeSpan,
 }
 
-#[derive(Debug)]
+#[derive(Error, Debug)]
 pub enum NestedRangeInsertionError {
-    /// "Inner range exceeds span of outer range"
+    #[error("Inner range exceeds span of outer range.")]
     InnerRangeExceedsOuterRange,
-    /// "Cannot insert range that intersects another range"
+    #[error("Cannot insert range that intersects another range.")]
     RangeIntersectsExistingRange,
-    /// "Cannot insert range with negative span"
+    #[error("Cannot insert range with negative span.")]
     NegativeSpan,
 }
 

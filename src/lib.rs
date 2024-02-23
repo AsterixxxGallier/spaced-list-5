@@ -75,3 +75,14 @@ pub(crate) use {
     skeleton::traversal::iteration::BackwardsIter,
     skeleton::traversal::iteration::ForwardsIter,
 };
+
+macro_rules! display_unwrap {
+    ($arg:expr) => {
+        match $arg {
+            Err(error) => panic!("{}", error),
+            Ok(value) => value
+        }
+    };
+}
+
+pub(crate) use display_unwrap;

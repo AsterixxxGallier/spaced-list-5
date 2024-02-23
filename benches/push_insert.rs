@@ -8,7 +8,7 @@ fn criterion_benchmark(c: &mut Criterion) {
     group.bench_function("push", |b| b.iter(|| {
         let mut list = HollowSpacedList::new();
         for _ in 0..50_000 {
-            list.try_push(1).unwrap();
+            list.push(1);
         }
     }));
     group.bench_function("insert", |b| b.iter(|| {
