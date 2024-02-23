@@ -74,6 +74,4 @@ pub(crate) use {
     skeleton::ephemeral_index::EphemeralIndex,
     skeleton::traversal::iteration::BackwardsIter,
     skeleton::traversal::iteration::ForwardsIter,
-
-    spaced_lists::SpacingOperation,
 };

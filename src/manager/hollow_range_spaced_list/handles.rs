@@ -34,20 +34,37 @@ handle!(HollowRangeInsertionsHandle, insertions);
 // handle!(HollowRangeDeletionsHandle, deletions);
 
 impl<S: Spacing> HollowRangePositionsHandle<S> {
-    pub fn try_increase_spacing_after(&mut self, position: S, spacing: S) -> Result<(), SpacingError<S>> {
-        self.manager.borrow_mut().list.try_increase_spacing_after(position, spacing)
+    pub fn increase_spacing_after(&mut self, position: S, change: S) {
+        self.manager.borrow_mut().list.increase_spacing_after(position, change);
     }
 
-    pub fn try_increase_spacing_before(&mut self, position: S, spacing: S) -> Result<(), SpacingError<S>> {
-        self.manager.borrow_mut().list.try_increase_spacing_before(position, spacing)
+    pub fn increase_spacing_before(&mut self, position: S, change: S) {
+        self.manager.borrow_mut().list.increase_spacing_before(position, change);
     }
 
-    pub fn try_decrease_spacing_after(&mut self, position: S, spacing: S) -> Result<(), SpacingError<S>> {
-        self.manager.borrow_mut().list.try_decrease_spacing_after(position, spacing)
+    pub fn decrease_spacing_after(&mut self, position: S, change: S) {
+        self.manager.borrow_mut().list.decrease_spacing_after(position, change);
     }
 
-    pub fn try_decrease_spacing_before(&mut self, position: S, spacing: S) -> Result<(), SpacingError<S>> {
-        self.manager.borrow_mut().list.try_decrease_spacing_before(position, spacing)
+    pub fn decrease_spacing_before(&mut self, position: S, change: S) {
+        self.manager.borrow_mut().list.decrease_spacing_before(position, change);
+    }
+
+
+    pub fn try_increase_spacing_after(&mut self, position: S, change: S) -> Result<(), SpacingError<S>> {
+        self.manager.borrow_mut().list.try_increase_spacing_after(position, change)
+    }
+
+    pub fn try_increase_spacing_before(&mut self, position: S, change: S) -> Result<(), SpacingError<S>> {
+        self.manager.borrow_mut().list.try_increase_spacing_before(position, change)
+    }
+
+    pub fn try_decrease_spacing_after(&mut self, position: S, change: S) -> Result<(), SpacingError<S>> {
+        self.manager.borrow_mut().list.try_decrease_spacing_after(position, change)
+    }
+
+    pub fn try_decrease_spacing_before(&mut self, position: S, change: S) -> Result<(), SpacingError<S>> {
+        self.manager.borrow_mut().list.try_decrease_spacing_before(position, change)
     }
 }
 

@@ -1,6 +1,7 @@
 use std::cell::RefCell;
 use std::mem;
 use std::rc::Rc;
+use num_traits::zero;
 
 use crate::{EphemeralIndex, EphemeralPosition, Index, Node, Skeleton, Spacing};
 
@@ -18,12 +19,12 @@ impl<S: Spacing, T> Skeleton<Node, S, T> {
             this.borrow_mut().offset = distance;
             this.borrow_mut().elements.push(element);
             Ok(EphemeralPosition::new(this, 0, distance))
-        } else if distance < S::zero() {
+        } else if distance < zero() {
             Err(PushError::NegativeDistanceInNonEmptyList)
         } else {
             let index = this.borrow_mut().push_link();
             // cannot fail because we would have returned with an Err already if distance were < 0
-            this.borrow_mut().try_inflate(index, distance).unwrap();
+            this.borrow_mut().increase_spacing(index, distance);
             this.borrow_mut().elements.push(element);
             Ok(EphemeralPosition::at_end(this))
         }
@@ -77,7 +78,7 @@ impl<S: Spacing, T> Skeleton<Node, S, T> {
                 mem::replace(&mut this.borrow_mut().elements[0], element);
 
             // cannot fail, because we already established previous_first_position > position
-            this.borrow_mut().inflate_after_index(0, previous_first_position - position);
+            this.borrow_mut().increase_spacing_after_index(0, previous_first_position - position);
             this.borrow_mut().offset = position;
 
             let insertion_index = Self::insert(

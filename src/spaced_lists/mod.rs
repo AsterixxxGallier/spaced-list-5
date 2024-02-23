@@ -1,94 +1,61 @@
-use std::fmt::{Display, Formatter};
 use thiserror::Error;
-
-#[derive(Debug, Copy, Clone)]
-pub(crate) enum SpacingOperation { Increase, Decrease }
-
-impl SpacingOperation {
-    fn complement(self) -> Self {
-        match self {
-            SpacingOperation::Increase => SpacingOperation::Decrease,
-            SpacingOperation::Decrease => SpacingOperation::Increase,
-        }
-    }
-}
-
-impl Display for SpacingOperation {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match *self {
-            SpacingOperation::Increase => f.write_str("increase"),
-            SpacingOperation::Decrease => f.write_str("decrease"),
-        }
-    }
-}
 
 #[derive(Error, Debug)]
 pub enum SpacingError<S: crate::Spacing> {
-    #[error("Cannot {operation} spacing after position {position}, \
-             as that position is at or after the end of this list.")]
+    #[error("Cannot change spacing after position {position}, as that position is at or after the end of this list.")]
     PositionAtOrAfterList {
-        operation: SpacingOperation,
         position: S,
     },
-    #[error("Cannot {operation} spacing before position {position}, \
-             as that position is after the end of this list.")]
+    #[error("Cannot change spacing before position {position}, as that position is after the end of this list.")]
     PositionAfterList {
-        operation: SpacingOperation,
         position: S,
     },
-    #[error("Cannot {operation} spacing by {amount}, as it is a negative amount. \
-             Explicitly {} spacing for that.", operation.complement())]
-    AmountNegative {
-        operation: SpacingOperation,
-        amount: S,
-    },
-    #[error("The spacing at position {position} is {spacing}, which is less than {amount}. \
-             It cannot be decreased by this amount without becoming negative.")]
+    #[error("The spacing at position {position} is {spacing}. It is not large enough to be able to be decreased by {change} without becoming negative.")]
     SpacingNotLargeEnough {
         position: S,
-        amount: S,
+        change: S,
         spacing: S,
     },
 }
 
-// TODO panicking non-try versions of try_ functions
+// TODO more panicking non-try versions of try_ functions
 
 macro_rules! spacing_functions {
     () => {
-        pub fn increase_spacing_after(&mut self, position: S, spacing: S) {
-            Skeleton::inflate_after(self.skeleton.clone(), position, spacing);
+        pub fn increase_spacing_after(&mut self, position: S, change: S) {
+            Skeleton::increase_spacing_after(self.skeleton.clone(), position, change);
         }
 
-        pub fn increase_spacing_before(&mut self, position: S, spacing: S) {
-            Skeleton::inflate_before(self.skeleton.clone(), position, spacing);
+        pub fn increase_spacing_before(&mut self, position: S, change: S) {
+            Skeleton::increase_spacing_before(self.skeleton.clone(), position, change);
         }
 
-        pub fn decrease_spacing_after(&mut self, position: S, spacing: S) {
-            Skeleton::deflate_after(self.skeleton.clone(), position, spacing);
+        pub fn decrease_spacing_after(&mut self, position: S, change: S) {
+            Skeleton::decrease_spacing_after(self.skeleton.clone(), position, change);
         }
 
-        pub fn decrease_spacing_before(&mut self, position: S, spacing: S) {
-            Skeleton::deflate_before(self.skeleton.clone(), position, spacing);
+        pub fn decrease_spacing_before(&mut self, position: S, change: S) {
+            Skeleton::decrease_spacing_before(self.skeleton.clone(), position, change);
         }
 
 
-        pub fn try_increase_spacing_after(&mut self, position: S, spacing: S) -> Result<(), SpacingError<S>> {
-            Skeleton::try_inflate_after(self.skeleton.clone(), position, spacing)?;
+        pub fn try_increase_spacing_after(&mut self, position: S, change: S) -> Result<(), SpacingError<S>> {
+            Skeleton::try_increase_spacing_after(self.skeleton.clone(), position, change)?;
             Ok(())
         }
 
-        pub fn try_increase_spacing_before(&mut self, position: S, spacing: S) -> Result<(), SpacingError<S>> {
-            Skeleton::try_inflate_before(self.skeleton.clone(), position, spacing)?;
+        pub fn try_increase_spacing_before(&mut self, position: S, change: S) -> Result<(), SpacingError<S>> {
+            Skeleton::try_increase_spacing_before(self.skeleton.clone(), position, change)?;
             Ok(())
         }
 
-        pub fn try_decrease_spacing_after(&mut self, position: S, spacing: S) -> Result<(), SpacingError<S>> {
-            Skeleton::try_deflate_after(self.skeleton.clone(), position, spacing)?;
+        pub fn try_decrease_spacing_after(&mut self, position: S, change: S) -> Result<(), SpacingError<S>> {
+            Skeleton::try_decrease_spacing_after(self.skeleton.clone(), position, change)?;
             Ok(())
         }
 
-        pub fn try_decrease_spacing_before(&mut self, position: S, spacing: S) -> Result<(), SpacingError<S>> {
-            Skeleton::try_deflate_before(self.skeleton.clone(), position, spacing)?;
+        pub fn try_decrease_spacing_before(&mut self, position: S, change: S) -> Result<(), SpacingError<S>> {
+            Skeleton::try_decrease_spacing_before(self.skeleton.clone(), position, change)?;
             Ok(())
         }
     }

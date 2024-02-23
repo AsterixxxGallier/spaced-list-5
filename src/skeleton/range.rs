@@ -2,6 +2,7 @@ use std::cell::RefCell;
 use std::cmp::Ordering;
 use std::mem;
 use std::rc::Rc;
+use num_traits::zero;
 
 use crate::{BoundType, EphemeralIndex, EphemeralPosition, Index, Range, Skeleton, Spacing};
 
@@ -26,25 +27,25 @@ pub enum RangeInsertionError {
 impl<S: Spacing, T> Skeleton<Range, S, T> {
     pub(crate) fn try_push(this: Rc<RefCell<Self>>, distance: S, span: S, element: T)
                            -> Result<EphemeralPosition<Range, S, T>, RangePushError> {
-        if span < S::zero() {
+        if span < zero() {
             Err(RangePushError::NegativeSpan)
         } else if this.borrow_mut().elements.is_empty() {
             this.borrow_mut().offset = distance;
             this.borrow_mut().push_link();
             // cannot fail because we would have returned with an Err already if span were < 0
-            this.borrow_mut().try_inflate(0, span).unwrap();
+            this.borrow_mut().increase_spacing(0, span);
             this.borrow_mut().elements.push(element);
             Ok(EphemeralPosition::new(this, 0, distance))
-        } else if distance < S::zero() {
+        } else if distance < zero() {
             Err(RangePushError::NegativeDistanceInNonEmptyList)
         } else {
             let start_index = this.borrow_mut().push_link();
             // cannot fail because we would have returned with an Err already if distance were < 0
-            this.borrow_mut().try_inflate(start_index, distance).unwrap();
+            this.borrow_mut().increase_spacing(start_index, distance);
             let start_position = this.borrow().last_position();
             let span_index = this.borrow_mut().push_link();
             // cannot fail because we would have returned with an Err already if span were < 0
-            this.borrow_mut().try_inflate(span_index, span).unwrap();
+            this.borrow_mut().increase_spacing(span_index, span);
             this.borrow_mut().elements.push(element);
             Ok(EphemeralPosition::new(this, span_index, start_position))
         }
@@ -94,7 +95,7 @@ impl<S: Spacing, T> Skeleton<Range, S, T> {
     //             A                   C.0 = -2  C.1 = -1
     pub(crate) fn try_insert(this: Rc<RefCell<Self>>, position: S, span: S, element: T)
                              -> Result<EphemeralPosition<Range, S, T>, RangeInsertionError> {
-        if span < S::zero() {
+        if span < zero() {
             Err(RangeInsertionError::NegativeSpan)
         } else if this.borrow().elements.is_empty() {
             // we checked that span is non-negative, so NegativeSpan can't occur, and
@@ -116,11 +117,11 @@ impl<S: Spacing, T> Skeleton<Range, S, T> {
             match span.cmp(&previous_first_span) {
                 Ordering::Greater => {
                     // cannot fail, because we just established span > previous_first_span
-                    this.borrow_mut().inflate_after_index(0, span - previous_first_span);
+                    this.borrow_mut().increase_spacing_after_index(0, span - previous_first_span);
                 }
                 Ordering::Less => {
                     // cannot fail, because we just established span < previous_first_span
-                    this.borrow_mut().deflate_after_index(0, previous_first_span - span);
+                    this.borrow_mut().decrease_spacing_after_index(0, previous_first_span - span);
                 }
                 Ordering::Equal => {
                     // no change needed
@@ -145,7 +146,7 @@ impl<S: Spacing, T> Skeleton<Range, S, T> {
 
             therefore, this cannot fail
              */
-            this.borrow_mut().inflate_after_index(1, (previous_first_position + previous_first_span) - (position + span));
+            this.borrow_mut().increase_spacing_after_index(1, (previous_first_position + previous_first_span) - (position + span));
 
             // cannot fail, because we made enough space
             let insertion_index = Self::try_insert(

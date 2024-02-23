@@ -113,7 +113,7 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
     }
 
     fn push_link(&mut self) -> usize {
-        let mut length = S::zero();
+        let mut length = zero();
         let index = self.links.len();
         for degree in 0..index.trailing_ones() {
             length += self.links[index - (1 << degree)];
@@ -155,7 +155,7 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
     }
 }
 
-pub mod flate;
+pub mod change_spacing;
 pub mod node;
 pub mod range;
 pub mod nested_range;
