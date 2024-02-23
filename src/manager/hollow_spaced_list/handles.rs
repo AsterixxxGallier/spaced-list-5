@@ -34,19 +34,19 @@ handle!(HollowInsertionsHandle, insertions);
 // handle!(HollowDeletionsHandle, deletions);
 
 impl<S: Spacing> HollowPositionsHandle<S> {
-    pub fn try_increase_spacing_after(&mut self, position: S, spacing: S) -> Result<(), SpacingError> {
+    pub fn try_increase_spacing_after(&mut self, position: S, spacing: S) -> Result<(), SpacingError<S>> {
         self.manager.borrow_mut().list.try_increase_spacing_after(position, spacing)
     }
 
-    pub fn try_increase_spacing_before(&mut self, position: S, spacing: S) -> Result<(), SpacingError> {
+    pub fn try_increase_spacing_before(&mut self, position: S, spacing: S) -> Result<(), SpacingError<S>> {
         self.manager.borrow_mut().list.try_increase_spacing_before(position, spacing)
     }
 
-    pub fn try_decrease_spacing_after(&mut self, position: S, spacing: S) -> Result<(), SpacingError> {
+    pub fn try_decrease_spacing_after(&mut self, position: S, spacing: S) -> Result<(), SpacingError<S>> {
         self.manager.borrow_mut().list.try_decrease_spacing_after(position, spacing)
     }
 
-    pub fn try_decrease_spacing_before(&mut self, position: S, spacing: S) -> Result<(), SpacingError> {
+    pub fn try_decrease_spacing_before(&mut self, position: S, spacing: S) -> Result<(), SpacingError<S>> {
         self.manager.borrow_mut().list.try_decrease_spacing_before(position, spacing)
     }
 }

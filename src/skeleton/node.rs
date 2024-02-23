@@ -77,7 +77,7 @@ impl<S: Spacing, T> Skeleton<Node, S, T> {
                 mem::replace(&mut this.borrow_mut().elements[0], element);
 
             // cannot fail, because we already established previous_first_position > position
-            this.borrow_mut().try_inflate_after_index(0, previous_first_position - position).unwrap();
+            this.borrow_mut().inflate_after_index(0, previous_first_position - position);
             this.borrow_mut().offset = position;
 
             let insertion_index = Self::insert(

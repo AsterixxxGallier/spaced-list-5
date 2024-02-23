@@ -40,7 +40,7 @@ fn trailing_ones(n: u32) -> u32 {
 }
 
 #[inline(always)]
-const fn link_index(node_index: u32, degree: u32) -> u32 {
+const fn get_link_index(node_index: u32, degree: u32) -> u32 {
     node_index + (1 << degree) - 1
 }
 
@@ -49,7 +49,7 @@ fn node_index(n: u32) -> u32 {
     let mut node_index = n;
     for degree in 0..16 {
         if node_index & 1 == 0 {
-            counter += link_index(node_index << degree, degree);
+            counter += get_link_index(node_index << degree, degree);
         }
         node_index >>= 1;
     }
@@ -60,7 +60,7 @@ fn node_index_opt(n: u32) -> u32 {
     let mut counter = 0;
     for degree in 0..16 {
         if n >> degree & 1 == 0 {
-            counter += link_index(n >> degree << degree, degree);
+            counter += get_link_index(n >> degree << degree, degree);
         }
     }
     counter
@@ -87,7 +87,7 @@ fn node_index_trailing_ones(n: u32) -> u32 {
     let mut degree = 0;
     while degree < 16 {
         degree += node_index.trailing_ones();
-        counter += link_index(node_index << degree, degree);
+        counter += get_link_index(node_index << degree, degree);
         node_index >>= 1;
         degree += 1;
     }

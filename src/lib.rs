@@ -23,11 +23,12 @@
 // #![allow(clippy::needless_pass_by_value, clippy::missing_errors_doc, clippy::module_name_repetitions)]
 #![allow(dead_code)]
 
+use std::fmt::{Debug, Display};
 use std::ops::{Add, AddAssign, Sub, SubAssign};
 
 use num_traits::Zero;
 
-pub trait Spacing = Add<Output=Self> + AddAssign + Sub<Output=Self> + SubAssign + Zero + Ord + Copy;
+pub trait Spacing = Add<Output=Self> + AddAssign + Sub<Output=Self> + SubAssign + Zero + Ord + Copy + Display + Debug;
 
 pub mod manager;
 
@@ -73,4 +74,6 @@ pub(crate) use {
     skeleton::ephemeral_index::EphemeralIndex,
     skeleton::traversal::iteration::BackwardsIter,
     skeleton::traversal::iteration::ForwardsIter,
+
+    spaced_lists::SpacingOperation,
 };

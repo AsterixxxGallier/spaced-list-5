@@ -43,7 +43,7 @@ impl<S: Spacing> HollowNestedRangeSpacedList<S> {
     }
 
 
-    spacing_methods!();
+    spacing_functions!();
 
 
     #[must_use]

@@ -7,7 +7,7 @@ use paste::paste;
 
 use crate::{NestedRange, Node};
 use crate::{EphemeralPosition, EphemeralIndex, ParentData, Range, Skeleton, Spacing, BoundType};
-use crate::skeleton::link_index;
+use crate::skeleton::get_link_index;
 use r#loop::*;
 use after_loop::*;
 use checks::*;

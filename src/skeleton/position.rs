@@ -137,7 +137,7 @@ macro_rules! position {
         impl<Kind, S: Spacing + Display$(, $T)?> Display for $type {
             fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
                 f.write_str(concat!(stringify!($name), " { "))?;
-                self.position.fmt(f)?;
+                Display::fmt(&self.position, f)?;
                 f.write_str(" }")?;
                 Ok(())
             }

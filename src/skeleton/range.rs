@@ -116,11 +116,11 @@ impl<S: Spacing, T> Skeleton<Range, S, T> {
             match span.cmp(&previous_first_span) {
                 Ordering::Greater => {
                     // cannot fail, because we just established span > previous_first_span
-                    this.borrow_mut().try_inflate_after_index(0, span - previous_first_span).unwrap();
+                    this.borrow_mut().inflate_after_index(0, span - previous_first_span);
                 }
                 Ordering::Less => {
                     // cannot fail, because we just established span < previous_first_span
-                    this.borrow_mut().try_deflate_after_index(0, previous_first_span - span).unwrap();
+                    this.borrow_mut().deflate_after_index(0, previous_first_span - span);
                 }
                 Ordering::Equal => {
                     // no change needed
@@ -145,7 +145,7 @@ impl<S: Spacing, T> Skeleton<Range, S, T> {
 
             therefore, this cannot fail
              */
-            this.borrow_mut().try_inflate_after_index(1, (previous_first_position + previous_first_span) - (position + span)).unwrap();
+            this.borrow_mut().inflate_after_index(1, (previous_first_position + previous_first_span) - (position + span));
 
             // cannot fail, because we made enough space
             let insertion_index = Self::try_insert(

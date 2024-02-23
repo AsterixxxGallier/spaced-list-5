@@ -40,7 +40,7 @@ impl<S: Spacing> HollowSpacedList<S> {
     }
 
 
-    spacing_methods!();
+    spacing_functions!();
 
 
     #[must_use]

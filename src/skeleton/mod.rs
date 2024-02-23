@@ -54,6 +54,11 @@ pub(crate) struct ParentData<Parent> {
 //            say, hypers don't need to be nested deeply at these sizes.
 //            This mechanism guarantees an upper bound not only on allocated array size, but also on jump distances,
 //            except when entering a sub. In this way, most of the really bad cache misses can be avoided.
+// TODO optimization opportunity: store a small list of recently/often-accessed indices with their respective positions
+//  for quick access (in other words: a shortcuts cache)
+// TODO optimization opportunity: instead of introducing a sub, actually splice the element into the vec and recalculate
+//  spacings accordingly (only when it's faster, so for small skeletons)
+// TODO double-check that subs never have a negative offset
 pub(crate) struct Skeleton<Kind, S: Spacing, T> {
     links: Vec<S>,
     elements: Vec<T>,
@@ -69,7 +74,7 @@ pub(crate) struct Skeleton<Kind, S: Spacing, T> {
 }
 
 #[inline(always)]
-pub(crate) const fn link_index(index: usize, degree: usize) -> usize {
+pub(crate) const fn get_link_index(index: usize, degree: usize) -> usize {
     index | ((1 << degree) - 1)
 }
 

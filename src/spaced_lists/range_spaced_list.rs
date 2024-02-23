@@ -39,7 +39,7 @@ impl<S: Spacing, T> RangeSpacedList<S, T> {
     }
 
 
-    spacing_methods!();
+    spacing_functions!();
 
 
     #[must_use]

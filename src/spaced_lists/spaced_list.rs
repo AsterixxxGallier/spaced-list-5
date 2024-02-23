@@ -35,7 +35,7 @@ impl<S: Spacing, T> SpacedList<S, T> {
     }
 
 
-    spacing_methods!();
+    spacing_functions!();
 
 
     #[must_use]

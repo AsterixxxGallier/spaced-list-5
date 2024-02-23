@@ -3,29 +3,51 @@ use std::rc::Rc;
 
 use num_traits::zero;
 
-use crate::{Spacing, Skeleton};
-use crate::skeleton::{link_index, relative_depth};
+use crate::{Spacing, Skeleton, SpacingError, SpacingOperation};
+use crate::skeleton::{get_link_index, relative_depth};
 
-#[derive(Debug)]
-pub enum FlateError {
-    /// "Cannot inflate/deflate after the given position, as that position is at or after the end of this list"
-    PositionAtOrAfterList,
-    /// "Cannot inflate/deflate before the given position, as that position is after the end of this list"
-    PositionAfterList,
-    /// "Cannot inflate/deflate by negative amount, explicitly deflate/inflate for that"
-    AmountNegative,
-    /// "Deflating at this index would deflate a link below zero"
-    DeflationBelowZero,
+macro_rules! display_unwrap {
+    ($arg:expr) => {
+        match $arg {
+            Err(error) => panic!("{}", error),
+            Ok(value) => value
+        }
+    };
 }
 
+// TODO refactor this and all increase/decrease_spacing functions to
+//  - do nothing if amount = 0
+//  - check that all spacings are large enough to be changed by amount if amount < 0
+//  - "inflate" by amount
+
 impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
-    pub fn try_inflate_after(this: Rc<RefCell<Self>>, position: S, amount: S) -> Result<(), FlateError> {
+    pub fn inflate_after(this: Rc<RefCell<Self>>, position: S, amount: S) {
+        display_unwrap!(Skeleton::try_inflate_after(this, position, amount));
+    }
+
+    pub fn inflate_before(this: Rc<RefCell<Self>>, position: S, amount: S) {
+        display_unwrap!(Skeleton::try_inflate_before(this, position, amount));
+    }
+
+    pub fn deflate_after(this: Rc<RefCell<Self>>, position: S, amount: S) {
+        display_unwrap!(Skeleton::try_deflate_after(this, position, amount));
+    }
+
+    pub fn deflate_before(this: Rc<RefCell<Self>>, position: S, amount: S) {
+        display_unwrap!(Skeleton::try_deflate_before(this, position, amount));
+    }
+
+
+    pub fn try_inflate_after(this: Rc<RefCell<Self>>, position: S, amount: S) -> Result<(), SpacingError<S>> {
         if position < this.borrow().offset {
             this.borrow_mut().offset += amount;
             return Ok(());
         }
         if position >= this.borrow().last_position() {
-            return Err(FlateError::PositionAtOrAfterList);
+            return Err(SpacingError::PositionAtOrAfterList {
+                operation: SpacingOperation::Increase,
+                position
+            });
         }
         let result = Self::shallow_at_or_before(this.clone(), position).unwrap();
         this.borrow_mut().try_inflate(result.index, amount)?;
@@ -38,13 +60,16 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
         Ok(())
     }
 
-    pub fn try_inflate_before(this: Rc<RefCell<Self>>, position: S, amount: S) -> Result<(), FlateError> {
+    pub fn try_inflate_before(this: Rc<RefCell<Self>>, position: S, amount: S) -> Result<(), SpacingError<S>> {
         if position <= this.borrow().offset {
             this.borrow_mut().offset += amount;
             return Ok(());
         }
         if position > this.borrow().last_position() {
-            return Err(FlateError::PositionAfterList);
+            return Err(SpacingError::PositionAfterList {
+                operation: SpacingOperation::Increase,
+                position
+            });
         }
         let result = Self::shallow_before(this.clone(), position).unwrap();
         this.borrow_mut().try_inflate(result.index, amount)?;
@@ -57,16 +82,19 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
         Ok(())
     }
 
-    pub fn try_deflate_after(this: Rc<RefCell<Self>>, position: S, amount: S) -> Result<(), FlateError> {
+    pub fn try_deflate_after(this: Rc<RefCell<Self>>, position: S, amount: S) -> Result<(), SpacingError<S>> {
         if position < this.borrow().offset {
             this.borrow_mut().offset -= amount;
             return Ok(());
         }
         if position >= this.borrow().last_position() {
-            return Err(FlateError::PositionAtOrAfterList);
+            return Err(SpacingError::PositionAtOrAfterList {
+                operation: SpacingOperation::Decrease,
+                position
+            });
         }
         let result = Self::shallow_at_or_before(this.clone(), position).unwrap();
-        this.borrow_mut().try_deflate(result.index, amount)?;
+        this.borrow_mut().try_deflate(result.index, position, amount)?;
         if let Some(sub) = this.borrow_mut().sub(result.index) {
             let position_in_sub = position - result.position;
             if position_in_sub < sub.borrow().last_position() {
@@ -76,16 +104,19 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
         Ok(())
     }
 
-    pub fn try_deflate_before(this: Rc<RefCell<Self>>, position: S, amount: S) -> Result<(), FlateError> {
+    pub fn try_deflate_before(this: Rc<RefCell<Self>>, position: S, amount: S) -> Result<(), SpacingError<S>> {
         if position <= this.borrow().offset {
             this.borrow_mut().offset -= amount;
             return Ok(());
         }
         if position > this.borrow().last_position() {
-            return Err(FlateError::PositionAfterList);
+            return Err(SpacingError::PositionAfterList {
+                operation: SpacingOperation::Decrease,
+                position
+            });
         }
         let result = Self::shallow_before(this.clone(), position).unwrap();
-        this.borrow_mut().try_deflate(result.index, amount)?;
+        this.borrow_mut().try_deflate(result.index, position, amount)?;
         if let Some(sub) = this.borrow_mut().sub(result.index) {
             let position_in_sub = position - result.position;
             if position_in_sub <= sub.borrow().last_position() {
@@ -95,71 +126,93 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
         Ok(())
     }
 
-    pub fn inflate_unchecked(&mut self, index: usize, amount: S) {
+
+    pub(super) fn inflate_unchecked(&mut self, index: usize, amount: S) {
         for degree in 0..relative_depth(index, self.links.len()) {
             if index >> degree & 1 == 0 {
-                self.links[link_index(index, degree)] += amount;
+                self.links[get_link_index(index, degree)] += amount;
             }
         }
         self.length += amount;
     }
 
-    pub fn try_inflate(&mut self, index: usize, amount: S) -> Result<(), FlateError> {
+    pub(super) fn try_inflate(&mut self, index: usize, amount: S) -> Result<(), SpacingError<S>> {
         assert!(self.link_index_is_in_bounds(index), "Index not in bounds");
         if amount < zero() {
-            return Err(FlateError::AmountNegative);
+            return Err(SpacingError::AmountNegative {
+                operation: SpacingOperation::Increase,
+                amount
+            });
         }
         self.inflate_unchecked(index, amount);
         Ok(())
     }
 
-    pub fn deflate_unchecked(&mut self, index: usize, amount: S) {
-        for degree in 0..relative_depth(index, self.links.len()) {
-            if index >> degree & 1 == 0 {
-                self.links[link_index(index, degree)] -= amount;
-            }
-        }
-        self.length -= amount;
+    pub(super) fn inflate(&mut self, index: usize, amount: S) {
+        assert!(self.link_index_is_in_bounds(index), "Index not in bounds");
+        assert!(amount >= zero());
+        self.inflate_unchecked(index, amount);
     }
 
-    pub fn try_deflate(&mut self, index: usize, amount: S) -> Result<(), FlateError> {
+    pub(super) fn try_deflate(&mut self, index: usize, position: S, amount: S) -> Result<(), SpacingError<S>> {
         assert!(self.link_index_is_in_bounds(index), "Index not in bounds");
         if amount < zero() {
-            return Err(FlateError::AmountNegative);
+            return Err(SpacingError::AmountNegative {
+                operation: SpacingOperation::Decrease,
+                amount
+            });
         }
         for degree in 0..self.depth {
-            if index >> degree & 1 == 0 && self.link(link_index(index, degree)) < amount {
-                return Err(FlateError::DeflationBelowZero);
+            if index >> degree & 1 == 0 && self.link(get_link_index(index, degree)) < amount {
+                return Err(SpacingError::SpacingNotLargeEnough {
+                    position,
+                    amount,
+                    spacing: self.link(index)
+                });
             }
         }
         self.deflate_unchecked(index, amount);
         Ok(())
     }
 
-    pub fn try_inflate_after_index(&mut self, index: usize, amount: S) -> Result<(), FlateError> {
-        if amount < zero() {
-            return Err(FlateError::AmountNegative);
+
+    pub(super) fn deflate(&mut self, index: usize, amount: S) {
+        assert!(self.link_index_is_in_bounds(index), "Index not in bounds");
+        assert!(amount >= zero());
+        for degree in 0..self.depth {
+            assert!(!(index >> degree & 1 == 0 && self.link(get_link_index(index, degree)) < amount));
         }
+        self.deflate_unchecked(index, amount);
+    }
+
+    pub(super) fn deflate_unchecked(&mut self, index: usize, amount: S) {
+        for degree in 0..relative_depth(index, self.links.len()) {
+            if index >> degree & 1 == 0 {
+                self.links[get_link_index(index, degree)] -= amount;
+            }
+        }
+        self.length -= amount;
+    }
+
+
+    pub(super) fn inflate_after_index(&mut self, index: usize, amount: S) {
+        assert!(amount >= zero());
         if self.link_index_is_in_bounds(index) {
-            self.try_inflate(index, amount)?;
+            self.inflate(index, amount);
             if let Some(sub) = self.sub(index) {
                 sub.borrow_mut().offset += amount;
             }
         }
-        Ok(())
     }
 
-    pub fn try_deflate_after_index(&mut self, index: usize, amount: S) -> Result<(), FlateError> {
-        if amount < zero() {
-            return Err(FlateError::AmountNegative);
-        }
+    pub(super) fn deflate_after_index(&mut self, index: usize, amount: S) {
+        assert!(amount >= zero());
         if self.link_index_is_in_bounds(index) {
-            self.try_deflate(index, amount)?;
+            self.deflate(index, amount);
             if let Some(sub) = self.sub(index) {
                 sub.borrow_mut().offset -= amount;
             }
         }
-        Ok(())
     }
 }
 
@@ -167,7 +220,7 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
 mod tests {
     // use std::collections::HashMap;
 
-    use crate::skeleton::{link_index, relative_depth};
+    use crate::skeleton::{get_link_index, relative_depth};
 
     #[test]
     fn test() {
@@ -178,7 +231,7 @@ mod tests {
             for index in 0usize..size {
                 let depth =
                     (0..)
-                        .take_while(|&degree| link_index(index, degree) < size)
+                        .take_while(|&degree| get_link_index(index, degree) < size)
                         .count();
                 assert_eq!(relative_depth(index, size), depth);
                 // println!("{:04b}/{:04b}=>{}", index, size, depth);
