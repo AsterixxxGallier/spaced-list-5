@@ -1,6 +1,6 @@
 use std::rc::Rc;
 use std::cell::{Ref, RefCell};
-use crate::{BackwardsIter, display_unwrap, ForwardsIter, HollowPosition, NestedRange, NestedRangeInsertionError, NestedRangePushError, Node, Position, PushError, Range, RangeInsertionError, RangePushError, Skeleton, Spacing};
+use crate::{SpacingError, BackwardsIter, display_unwrap, ForwardsIter, HollowPosition, NestedRange, NestedRangeInsertionError, NestedRangePushError, Node, Position, PushError, Range, RangeInsertionError, RangePushError, Skeleton, Spacing};
 use paste::paste;
 use itertools::Itertools;
 use push_insert_functions::push_insert_functions;
