@@ -3,10 +3,28 @@ use std::cmp::Ordering;
 use std::rc::Rc;
 
 use num_traits::zero;
+use thiserror::Error;
 
 use crate::{display_unwrap, Skeleton, Spacing};
 use crate::skeleton::{get_link_index, relative_depth};
-use crate::spaced_lists::spacing_error::SpacingError;
+
+#[derive(Error, Debug)]
+pub enum SpacingError<S: Spacing> {
+    #[error("Cannot change spacing after position {position}, as that position is at or after the end of this list.")]
+    PositionAtOrAfterList {
+        position: S,
+    },
+    #[error("Cannot change spacing before position {position}, as that position is after the end of this list.")]
+    PositionAfterList {
+        position: S,
+    },
+    #[error("The spacing at position {position} is {spacing}. It is not large enough to be able to be decreased by {change} without becoming negative.")]
+    SpacingNotLargeEnough {
+        position: S,
+        change: S,
+        spacing: S,
+    },
+}
 
 // NOTE FOR DUMMIES (LIKE ME): there are separate increase and decrease functions because S might be a non-negative type
 //  like usize, so increasing by a negative value is impossible, so we need extra decrease functions

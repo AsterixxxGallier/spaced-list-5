@@ -35,42 +35,37 @@ pub mod manager;
 
 #[doc(inline)]
 pub use {
-    skeleton::bound_type::BoundType,
-    skeleton::element_ref::ElementRef,
-    skeleton::element_ref::ElementRefMut,
-    skeleton::index::HollowIndex,
-    skeleton::index::Index,
-    skeleton::nested_range::NestedRangeInsertionError,
-    skeleton::nested_range::NestedRangePushError,
-    skeleton::NestedRange,
-    skeleton::Node,
-    skeleton::node::PushError,
-    skeleton::position::HollowPosition,
-    skeleton::position::Position,
-    skeleton::Range,
-    skeleton::range::RangeInsertionError,
-    skeleton::range::RangePushError,
-    skeleton::RangeKind,
     spaced_lists::HollowNestedRangeSpacedList,
     spaced_lists::HollowRangeSpacedList,
     spaced_lists::HollowSpacedList,
     spaced_lists::NestedRangeSpacedList,
     spaced_lists::RangeSpacedList,
     spaced_lists::SpacedList,
+
+    skeleton::Node,
+    skeleton::Range,
+    skeleton::NestedRange,
+    skeleton::RangeKind,
+
+    skeleton::bound_type::BoundType,
+    skeleton::index::Index,
+    skeleton::index::HollowIndex,
+    skeleton::position::Position,
+    skeleton::position::HollowPosition,
+    skeleton::element_ref::ElementRef,
+    skeleton::element_ref::ElementRefMut,
+
+    skeleton::node::PushError,
+    skeleton::range::RangePushError,
+    skeleton::range::RangeInsertionError,
+    skeleton::nested_range::NestedRangePushError,
+    skeleton::nested_range::NestedRangeInsertionError,
+    skeleton::change_spacing::SpacingError,
 };
 
 
 pub(crate) mod skeleton;
 pub(crate) mod spaced_lists;
-
-pub(crate) use {
-    skeleton::ephemeral_index::EphemeralIndex,
-    skeleton::ephemeral_position::EphemeralPosition,
-    skeleton::ParentData,
-    skeleton::Skeleton,
-    skeleton::traversal::iteration::BackwardsIter,
-    skeleton::traversal::iteration::ForwardsIter,
-};
 
 macro_rules! display_unwrap {
     ($arg:expr) => {
@@ -81,6 +76,12 @@ macro_rules! display_unwrap {
     };
 }
 
-pub(crate) use display_unwrap;
-#[doc(inline)]
-pub use spaced_lists::spacing_error::SpacingError;
+pub(crate) use {
+    skeleton::ephemeral_index::EphemeralIndex,
+    skeleton::ephemeral_position::EphemeralPosition,
+    skeleton::ParentData,
+    skeleton::Skeleton,
+    skeleton::traversal::iteration::BackwardsIter,
+    skeleton::traversal::iteration::ForwardsIter,
+    display_unwrap,
+};
