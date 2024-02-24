@@ -84,7 +84,7 @@ macro_rules! traversal_functions {
         paste! {
             pub fn [<conditional_ $pos>](this: Rc<RefCell<Self>>, target: S, condition: fn(Ref<T>) -> bool)
                 -> Option<EphemeralPosition<$kind, S, T>> {
-                traversal_function_body!(this; shallow; $cmp target with function_condition (condition))
+                traversal_function_body!(this; deep; $cmp target with function_condition (condition))
             }
         }
     };
