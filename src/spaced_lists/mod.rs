@@ -3,15 +3,12 @@ use std::cell::{Ref, RefCell};
 use crate::{BackwardsIter, display_unwrap, ForwardsIter, HollowPosition, NestedRange, NestedRangeInsertionError, NestedRangePushError, Node, Position, PushError, Range, RangeInsertionError, RangePushError, Skeleton, Spacing};
 use paste::paste;
 use itertools::Itertools;
-use spacing_error::SpacingError;
 use push_insert_functions::push_insert_functions;
 use spacing_functions::spacing_functions;
 use trivial_accessors::trivial_accessors;
 use first_last_functions::first_last_functions;
 use traversal_functions::{unconditional_traversal_function, conditional_traversal_function, all_traversal_functions};
 use iter_functions::iter_functions;
-
-pub mod spacing_error;
 
 mod push_insert_functions;
 mod spacing_functions;
