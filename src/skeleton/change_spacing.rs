@@ -4,8 +4,9 @@ use std::rc::Rc;
 
 use num_traits::zero;
 
-use crate::{Spacing, Skeleton, SpacingError, display_unwrap};
+use crate::{display_unwrap, Skeleton, Spacing};
 use crate::skeleton::{get_link_index, relative_depth};
+use crate::spaced_lists::spacing_error::SpacingError;
 
 // NOTE FOR DUMMIES (LIKE ME): there are separate increase and decrease functions because S might be a non-negative type
 //  like usize, so increasing by a negative value is impossible, so we need extra decrease functions

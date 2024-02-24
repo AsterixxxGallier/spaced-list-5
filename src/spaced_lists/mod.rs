@@ -1,96 +1,61 @@
-use thiserror::Error;
+use std::rc::Rc;
+use std::cell::{Ref, RefCell};
+use crate::{BackwardsIter, display_unwrap, ForwardsIter, HollowPosition, NestedRange, NestedRangeInsertionError, NestedRangePushError, Node, Position, PushError, Range, RangeInsertionError, RangePushError, Skeleton, Spacing};
+use paste::paste;
+use itertools::Itertools;
+use spacing_error::SpacingError;
+use push_insert_functions::push_insert_functions;
+use spacing_functions::spacing_functions;
+use trivial_accessors::trivial_accessors;
+use first_last_functions::first_last_functions;
+use traversal_functions::{unconditional_traversal_function, conditional_traversal_function, all_traversal_functions};
+use iter_functions::iter_functions;
 
-#[derive(Error, Debug)]
-pub enum SpacingError<S: crate::Spacing> {
-    #[error("Cannot change spacing after position {position}, as that position is at or after the end of this list.")]
-    PositionAtOrAfterList {
-        position: S,
-    },
-    #[error("Cannot change spacing before position {position}, as that position is after the end of this list.")]
-    PositionAfterList {
-        position: S,
-    },
-    #[error("The spacing at position {position} is {spacing}. It is not large enough to be able to be decreased by {change} without becoming negative.")]
-    SpacingNotLargeEnough {
-        position: S,
-        change: S,
-        spacing: S,
-    },
-}
+pub mod spacing_error;
 
-macro_rules! spacing_functions {
-    () => {
-        pub fn increase_spacing_after(&mut self, position: S, change: S) {
-            Skeleton::increase_spacing_after(self.skeleton.clone(), position, change);
+mod push_insert_functions;
+mod spacing_functions;
+mod trivial_accessors;
+mod first_last_functions;
+mod traversal_functions;
+mod iter_functions;
+
+macro_rules! spaced_list {
+    ($kind:ident; $name:ident, ($($T:ident)?), $type:ty, $skeleton:ty, $position_ident:ident, $position:ty) => {
+        pub struct $name<S: Spacing$(, $T)?> {
+            skeleton: Rc<RefCell<$skeleton>>,
+            size: usize,
         }
 
-        pub fn increase_spacing_before(&mut self, position: S, change: S) {
-            Skeleton::increase_spacing_before(self.skeleton.clone(), position, change);
+        impl<S: Spacing$(, $T)?> Default for $type {
+            fn default() -> Self {
+                Self {
+                    skeleton: Skeleton::new(None),
+                    size: 0,
+                }
+            }
         }
 
-        pub fn decrease_spacing_after(&mut self, position: S, change: S) {
-            Skeleton::decrease_spacing_after(self.skeleton.clone(), position, change);
-        }
+        impl<S: Spacing$(, $T)?> $type {
+            #[must_use]
+            pub fn new() -> Self {
+                Self::default()
+            }
 
-        pub fn decrease_spacing_before(&mut self, position: S, change: S) {
-            Skeleton::decrease_spacing_before(self.skeleton.clone(), position, change);
-        }
-
-
-        pub fn try_increase_spacing_after(&mut self, position: S, change: S) -> Result<(), SpacingError<S>> {
-            Skeleton::try_increase_spacing_after(self.skeleton.clone(), position, change)?;
-            Ok(())
-        }
-
-        pub fn try_increase_spacing_before(&mut self, position: S, change: S) -> Result<(), SpacingError<S>> {
-            Skeleton::try_increase_spacing_before(self.skeleton.clone(), position, change)?;
-            Ok(())
-        }
-
-        pub fn try_decrease_spacing_after(&mut self, position: S, change: S) -> Result<(), SpacingError<S>> {
-            Skeleton::try_decrease_spacing_after(self.skeleton.clone(), position, change)?;
-            Ok(())
-        }
-
-        pub fn try_decrease_spacing_before(&mut self, position: S, change: S) -> Result<(), SpacingError<S>> {
-            Skeleton::try_decrease_spacing_before(self.skeleton.clone(), position, change)?;
-            Ok(())
+            push_insert_functions!($kind; ($($T)?), $position);
+            spacing_functions!();
+            trivial_accessors!();
+            first_last_functions!($position_ident, $position);
+            all_traversal_functions!($kind; unconditional_, $position);
+            $(all_traversal_functions!($kind; conditional_, $position); ${ignore($T)})?
+            iter_functions!($kind; $position);
         }
     }
 }
 
-macro_rules! trivial_accessors {
-    () => {
-        #[must_use]
-        pub fn size(&self) -> usize {
-            self.size
-        }
-
-        #[must_use]
-        pub fn is_empty(&self) -> bool {
-            self.size == 0
-        }
-
-        #[must_use]
-        pub fn length(&self) -> S {
-            self.skeleton.borrow().length()
-        }
-
-        #[must_use]
-        pub fn start(&self) -> S {
-            self.skeleton.borrow().offset()
-        }
-
-        #[must_use]
-        pub fn end(&self) -> S {
-            self.skeleton.borrow().last_position()
-        }
-    }
-}
-
-pub mod spaced_list;
-pub mod range_spaced_list;
-pub mod nested_range_spaced_list;
-pub mod hollow_spaced_list;
-pub mod hollow_range_spaced_list;
-pub mod hollow_nested_range_spaced_list;
+spaced_list!(Node; SpacedList, (T), SpacedList<S, T>, Skeleton<Node, S, T>, Position, Position<Node, S, T>);
+spaced_list!(Range; RangeSpacedList, (T), RangeSpacedList<S, T>, Skeleton<Range, S, T>, Position, Position<Range, S, T>);
+spaced_list!(NestedRange; NestedRangeSpacedList, (T), NestedRangeSpacedList<S, T>, Skeleton<NestedRange, S, T>, Position, Position<NestedRange, S, T>);
+spaced_list!(Node; HollowSpacedList, (), HollowSpacedList<S>, Skeleton<Node, S, ()>, HollowPosition, HollowPosition<Node, S>);
+spaced_list!(Range; HollowRangeSpacedList, (), HollowRangeSpacedList<S>, Skeleton<Range, S, ()>, HollowPosition, HollowPosition<Range, S>);
+spaced_list!(NestedRange; HollowNestedRangeSpacedList, (), HollowNestedRangeSpacedList<S>, Skeleton<NestedRange, S, ()>, HollowPosition, HollowPosition<NestedRange, S>);

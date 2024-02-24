@@ -14,6 +14,7 @@
 // TODO add NestedRange stuff when the manager module fully supports it
 
 #![feature(trait_alias)]
+#![feature(macro_metavar_expr)]
 
 // used ONLY for the prefetch_read_data intrinsic, which is used in loop.rs for a significant performance gain
 #![allow(internal_features)]
@@ -34,33 +35,28 @@ pub mod manager;
 
 #[doc(inline)]
 pub use {
-    spaced_lists::spaced_list::SpacedList,
-    spaced_lists::range_spaced_list::RangeSpacedList,
-    spaced_lists::nested_range_spaced_list::NestedRangeSpacedList,
-    spaced_lists::hollow_spaced_list::HollowSpacedList,
-    spaced_lists::hollow_range_spaced_list::HollowRangeSpacedList,
-    spaced_lists::hollow_nested_range_spaced_list::HollowNestedRangeSpacedList,
-
-    skeleton::position::Position,
-    skeleton::position::HollowPosition,
-    skeleton::index::Index,
-    skeleton::index::HollowIndex,
     skeleton::bound_type::BoundType,
-
-    skeleton::Node,
-    skeleton::Range,
-    skeleton::NestedRange,
-    skeleton::RangeKind,
-
     skeleton::element_ref::ElementRef,
     skeleton::element_ref::ElementRefMut,
-
-    skeleton::node::PushError,
-    skeleton::range::RangePushError,
-    skeleton::range::RangeInsertionError,
-    skeleton::nested_range::NestedRangePushError,
+    skeleton::index::HollowIndex,
+    skeleton::index::Index,
     skeleton::nested_range::NestedRangeInsertionError,
-    spaced_lists::SpacingError,
+    skeleton::nested_range::NestedRangePushError,
+    skeleton::NestedRange,
+    skeleton::Node,
+    skeleton::node::PushError,
+    skeleton::position::HollowPosition,
+    skeleton::position::Position,
+    skeleton::Range,
+    skeleton::range::RangeInsertionError,
+    skeleton::range::RangePushError,
+    skeleton::RangeKind,
+    spaced_lists::HollowNestedRangeSpacedList,
+    spaced_lists::HollowRangeSpacedList,
+    spaced_lists::HollowSpacedList,
+    spaced_lists::NestedRangeSpacedList,
+    spaced_lists::RangeSpacedList,
+    spaced_lists::SpacedList,
 };
 
 
@@ -68,10 +64,10 @@ pub(crate) mod skeleton;
 pub(crate) mod spaced_lists;
 
 pub(crate) use {
-    skeleton::Skeleton,
-    skeleton::ParentData,
-    skeleton::ephemeral_position::EphemeralPosition,
     skeleton::ephemeral_index::EphemeralIndex,
+    skeleton::ephemeral_position::EphemeralPosition,
+    skeleton::ParentData,
+    skeleton::Skeleton,
     skeleton::traversal::iteration::BackwardsIter,
     skeleton::traversal::iteration::ForwardsIter,
 };
@@ -86,3 +82,5 @@ macro_rules! display_unwrap {
 }
 
 pub(crate) use display_unwrap;
+#[doc(inline)]
+pub use spaced_lists::spacing_error::SpacingError;

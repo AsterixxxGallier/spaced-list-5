@@ -218,3 +218,9 @@ impl<Kind, S: Spacing> From<HollowPosition<Kind, S>> for Position<Kind, S, ()> {
         Self::new(position.skeleton, position.index, position.position)
     }
 }
+
+impl<Kind, S: Spacing> From<EphemeralPosition<Kind, S, ()>> for HollowPosition<Kind, S> {
+    fn from(ephemeral: EphemeralPosition<Kind, S, ()>) -> Self {
+        ephemeral.persistent().into()
+    }
+}

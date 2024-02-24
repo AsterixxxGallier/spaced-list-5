@@ -200,7 +200,7 @@ impl<S: Spacing, T> Skeleton<Range, S, T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::spaced_lists::range_spaced_list::RangeSpacedList;
+    use crate::RangeSpacedList;
 
     #[test]
     fn test() {

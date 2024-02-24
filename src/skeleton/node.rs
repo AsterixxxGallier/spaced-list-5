@@ -119,7 +119,7 @@ impl<S: Spacing, T> Skeleton<Node, S, T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::spaced_lists::spaced_list::SpacedList;
+    use crate::SpacedList;
 
     #[test]
     fn test() {
