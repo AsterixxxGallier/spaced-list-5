@@ -3,6 +3,7 @@ use std::cell::{Ref, RefCell, RefMut};
 use maybe_owned::MaybeOwned;
 
 use crate::{ParentData, BoundType, EphemeralIndex, Position, Node, RangeKind, Skeleton, Spacing};
+use crate::skeleton::ElementSlot;
 
 pub(crate) struct EphemeralPosition<Kind, S: Spacing, T> {
     pub(crate) skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>,
@@ -136,24 +137,24 @@ impl<Kind, S: Spacing, T> EphemeralPosition<Kind, S, T> {
 }
 
 impl<S: Spacing, T> EphemeralPosition<Node, S, T> {
-    pub(crate) fn element(&self) -> Ref<T> {
+    pub(crate) fn element(&self) -> Ref<ElementSlot<T>> {
         Ref::map(RefCell::borrow(&self.skeleton),
                  |skeleton| &skeleton.elements[self.index])
     }
 
-    pub(crate) fn element_mut(&self) -> RefMut<T> {
+    pub(crate) fn element_mut(&self) -> RefMut<ElementSlot<T>> {
         RefMut::map(RefCell::borrow_mut(&self.skeleton),
                     |skeleton| &mut skeleton.elements[self.index])
     }
 }
 
 impl<Kind: RangeKind, S: Spacing, T> EphemeralPosition<Kind, S, T> {
-    pub(crate) fn element(&self) -> Ref<T> {
+    pub(crate) fn element(&self) -> Ref<ElementSlot<T>> {
         Ref::map(RefCell::borrow(&self.skeleton),
                  |skeleton| &skeleton.elements[self.index / 2])
     }
 
-    pub(crate) fn element_mut(&self) -> RefMut<T> {
+    pub(crate) fn element_mut(&self) -> RefMut<ElementSlot<T>> {
         RefMut::map(RefCell::borrow_mut(&self.skeleton),
                     |skeleton| &mut skeleton.elements[self.index / 2])
     }

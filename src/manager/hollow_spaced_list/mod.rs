@@ -25,7 +25,7 @@ struct HollowLocks {
 
     // -1: elements might be removed
     // > 0: elements may not be removed TODO implement the ability to remove elements
-    // deletions: Cell<isize>,
+    // removals: Cell<isize>,
 }
 
 pub struct HollowManager<S: Spacing> {
@@ -57,8 +57,8 @@ impl<S: Spacing> HollowManager<S> {
         HollowInsertionsLock::new(this)
     }
 
-    /*fn deletions_lock(this: Rc<RefCell<Self>>) -> HollowDeletionsLock<S> {
-        HollowDeletionsLock::new(this)
+    /*fn removals_lock(this: Rc<RefCell<Self>>) -> HollowRemovalsLock<S> {
+        HollowRemovalsLock::new(this)
     }*/
 
     pub fn positions_handle(this: Rc<RefCell<Self>>) -> HollowPositionsHandle<S> {
@@ -69,8 +69,8 @@ impl<S: Spacing> HollowManager<S> {
         HollowInsertionsHandle::new(this)
     }
 
-    /*fn deletions_handle(this: Rc<RefCell<Self>>) -> HollowDeletionsHandle<S> {
-        HollowDeletionsHandle::new(this)
+    /*fn removals_handle(this: Rc<RefCell<Self>>) -> HollowRemovalsHandle<S> {
+        HollowRemovalsHandle::new(this)
     }*/
 
     pub fn before(this: Rc<RefCell<Self>>, position: S) -> Option<HollowLockedPosition<S>> {

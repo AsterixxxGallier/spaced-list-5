@@ -31,4 +31,4 @@ macro_rules! lock {
 
 lock!(HollowRangePositionsLock, positions);
 lock!(HollowRangeInsertionsLock, insertions);
-// lock!(HollowRangeDeletionsLock, deletions);
+// lock!(HollowRangeRemovalsLock, removals);

@@ -1,8 +1,10 @@
 macro_rules! unconditional_traversal_function {
     ($kind:ident; $function:ident, $skeleton_function:ident, $position:ty) => {
-        #[must_use]
-        pub fn $function(&self, position: S) -> Option<$position> {
-            Skeleton::<$kind, _, _>::$skeleton_function(self.skeleton.clone(), position).map(Into::into)
+        paste! {
+            #[must_use]
+            pub fn $function(&self, position: S) -> Option<$position> {
+                Skeleton::<$kind, _, _>::[< conditional_ $skeleton_function >](self.skeleton.clone(), position, |slot| slot.is_some()).map(Into::into)
+            }
         }
     };
 }
@@ -11,8 +13,13 @@ macro_rules! conditional_traversal_function {
     ($kind:ident; $function:ident, $skeleton_function:ident, $position:ty) => {
         paste! {
             #[must_use]
-            pub fn [< conditional_ $function >](&self, position: S, condition: fn(Ref<T>) -> bool) -> Option<$position> {
-                Skeleton::<$kind, _, _>::[< conditional_ $skeleton_function >](self.skeleton.clone(), position, condition).map(Into::into)
+            pub fn [< conditional_ $function >]<C: Fn(&T) -> bool>(&self, position: S, condition: C) -> Option<$position> {
+                Skeleton::<$kind, _, _>::[< conditional_ $skeleton_function >](self.skeleton.clone(), position, |slot| {
+                    match slot.deref() {
+                        ElementSlot::Some(element) => condition(element),
+                        ElementSlot::None => false
+                    }
+                }).map(Into::into)
             }
         }
     };

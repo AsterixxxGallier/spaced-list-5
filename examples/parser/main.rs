@@ -222,7 +222,7 @@ fn main() {
         let left =
             inline_expressions
                 .ending_at(left_position)
-                .map(|position| position.element().clone())
+                .map(|position| position.element().as_ref().unwrap().clone())
                 .unwrap_or_else(|| {
                     // let error_start = left_position - 1;
                     let previous_whitespace =
@@ -266,7 +266,7 @@ fn main() {
         let right =
             inline_expressions
                 .ending_at(left_position)
-                .map(|position| position.element().clone())
+                .map(|position| position.element().as_ref().unwrap().clone())
                 .unwrap_or_else(|| {
                     // let error_start = left_position - 1;
                     let previous_whitespace =
@@ -323,7 +323,7 @@ fn main() {
         lines
             .iter_ranges()
             .enumerate()
-            .map(|(index, (start, _))| (*start.element(), index))
+            .map(|(index, (start, _))| (start.element().unwrap(), index))
             .into_grouping_map()
             .collect::<Vec<_>>();
 

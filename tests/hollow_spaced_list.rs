@@ -80,6 +80,89 @@ fn randomized() {
     println!("traversal tests: {:?}", timestamp.elapsed());
 }
 
+/*#[allow(unused_variables)]
+#[test]
+fn randomized_with_removals() {
+    let mut list: HollowSpacedList<i32> = HollowSpacedList::new();
+    let mut set: BTreeSet<i32> = BTreeSet::new();
+    let range = -100_000..100_000;
+
+    let seed = random();
+    // let seed = 2;
+
+    let timestamp = Instant::now();
+    let mut rng = StdRng::seed_from_u64(seed);
+    for _ in 0..40_000 {
+        let pos = rng.gen_range(range.clone());
+        set.insert(pos);
+    }
+    println!("insert into set: {:?}", timestamp.elapsed());
+
+    let timestamp = Instant::now();
+    let mut rng = StdRng::seed_from_u64(seed);
+    for _ in 0..40_000 {
+        let pos = rng.gen_range(range.clone());
+        if list.at(pos).is_none() {
+            list.insert(pos);
+        }
+    }
+    println!("insert into list: {:?}", timestamp.elapsed());
+
+    let timestamp = Instant::now();
+    let mut rng = StdRng::seed_from_u64(seed + 1);
+    for _ in 0..40_000 {
+        let pos = rng.gen_range(range.clone());
+        set.remove(&pos);
+    }
+    println!("insert into set: {:?}", timestamp.elapsed());
+
+    let timestamp = Instant::now();
+    let mut rng = StdRng::seed_from_u64(seed + 1);
+    for _ in 0..40_000 {
+        let pos = rng.gen_range(range.clone());
+        if list.at(pos).is_none() {
+            list.(pos);
+        }
+    }
+    println!("insert into list: {:?}", timestamp.elapsed());
+
+    let timestamp = Instant::now();
+    let mut list_iter = list.iter();
+    let set_iter = set.iter();
+    for (index, &position) in set_iter.enumerate() {
+        let list_next_position = list_iter.next().unwrap().position();
+        // println!("{}: expected: {}, actual: {}", index, position, list_next_position);
+        assert_eq!(position, list_next_position);
+    }
+    println!("iterate over both: {:?}", timestamp.elapsed());
+
+    let timestamp = Instant::now();
+    let mut list_iter = list.iter_backwards();
+    let set_iter = set.iter().rev();
+    for (index, &position) in set_iter.enumerate() {
+        let list_next_position = list_iter.next().unwrap().position();
+        // println!("{}: expected: {}, actual: {}", index, position, list_next_position);
+        assert_eq!(position, list_next_position);
+    }
+    println!("iterate over both in reverse: {:?}", timestamp.elapsed());
+
+    let timestamp = Instant::now();
+    for _ in 0..1_000 {
+        let pos = rng.gen_range(range.clone());
+        assert_eq!(list.before(pos).map(|it| it.position()),
+                   set.iter().take_while(|it| **it < pos).last().copied());
+        assert_eq!(list.at_or_before(pos).map(|it| it.position()),
+                   set.iter().take_while(|it| **it <= pos).last().copied());
+        assert_eq!(list.at(pos).map(|it| it.position()),
+                   set.get(&pos).copied());
+        assert_eq!(list.at_or_after(pos).map(|it| it.position()),
+                   set.iter().rev().take_while(|it| **it >= pos).last().copied());
+        assert_eq!(list.after(pos).map(|it| it.position()),
+                   set.iter().rev().take_while(|it| **it > pos).last().copied());
+    }
+    println!("traversal tests: {:?}", timestamp.elapsed());
+}*/
+
 #[test]
 fn iterate() {
     let mut list: HollowSpacedList<u64> = HollowSpacedList::new();
@@ -137,11 +220,13 @@ fn change_spacing() {
 #[test]
 fn queries() {
     let positions = [0, 1, 3, 5];
-    for positions in positions.iter().permutations(positions.len()) {
+    for positions in positions.into_iter().permutations(positions.len()) {
         let mut list: HollowSpacedList<i64> = HollowSpacedList::new();
-        for &position in positions {
+        for &position in &positions {
             list.insert(position);
         }
+
+        println!("{:?}", positions);
 
         // region -1
         let query_pos = -1;

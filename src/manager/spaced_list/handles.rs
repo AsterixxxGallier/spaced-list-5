@@ -31,7 +31,7 @@ macro_rules! handle {
 
 handle!(PositionsHandle, positions);
 handle!(InsertionsHandle, insertions);
-// handle!(DeletionsHandle, deletions);
+// handle!(RemovalsHandle, removals);
 handle!(ValuesHandle, values);
 
 impl<S: Spacing, T> PositionsHandle<S, T> {

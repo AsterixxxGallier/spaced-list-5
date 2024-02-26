@@ -72,6 +72,7 @@ macro_rules! r#loop {
                 // SAFETY: _mm_prefetch does not change the behaviour of the program, and the parameters are valid
                 unsafe {
                     let reference = &$skeleton.borrow().links[get_link_index($index, $degree - 1)];
+                    // FIXME we probably shouldn't use core::arch::x86_64::_MM_HINT_T0 here, but 3 directly instead!
                     prefetch_read_data(reference as *const S as *const i8, core::arch::x86_64::_MM_HINT_T0);
                     let reference = &$skeleton.borrow().links[get_link_index($index + (1 << $degree), $degree - 1)];
                     prefetch_read_data(reference as *const S as *const i8, core::arch::x86_64::_MM_HINT_T0);

@@ -31,7 +31,7 @@ macro_rules! handle {
 
 handle!(RangePositionsHandle, positions);
 handle!(RangeInsertionsHandle, insertions);
-// handle!(RangeDeletionsHandle, deletions);
+// handle!(RangeRemovalsHandle, removals);
 handle!(RangeValuesHandle, values);
 
 impl<S: Spacing, T> RangePositionsHandle<S, T> {

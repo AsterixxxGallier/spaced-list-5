@@ -1,6 +1,7 @@
 use std::rc::Rc;
-use std::cell::{Ref, RefCell};
-use crate::{SpacingError, BackwardsIter, display_unwrap, ForwardsIter, HollowPosition, NestedRange, NestedRangeInsertionError, NestedRangePushError, Node, Position, PushError, Range, RangeInsertionError, RangePushError, Skeleton, Spacing};
+use std::ops::Deref;
+use std::cell::{RefCell};
+use crate::{ElementSlot, SpacingError, BackwardsIter, display_unwrap, ForwardsIter, HollowPosition, NestedRange, NestedRangeInsertionError, NestedRangePushError, Node, Position, PushError, Range, RangeInsertionError, RangePushError, Skeleton, Spacing, Index};
 use paste::paste;
 use itertools::Itertools;
 use push_insert_functions::push_insert_functions;
@@ -10,6 +11,7 @@ use first_last_functions::first_last_functions;
 use traversal_functions::{unconditional_traversal_function, conditional_traversal_function, all_traversal_functions};
 use iter_functions::iter_functions;
 
+// TODO do any of these functions actually _need_ a mutable self parameter?
 mod push_insert_functions;
 mod spacing_functions;
 mod trivial_accessors;
@@ -56,3 +58,10 @@ spaced_list!(NestedRange; NestedRangeSpacedList, (T), NestedRangeSpacedList<S, T
 spaced_list!(Node; HollowSpacedList, (), HollowSpacedList<S>, Skeleton<Node, S, ()>, HollowPosition, HollowPosition<Node, S>);
 spaced_list!(Range; HollowRangeSpacedList, (), HollowRangeSpacedList<S>, Skeleton<Range, S, ()>, HollowPosition, HollowPosition<Range, S>);
 spaced_list!(NestedRange; HollowNestedRangeSpacedList, (), HollowNestedRangeSpacedList<S>, Skeleton<NestedRange, S, ()>, HollowPosition, HollowPosition<NestedRange, S>);
+
+impl<S: Spacing, T> SpacedList<S, T> {
+    pub fn remove(&mut self, index: Index<Node, S, T>) -> Option<T> {
+        let ephemeral = index.ephemeral();
+        Skeleton::remove(ephemeral.skeleton.clone(), ephemeral)
+    }
+}

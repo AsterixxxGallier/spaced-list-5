@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::marker::PhantomData;
 use std::rc::{Rc, Weak};
 
-use nohash_hasher::IntMap;
+use nohash_hasher::{IntMap, IntSet};
 use num_traits::zero;
 
 use crate::{Spacing, EphemeralIndex, Index};
@@ -59,19 +59,29 @@ pub(crate) struct ParentData<Parent> {
 // TODO optimization opportunity: instead of introducing a sub, actually splice the element into the vec and recalculate
 //  spacings accordingly (only when it's faster, so for small skeletons)
 // TODO double-check that subs never have a negative offset
+// TODO optimization opportunity: in empty element slots, store information that makes it O(log n) to skip many empty
+//  slots; this can be achieved by using a similar tree structure as for the spacings (boolean tree with AND and element
+//  access)
+// TODO integrate subs into element slots?
+// TODO insert functions that (also) take an index as a parameter (?)
+// the last element slot must always be full!
 pub(crate) struct Skeleton<Kind, S: Spacing, T> {
     links: Vec<S>,
-    elements: Vec<T>,
+    elements: Vec<ElementSlot<T>>,
     subs: Vec<Option<Rc<RefCell<Self>>>>,
     parent_data: Option<ParentData<Self>>,
     offset: S,
     length: S,
     depth: usize,
     first_persistent_index: isize,
+    /// When an element is removed, its persistent index is inserted into this set.
+    dangling_persistent_indices: IntSet<isize>,
     from_persistent: IntMap<isize, EphemeralIndex<Kind, S, T>>,
     into_persistent: IntMap<usize, Index<Kind, S, T>>,
     _kind: PhantomData<Kind>,
 }
+
+pub type ElementSlot<T> = Option<T>;
 
 #[inline(always)]
 pub(crate) const fn get_link_index(index: usize, degree: usize) -> usize {
@@ -94,6 +104,7 @@ impl<Kind, S: Spacing, T> Skeleton<Kind, S, T> {
             length: zero(),
             depth: 0,
             first_persistent_index: 0,
+            dangling_persistent_indices: IntSet::default(),
             from_persistent: IntMap::default(),
             into_persistent: IntMap::default(),
             _kind: PhantomData::<Kind>,

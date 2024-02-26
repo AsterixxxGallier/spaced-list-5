@@ -5,7 +5,7 @@ use std::rc::Rc;
 use num_traits::zero;
 use thiserror::Error;
 
-use crate::{BoundType, EphemeralIndex, EphemeralPosition, Index, Range, Skeleton, Spacing};
+use crate::{ElementSlot, BoundType, EphemeralIndex, EphemeralPosition, Index, Range, Skeleton, Spacing};
 
 #[derive(Error, Debug)]
 pub enum RangePushError {
@@ -35,11 +35,13 @@ impl<S: Spacing, T> Skeleton<Range, S, T> {
             this.borrow_mut().push_link();
             // cannot fail because we would have returned with an Err already if span were < 0
             this.borrow_mut().increase_spacing(0, span);
-            this.borrow_mut().elements.push(element);
+            this.borrow_mut().elements.push(ElementSlot::Some(element));
             Ok(EphemeralPosition::new(this, 0, distance))
         } else if distance < zero() {
             Err(RangePushError::NegativeDistanceInNonEmptyList)
         } else {
+            // last element slot must always be full => no need to handle the case that it's empty
+
             let start_index = this.borrow_mut().push_link();
             // cannot fail because we would have returned with an Err already if distance were < 0
             this.borrow_mut().increase_spacing(start_index, distance);
@@ -47,7 +49,7 @@ impl<S: Spacing, T> Skeleton<Range, S, T> {
             let span_index = this.borrow_mut().push_link();
             // cannot fail because we would have returned with an Err already if span were < 0
             this.borrow_mut().increase_spacing(span_index, span);
-            this.borrow_mut().elements.push(element);
+            this.borrow_mut().elements.push(ElementSlot::Some(element));
             Ok(EphemeralPosition::new(this, span_index, start_position))
         }
     }
@@ -111,8 +113,8 @@ impl<S: Spacing, T> Skeleton<Range, S, T> {
                 return Err(RangeInsertionError::RangeIntersectsExistingRange);
             }
 
-            let previous_first_element =
-                mem::replace(&mut this.borrow_mut().elements[0], element);
+            let previous_first_element_slot =
+                mem::replace(&mut this.borrow_mut().elements[0], ElementSlot::Some(element));
 
             this.borrow_mut().offset = position;
             match span.cmp(&previous_first_span) {
@@ -149,17 +151,21 @@ impl<S: Spacing, T> Skeleton<Range, S, T> {
              */
             this.borrow_mut().increase_spacing_after_index(1, (previous_first_position + previous_first_span) - (position + span));
 
-            // cannot fail, because we made enough space
-            let insertion_index = Self::try_insert(
-                this.clone(),
-                previous_first_position,
-                previous_first_span,
-                previous_first_element,
-            ).unwrap().into_index();
+            if let ElementSlot::Some(previous_first_element) = previous_first_element_slot {
+                // reinsert old element
 
-            let first_persistent_index = this.borrow().first_persistent_index;
-            this.borrow_mut().from_persistent.insert(first_persistent_index, insertion_index.clone());
-            this.borrow_mut().from_persistent.insert(first_persistent_index + 1, insertion_index.into_range().1);
+                // cannot fail, because we made enough space
+                let insertion_index = Self::try_insert(
+                    this.clone(),
+                    previous_first_position,
+                    previous_first_span,
+                    previous_first_element,
+                ).unwrap().into_index();
+
+                let first_persistent_index = this.borrow().first_persistent_index;
+                this.borrow_mut().from_persistent.insert(first_persistent_index, insertion_index.clone());
+                this.borrow_mut().from_persistent.insert(first_persistent_index + 1, insertion_index.into_range().1);
+            }
 
             this.borrow_mut().first_persistent_index -= 2;
             let first_persistent_index = this.borrow().first_persistent_index;
@@ -209,15 +215,15 @@ mod tests {
         let c = list.insert(3, 4, 'c');
         let a = list.insert(-2, -1, 'a');
 
-        println!("{} at {}; {} in {:?}", *a.element(), a.position, a.index, a.skeleton.borrow().elements);
-        println!("{} at {}; {} in {:?}", *b.element(), b.position, b.index, b.skeleton.borrow().elements);
-        println!("{} at {}; {} in {:?}", *c.element(), c.position, c.index, c.skeleton.borrow().elements);
+        for pos in [&a, &b, &c] {
+            println!("{} at {}; {} in {:?}", pos.element().unwrap(), pos.position, pos.index, pos.skeleton.borrow().elements);
+        }
 
         println!();
 
-        println!("{} at {}; {} in {:?}", a.ephemeral().element(), a.ephemeral().position, a.ephemeral().index, a.ephemeral().skeleton.borrow().elements);
-        println!("{} at {}; {} in {:?}", b.ephemeral().element(), b.ephemeral().position, b.ephemeral().index, b.ephemeral().skeleton.borrow().elements);
-        println!("{} at {}; {} in {:?}", c.ephemeral().element(), c.ephemeral().position, c.ephemeral().index, c.ephemeral().skeleton.borrow().elements);
+        for pos in [&a, &b, &c] {
+            println!("{} at {}; {} in {:?}", pos.ephemeral().element().unwrap(), pos.ephemeral().position, pos.ephemeral().index, pos.ephemeral().skeleton.borrow().elements);
+        }
 
         // println!();
 

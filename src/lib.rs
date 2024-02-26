@@ -15,6 +15,7 @@
 
 #![feature(trait_alias)]
 #![feature(macro_metavar_expr)]
+#![feature(option_take_if)]
 
 // used ONLY for the prefetch_read_data intrinsic, which is used in loop.rs for a significant performance gain
 #![allow(internal_features)]
@@ -54,6 +55,7 @@ pub use {
     skeleton::position::HollowPosition,
     skeleton::element_ref::ElementRef,
     skeleton::element_ref::ElementRefMut,
+    skeleton::ElementSlot,
 
     skeleton::node::PushError,
     skeleton::range::RangePushError,
@@ -77,10 +79,10 @@ macro_rules! display_unwrap {
 }
 
 pub(crate) use {
+    skeleton::Skeleton,
+    skeleton::ParentData,
     skeleton::ephemeral_index::EphemeralIndex,
     skeleton::ephemeral_position::EphemeralPosition,
-    skeleton::ParentData,
-    skeleton::Skeleton,
     skeleton::traversal::iteration::BackwardsIter,
     skeleton::traversal::iteration::ForwardsIter,
     display_unwrap,

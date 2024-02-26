@@ -1,4 +1,4 @@
-use std::cell::{Cell, Ref, RefCell};
+use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use crate::{Node, Position, Spacing, SpacedList};
@@ -25,7 +25,7 @@ struct Locks {
 
     // -1: elements might be removed
     // > 0: elements may not be removed TODO implement the ability to remove elements
-    // deletions: Cell<isize>,
+    // removals: Cell<isize>,
 
     // -1: elements might be mutated
     // > 0: elements may not be mutated (values must be preserved)
@@ -61,8 +61,8 @@ impl<S: Spacing, T> Manager<S, T> {
         InsertionsLock::new(this)
     }
 
-    /*fn deletions_lock(this: Rc<RefCell<Self>>) -> DeletionsLock<S, T> {
-        DeletionsLock::new(this)
+    /*fn removals_lock(this: Rc<RefCell<Self>>) -> RemovalsLock<S, T> {
+        RemovalsLock::new(this)
     }*/
 
     pub fn values_lock(this: Rc<RefCell<Self>>) -> ValuesLock<S, T> {
@@ -77,8 +77,8 @@ impl<S: Spacing, T> Manager<S, T> {
         InsertionsHandle::new(this)
     }
 
-    /*fn deletions_handle(this: Rc<RefCell<Self>>) -> DeletionsHandle<S, T> {
-        DeletionsHandle::new(this)
+    /*fn removals_handle(this: Rc<RefCell<Self>>) -> RemovalsHandle<S, T> {
+        RemovalsHandle::new(this)
     }*/
 
     pub fn values_handle(this: Rc<RefCell<Self>>) -> ValuesHandle<S, T> {
@@ -112,27 +112,27 @@ impl<S: Spacing, T> Manager<S, T> {
     }
     
 
-    pub fn conditional_before(this: Rc<RefCell<Self>>, position: S, condition: fn(Ref<T>) -> bool) -> Option<LockedPosition<S, T>> {
+    pub fn conditional_before<C: Fn(&T) -> bool>(this: Rc<RefCell<Self>>, position: S, condition: C) -> Option<LockedPosition<S, T>> {
         this.borrow().list.conditional_before(position, condition)
             .map(|position| Self::lock(this.clone(), position))
     }
 
-    pub fn conditional_at_or_before(this: Rc<RefCell<Self>>, position: S, condition: fn(Ref<T>) -> bool) -> Option<LockedPosition<S, T>> {
+    pub fn conditional_at_or_before<C: Fn(&T) -> bool>(this: Rc<RefCell<Self>>, position: S, condition: C) -> Option<LockedPosition<S, T>> {
         this.borrow().list.conditional_at_or_before(position, condition)
             .map(|position| Self::lock(this.clone(), position))
     }
 
-    pub fn conditional_at(this: Rc<RefCell<Self>>, position: S, condition: fn(Ref<T>) -> bool) -> Option<LockedPosition<S, T>> {
+    pub fn conditional_at<C: Fn(&T) -> bool>(this: Rc<RefCell<Self>>, position: S, condition: C) -> Option<LockedPosition<S, T>> {
         this.borrow().list.conditional_at(position, condition)
             .map(|position| Self::lock(this.clone(), position))
     }
 
-    pub fn conditional_at_or_after(this: Rc<RefCell<Self>>, position: S, condition: fn(Ref<T>) -> bool) -> Option<LockedPosition<S, T>> {
+    pub fn conditional_at_or_after<C: Fn(&T) -> bool>(this: Rc<RefCell<Self>>, position: S, condition: C) -> Option<LockedPosition<S, T>> {
         this.borrow().list.conditional_at_or_after(position, condition)
             .map(|position| Self::lock(this.clone(), position))
     }
 
-    pub fn conditional_after(this: Rc<RefCell<Self>>, position: S, condition: fn(Ref<T>) -> bool) -> Option<LockedPosition<S, T>> {
+    pub fn conditional_after<C: Fn(&T) -> bool>(this: Rc<RefCell<Self>>, position: S, condition: C) -> Option<LockedPosition<S, T>> {
         this.borrow().list.conditional_after(position, condition)
             .map(|position| Self::lock(this.clone(), position))
     }

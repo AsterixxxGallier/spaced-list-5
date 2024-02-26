@@ -1,4 +1,4 @@
-use std::cell::{Cell, Ref, RefCell};
+use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use crate::{Range, Position, Spacing, RangeSpacedList};
@@ -25,7 +25,7 @@ struct RangeLocks {
 
     // -1: elements might be removed
     // > 0: elements may not be removed TODO implement the ability to remove elements
-    // deletions: Cell<isize>,
+    // removals: Cell<isize>,
 
     // -1: elements might be mutated
     // > 0: elements may not be mutated (values must be preserved)
@@ -61,8 +61,8 @@ impl<S: Spacing, T> RangeManager<S, T> {
         RangeInsertionsLock::new(this)
     }
 
-    /*fn deletions_lock(this: Rc<RefCell<Self>>) -> RangeDeletionsLock<S, T> {
-        RangeDeletionsLock::new(this)
+    /*fn removals_lock(this: Rc<RefCell<Self>>) -> RangeRemovalsLock<S, T> {
+        RangeRemovalsLock::new(this)
     }*/
 
     pub fn values_lock(this: Rc<RefCell<Self>>) -> RangeValuesLock<S, T> {
@@ -77,8 +77,8 @@ impl<S: Spacing, T> RangeManager<S, T> {
         RangeInsertionsHandle::new(this)
     }
 
-    /*fn deletions_handle(this: Rc<RefCell<Self>>) -> RangeDeletionsHandle<S, T> {
-        RangeDeletionsHandle::new(this)
+    /*fn removals_handle(this: Rc<RefCell<Self>>) -> RangeRemovalsHandle<S, T> {
+        RangeRemovalsHandle::new(this)
     }*/
 
     pub fn values_handle(this: Rc<RefCell<Self>>) -> RangeValuesHandle<S, T> {
@@ -164,79 +164,79 @@ impl<S: Spacing, T> RangeManager<S, T> {
     }
 
 
-    pub fn conditional_starting_or_ending_before(this: Rc<RefCell<Self>>, position: S, condition: fn(Ref<T>) -> bool) -> Option<RangeLockedPosition<S, T>> {
+    pub fn conditional_starting_or_ending_before<C: Fn(&T) -> bool>(this: Rc<RefCell<Self>>, position: S, condition: C) -> Option<RangeLockedPosition<S, T>> {
         this.borrow().list.conditional_starting_or_ending_before(position, condition)
             .map(|position| Self::lock(this.clone(), position))
     }
 
-    pub fn conditional_starting_or_ending_at_or_before(this: Rc<RefCell<Self>>, position: S, condition: fn(Ref<T>) -> bool) -> Option<RangeLockedPosition<S, T>> {
+    pub fn conditional_starting_or_ending_at_or_before<C: Fn(&T) -> bool>(this: Rc<RefCell<Self>>, position: S, condition: C) -> Option<RangeLockedPosition<S, T>> {
         this.borrow().list.conditional_starting_or_ending_at_or_before(position, condition)
             .map(|position| Self::lock(this.clone(), position))
     }
 
-    pub fn conditional_starting_or_ending_at(this: Rc<RefCell<Self>>, position: S, condition: fn(Ref<T>) -> bool) -> Option<RangeLockedPosition<S, T>> {
+    pub fn conditional_starting_or_ending_at<C: Fn(&T) -> bool>(this: Rc<RefCell<Self>>, position: S, condition: C) -> Option<RangeLockedPosition<S, T>> {
         this.borrow().list.conditional_starting_or_ending_at(position, condition)
             .map(|position| Self::lock(this.clone(), position))
     }
 
-    pub fn conditional_starting_or_ending_at_or_after(this: Rc<RefCell<Self>>, position: S, condition: fn(Ref<T>) -> bool) -> Option<RangeLockedPosition<S, T>> {
+    pub fn conditional_starting_or_ending_at_or_after<C: Fn(&T) -> bool>(this: Rc<RefCell<Self>>, position: S, condition: C) -> Option<RangeLockedPosition<S, T>> {
         this.borrow().list.conditional_starting_or_ending_at_or_after(position, condition)
             .map(|position| Self::lock(this.clone(), position))
     }
 
-    pub fn conditional_starting_or_ending_after(this: Rc<RefCell<Self>>, position: S, condition: fn(Ref<T>) -> bool) -> Option<RangeLockedPosition<S, T>> {
+    pub fn conditional_starting_or_ending_after<C: Fn(&T) -> bool>(this: Rc<RefCell<Self>>, position: S, condition: C) -> Option<RangeLockedPosition<S, T>> {
         this.borrow().list.conditional_starting_or_ending_after(position, condition)
             .map(|position| Self::lock(this.clone(), position))
     }
 
 
-    pub fn conditional_starting_before(this: Rc<RefCell<Self>>, position: S, condition: fn(Ref<T>) -> bool) -> Option<RangeLockedPosition<S, T>> {
+    pub fn conditional_starting_before<C: Fn(&T) -> bool>(this: Rc<RefCell<Self>>, position: S, condition: C) -> Option<RangeLockedPosition<S, T>> {
         this.borrow().list.conditional_starting_before(position, condition)
             .map(|position| Self::lock(this.clone(), position))
     }
 
-    pub fn conditional_starting_at_or_before(this: Rc<RefCell<Self>>, position: S, condition: fn(Ref<T>) -> bool) -> Option<RangeLockedPosition<S, T>> {
+    pub fn conditional_starting_at_or_before<C: Fn(&T) -> bool>(this: Rc<RefCell<Self>>, position: S, condition: C) -> Option<RangeLockedPosition<S, T>> {
         this.borrow().list.conditional_starting_at_or_before(position, condition)
             .map(|position| Self::lock(this.clone(), position))
     }
 
-    pub fn conditional_starting_at(this: Rc<RefCell<Self>>, position: S, condition: fn(Ref<T>) -> bool) -> Option<RangeLockedPosition<S, T>> {
+    pub fn conditional_starting_at<C: Fn(&T) -> bool>(this: Rc<RefCell<Self>>, position: S, condition: C) -> Option<RangeLockedPosition<S, T>> {
         this.borrow().list.conditional_starting_at(position, condition)
             .map(|position| Self::lock(this.clone(), position))
     }
 
-    pub fn conditional_starting_at_or_after(this: Rc<RefCell<Self>>, position: S, condition: fn(Ref<T>) -> bool) -> Option<RangeLockedPosition<S, T>> {
+    pub fn conditional_starting_at_or_after<C: Fn(&T) -> bool>(this: Rc<RefCell<Self>>, position: S, condition: C) -> Option<RangeLockedPosition<S, T>> {
         this.borrow().list.conditional_starting_at_or_after(position, condition)
             .map(|position| Self::lock(this.clone(), position))
     }
 
-    pub fn conditional_starting_after(this: Rc<RefCell<Self>>, position: S, condition: fn(Ref<T>) -> bool) -> Option<RangeLockedPosition<S, T>> {
+    pub fn conditional_starting_after<C: Fn(&T) -> bool>(this: Rc<RefCell<Self>>, position: S, condition: C) -> Option<RangeLockedPosition<S, T>> {
         this.borrow().list.conditional_starting_after(position, condition)
             .map(|position| Self::lock(this.clone(), position))
     }
 
 
-    pub fn conditional_ending_before(this: Rc<RefCell<Self>>, position: S, condition: fn(Ref<T>) -> bool) -> Option<RangeLockedPosition<S, T>> {
+    pub fn conditional_ending_before<C: Fn(&T) -> bool>(this: Rc<RefCell<Self>>, position: S, condition: C) -> Option<RangeLockedPosition<S, T>> {
         this.borrow().list.conditional_ending_before(position, condition)
             .map(|position| Self::lock(this.clone(), position))
     }
 
-    pub fn conditional_ending_at_or_before(this: Rc<RefCell<Self>>, position: S, condition: fn(Ref<T>) -> bool) -> Option<RangeLockedPosition<S, T>> {
+    pub fn conditional_ending_at_or_before<C: Fn(&T) -> bool>(this: Rc<RefCell<Self>>, position: S, condition: C) -> Option<RangeLockedPosition<S, T>> {
         this.borrow().list.conditional_ending_at_or_before(position, condition)
             .map(|position| Self::lock(this.clone(), position))
     }
 
-    pub fn conditional_ending_at(this: Rc<RefCell<Self>>, position: S, condition: fn(Ref<T>) -> bool) -> Option<RangeLockedPosition<S, T>> {
+    pub fn conditional_ending_at<C: Fn(&T) -> bool>(this: Rc<RefCell<Self>>, position: S, condition: C) -> Option<RangeLockedPosition<S, T>> {
         this.borrow().list.conditional_ending_at(position, condition)
             .map(|position| Self::lock(this.clone(), position))
     }
 
-    pub fn conditional_ending_at_or_after(this: Rc<RefCell<Self>>, position: S, condition: fn(Ref<T>) -> bool) -> Option<RangeLockedPosition<S, T>> {
+    pub fn conditional_ending_at_or_after<C: Fn(&T) -> bool>(this: Rc<RefCell<Self>>, position: S, condition: C) -> Option<RangeLockedPosition<S, T>> {
         this.borrow().list.conditional_ending_at_or_after(position, condition)
             .map(|position| Self::lock(this.clone(), position))
     }
 
-    pub fn conditional_ending_after(this: Rc<RefCell<Self>>, position: S, condition: fn(Ref<T>) -> bool) -> Option<RangeLockedPosition<S, T>> {
+    pub fn conditional_ending_after<C: Fn(&T) -> bool>(this: Rc<RefCell<Self>>, position: S, condition: C) -> Option<RangeLockedPosition<S, T>> {
         this.borrow().list.conditional_ending_after(position, condition)
             .map(|position| Self::lock(this.clone(), position))
     }

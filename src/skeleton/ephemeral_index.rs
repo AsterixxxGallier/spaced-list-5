@@ -3,6 +3,7 @@ use std::cell::{Ref, RefCell, RefMut};
 use maybe_owned::MaybeOwned;
 
 use crate::{ParentData, BoundType, EphemeralPosition, Index, Node, RangeKind, Skeleton, Spacing};
+use crate::skeleton::ElementSlot;
 
 pub(crate) struct EphemeralIndex<Kind, S: Spacing, T> {
     pub(crate) skeleton: Rc<RefCell<Skeleton<Kind, S, T>>>,
@@ -54,7 +55,7 @@ impl<Kind, S: Spacing, T> EphemeralIndex<Kind, S, T> {
     pub(crate) fn into_next(self) -> Option<Self> {
         if self.index == self.skeleton.borrow().links.len() {
             if let Some(ParentData { parent, index_in_parent }) =
-            &self.skeleton.clone().borrow().parent_data {
+                &self.skeleton.clone().borrow().parent_data {
                 let parent = parent.upgrade().unwrap();
                 Some(Self {
                     skeleton: parent,
@@ -64,7 +65,7 @@ impl<Kind, S: Spacing, T> EphemeralIndex<Kind, S, T> {
                 None
             }
         } else if let Some(sub) =
-        self.skeleton.clone().borrow().sub(self.index) {
+            self.skeleton.clone().borrow().sub(self.index) {
             Some(Self {
                 skeleton: sub,
                 index: 0,
@@ -80,7 +81,7 @@ impl<Kind, S: Spacing, T> EphemeralIndex<Kind, S, T> {
     pub(crate) fn into_previous(self) -> Option<Self> {
         if self.index == 0 {
             if let Some(ParentData { parent, index_in_parent }) =
-            &self.skeleton.clone().borrow().parent_data {
+                &self.skeleton.clone().borrow().parent_data {
                 let parent = parent.upgrade().unwrap();
                 Some(Self {
                     skeleton: parent,
@@ -90,7 +91,7 @@ impl<Kind, S: Spacing, T> EphemeralIndex<Kind, S, T> {
                 None
             }
         } else if let Some(sub) =
-        self.skeleton.clone().borrow().sub(self.index - 1) {
+            self.skeleton.clone().borrow().sub(self.index - 1) {
             let index = sub.borrow().links.len();
             Some(Self {
                 skeleton: sub,
@@ -106,27 +107,28 @@ impl<Kind, S: Spacing, T> EphemeralIndex<Kind, S, T> {
 }
 
 impl <S: Spacing, T> EphemeralIndex<Node, S, T> {
-    pub(crate) fn element(&self) -> Ref<T> {
+    pub(crate) fn element(&self) -> Ref<ElementSlot<T>> {
         Ref::map(RefCell::borrow(&self.skeleton),
                  |skeleton| &skeleton.elements[self.index])
     }
 
-    pub(crate) fn element_mut(&self) -> RefMut<T> {
+    pub(crate) fn element_mut(&self) -> RefMut<ElementSlot<T>> {
         RefMut::map(RefCell::borrow_mut(&self.skeleton),
                     |skeleton| &mut skeleton.elements[self.index])
     }
 }
 
 impl<Kind: RangeKind, S: Spacing, T> EphemeralIndex<Kind, S, T> {
-    pub(crate) fn element(&self) -> Ref<T> {
+    pub(crate) fn element(&self) -> Ref<ElementSlot<T>> {
         Ref::map(RefCell::borrow(&self.skeleton),
                  |skeleton| &skeleton.elements[self.index / 2])
     }
 
-    pub(crate) fn element_mut(&self) -> RefMut<T> {
+    pub(crate) fn element_mut(&self) -> RefMut<ElementSlot<T>> {
         RefMut::map(RefCell::borrow_mut(&self.skeleton),
                     |skeleton| &mut skeleton.elements[self.index / 2])
     }
+
     pub(crate) fn bound_type(&self) -> BoundType {
         BoundType::of(self.index)
     }

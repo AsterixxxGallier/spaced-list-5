@@ -5,13 +5,26 @@ use std::intrinsics::prefetch_read_data;
 
 use paste::paste;
 
-use crate::{NestedRange, Node};
-use crate::{EphemeralPosition, EphemeralIndex, ParentData, Range, Skeleton, Spacing, BoundType};
+use crate::{NestedRange, Node, ElementSlot, EphemeralPosition, EphemeralIndex, ParentData, Range, Skeleton, Spacing, BoundType};
 use crate::skeleton::get_link_index;
 use r#loop::*;
 use after_loop::*;
 use checks::*;
 use traversal_function_body::*;
+
+macro_rules! conjunctive_condition {
+    ($name:ident, $a:ident, $b:ident) => {
+        macro_rules! $name {
+            ($$index:expr, $$skeleton:expr, $$condition:ident) => {
+                $a!($$index, $$skeleton, $$condition) && $b!($$index, $$skeleton, $$condition)
+            };
+        }
+    };
+}
+
+macro_rules! empty_condition {
+    ($($rest:tt)*) => { true };
+}
 
 macro_rules! index_is_at_start_condition {
     ($index:expr, $($rest:tt)*) => {
@@ -25,27 +38,14 @@ macro_rules! index_is_at_end_condition {
     };
 }
 
-macro_rules! empty_condition {
-    ($($rest:tt)*) => { true };
-}
-
 macro_rules! function_condition {
     ($index:expr, $skeleton:expr, $condition:ident) => {
         $condition(EphemeralIndex::new($skeleton, $index).element())
     };
 }
 
-macro_rules! index_is_at_start_and_function_condition {
-    ($index:expr, $skeleton:expr, $condition:ident) => {
-        (BoundType::of($index) == BoundType::Start && $condition(EphemeralIndex::new($skeleton, $index).element()))
-    };
-}
-
-macro_rules! index_is_at_end_and_function_condition {
-    ($index:expr, $skeleton:expr, $condition:ident) => {
-        (BoundType::of($index) == BoundType::End && $condition(EphemeralIndex::new($skeleton, $index).element()))
-    };
-}
+conjunctive_condition!(index_is_at_start_and_function_condition, index_is_at_start_condition, function_condition);
+conjunctive_condition!(index_is_at_end_and_function_condition, index_is_at_end_condition, function_condition);
 
 macro_rules! for_all_traversals {
     ($macro:ident $($prefixes:tt)*) => {
@@ -74,7 +74,7 @@ macro_rules! traversal_functions {
     };
     ($kind:ident conditional shallow $pos:ident: $cmp:tt) => {
         paste! {
-            pub fn [<conditional_ shallow_ $pos>](this: Rc<RefCell<Self>>, target: S, condition: fn(Ref<T>) -> bool)
+            pub fn [<conditional_ shallow_ $pos>]<C: Fn(Ref<ElementSlot<T>>) -> bool>(this: Rc<RefCell<Self>>, target: S, condition: C)
                 -> Option<EphemeralPosition<$kind, S, T>> {
                 traversal_function_body!(this; shallow; $cmp target with function_condition (condition))
             }
@@ -82,7 +82,7 @@ macro_rules! traversal_functions {
     };
     ($kind:ident conditional deep $pos:ident: $cmp:tt) => {
         paste! {
-            pub fn [<conditional_ $pos>](this: Rc<RefCell<Self>>, target: S, condition: fn(Ref<T>) -> bool)
+            pub fn [<conditional_ $pos>]<C: Fn(Ref<ElementSlot<T>>) -> bool>(this: Rc<RefCell<Self>>, target: S, condition: C)
                 -> Option<EphemeralPosition<$kind, S, T>> {
                 traversal_function_body!(this; deep; $cmp target with function_condition (condition))
             }
@@ -114,7 +114,7 @@ macro_rules! traversal_functions {
     };
     (conditional shallow $bound:ident $pos:ident: $cmp:tt) => {
         paste! {
-            pub fn [<conditional_ shallow_ $bound ing_ $pos>](this: Rc<RefCell<Self>>, target: S, condition: fn(Ref<T>) -> bool)
+            pub fn [<conditional_ shallow_ $bound ing_ $pos>]<C: Fn(Ref<ElementSlot<T>>) -> bool>(this: Rc<RefCell<Self>>, target: S, condition: C)
                 -> Option<EphemeralPosition<Range, S, T>> {
                 traversal_function_body!(this; shallow; $cmp target with [<index_is_at_ $bound _and_function_condition>] (condition))
             }
@@ -122,7 +122,7 @@ macro_rules! traversal_functions {
     };
     (conditional deep $bound:ident $pos:ident: $cmp:tt) => {
         paste! {
-            pub fn [<conditional_ $bound ing_ $pos>](this: Rc<RefCell<Self>>, target: S, condition: fn(Ref<T>) -> bool)
+            pub fn [<conditional_ $bound ing_ $pos>]<C: Fn(Ref<ElementSlot<T>>) -> bool>(this: Rc<RefCell<Self>>, target: S, condition: C)
                 -> Option<EphemeralPosition<Range, S, T>> {
                 traversal_function_body!(this; deep; $cmp target with [<index_is_at_ $bound _and_function_condition>] (condition))
             }
@@ -156,7 +156,7 @@ macro_rules! traversal_functions {
     };
     (conditional shallow nested $bound:ident $pos:ident: $cmp:tt) => {
         paste! {
-            pub fn [<conditional_ shallow_ $bound ing_ $pos>](this: Rc<RefCell<Self>>, target: S, condition: fn(Ref<T>) -> bool)
+            pub fn [<conditional_ shallow_ $bound ing_ $pos>]<C: Fn(Ref<ElementSlot<T>>) -> bool>(this: Rc<RefCell<Self>>, target: S, condition: C)
                 -> Option<EphemeralPosition<NestedRange, S, T>> {
                 traversal_function_body!(this; shallow; $cmp target with [<index_is_at_ $bound _and_function_condition>] (condition))
             }
@@ -164,7 +164,7 @@ macro_rules! traversal_functions {
     };
     (conditional deep nested $bound:ident $pos:ident: $cmp:tt) => {
         paste! {
-            pub fn [<conditional_ $bound ing_ $pos>](this: Rc<RefCell<Self>>, target: S, condition: fn(Ref<T>) -> bool)
+            pub fn [<conditional_ $bound ing_ $pos>]<C: Fn(Ref<ElementSlot<T>>) -> bool>(this: Rc<RefCell<Self>>, target: S, condition: C)
                 -> Option<EphemeralPosition<NestedRange, S, T>> {
                 traversal_function_body!(this; deep; $cmp target with [<index_is_at_ $bound _and_function_condition>] (condition))
             }

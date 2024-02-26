@@ -31,5 +31,5 @@ macro_rules! lock {
 
 lock!(RangePositionsLock, positions);
 lock!(RangeInsertionsLock, insertions);
-// lock!(RangeDeletionsLock, deletions);
+// lock!(RangeRemovalsLock, removals);
 lock!(RangeValuesLock, values);

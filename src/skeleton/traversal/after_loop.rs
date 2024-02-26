@@ -77,6 +77,7 @@ macro_rules! previous {
 /// the last element that <= a target. In the case that it <=, but not == the target, logic in
 /// here returns None instead of the wrong result.
 macro_rules! after_loop {
+    // TODO remove any region as it's unused
     // region any
     ($depth:ident, <, $target:ident, any;
         $skeleton:ident, $degree:ident, $index:ident, $position:ident) => {
@@ -112,10 +113,10 @@ macro_rules! after_loop {
     };
     // endregion
 
-    // Similar logic needs to be employed when the search is even more specific and only starts or
-    // ends (= nodes with even/odd indices) are looked for.
+    // Similar logic needs to be employed when the search is even more specific and a condition is
+    // given.
 
-    // region start/end
+    // region conditional
     ($depth:ident, <, $target:ident, $condition:ident ($($args:tt),*);
         $skeleton:ident, $degree:ident, $index:ident, $position:ident) => {
         {

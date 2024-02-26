@@ -5,6 +5,7 @@ use std::ops::{Deref, DerefMut};
 use ouroboros::self_referencing;
 
 use crate::{Node, Spacing, RangeKind, Skeleton};
+use crate::skeleton::ElementSlot;
 
 /// The spaced list that the referenced element is contained in cannot be mutated for the lifetime
 /// of the [`ElementRef`]. If you run into problems with this, consider storing a [`Position`] or
@@ -30,17 +31,17 @@ impl<Kind, S: Spacing, T> ElementRef<Kind, S, T> {
 }
 
 impl<S: Spacing, T> Deref for ElementRef<Node, S, T> {
-    type Target = T;
+    type Target = ElementSlot<T>;
 
-    fn deref(&self) -> &T {
+    fn deref(&self) -> &ElementSlot<T> {
         &self.borrow_skeleton_ref().elements[*self.borrow_index()]
     }
 }
 
 impl<Kind: RangeKind, S: Spacing, T> Deref for ElementRef<Kind, S, T> {
-    type Target = T;
+    type Target = ElementSlot<T>;
 
-    fn deref(&self) -> &T {
+    fn deref(&self) -> &ElementSlot<T> {
         &self.borrow_skeleton_ref().elements[self.borrow_index() / 2]
     }
 }
@@ -71,30 +72,30 @@ impl<Kind, S: Spacing, T> ElementRefMut<Kind, S, T> {
 }
 
 impl<S: Spacing, T> Deref for ElementRefMut<Node, S, T> {
-    type Target = T;
+    type Target = ElementSlot<T>;
 
-    fn deref(&self) -> &T {
+    fn deref(&self) -> &ElementSlot<T> {
         &self.borrow_skeleton_ref().elements[*self.borrow_index()]
     }
 }
 
 impl<Kind: RangeKind, S: Spacing, T> Deref for ElementRefMut<Kind, S, T> {
-    type Target = T;
+    type Target = ElementSlot<T>;
 
-    fn deref(&self) -> &T {
+    fn deref(&self) -> &ElementSlot<T> {
         &self.borrow_skeleton_ref().elements[self.borrow_index() / 2]
     }
 }
 
 impl<S: Spacing, T> DerefMut for ElementRefMut<Node, S, T> {
-    fn deref_mut(&mut self) -> &mut T {
+    fn deref_mut(&mut self) -> &mut ElementSlot<T> {
         let index = *self.borrow_index();
         self.with_skeleton_ref_mut(|skeleton_ref| &mut skeleton_ref.elements[index])
     }
 }
 
 impl<Kind: RangeKind, S: Spacing, T> DerefMut for ElementRefMut<Kind, S, T> {
-    fn deref_mut(&mut self) -> &mut T {
+    fn deref_mut(&mut self) -> &mut ElementSlot<T> {
         let index = self.borrow_index() / 2;
         self.with_skeleton_ref_mut(|skeleton_ref| &mut skeleton_ref.elements[index])
     }

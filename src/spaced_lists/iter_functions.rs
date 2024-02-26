@@ -1,21 +1,21 @@
 macro_rules! iter_functions {
     (Node; $position:ty) => {
         pub fn iter(&self) -> impl Iterator<Item=$position> {
-            ForwardsIter::from_start(self.skeleton.clone()).map_into()
+            ForwardsIter::from_start(self.skeleton.clone()).filter(|pos| pos.ephemeral().element().is_some()).map_into()
         }
 
         // covered by a to-do item somewhere else
         #[allow(clippy::should_implement_trait)]
         pub fn into_iter(self) -> impl Iterator<Item=$position> {
-            ForwardsIter::from_start(self.skeleton).map_into()
+            ForwardsIter::from_start(self.skeleton).filter(|pos| pos.ephemeral().element().is_some()).map_into()
         }
 
         pub fn iter_backwards(&self) -> impl Iterator<Item=$position> {
-            BackwardsIter::from_end(self.skeleton.clone()).map_into()
+            BackwardsIter::from_end(self.skeleton.clone()).filter(|pos| pos.ephemeral().element().is_some()).map_into()
         }
 
         pub fn into_iter_backwards(self) -> impl Iterator<Item=$position> {
-            BackwardsIter::from_end(self.skeleton).map_into()
+            BackwardsIter::from_end(self.skeleton).filter(|pos| pos.ephemeral().element().is_some()).map_into()
         }
     };
     (Range; $position:ty) => {

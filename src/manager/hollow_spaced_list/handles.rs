@@ -31,7 +31,7 @@ macro_rules! handle {
 
 handle!(HollowPositionsHandle, positions);
 handle!(HollowInsertionsHandle, insertions);
-// handle!(HollowDeletionsHandle, deletions);
+// handle!(HollowRemovalsHandle, removals);
 
 impl<S: Spacing> HollowPositionsHandle<S> {
     pub fn increase_spacing_after(&mut self, position: S, change: S) {

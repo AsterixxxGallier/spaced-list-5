@@ -25,7 +25,7 @@ struct HollowRangeLocks {
 
     // -1: elements might be removed
     // > 0: elements may not be removed TODO implement the ability to remove elements
-    // deletions: Cell<isize>,
+    // removals: Cell<isize>,
 }
 
 pub struct HollowRangeManager<S: Spacing> {
@@ -57,8 +57,8 @@ impl<S: Spacing> HollowRangeManager<S> {
         HollowRangeInsertionsLock::new(this)
     }
 
-    /*fn deletions_lock(this: Rc<RefCell<Self>>) -> HollowRangeDeletionsLock<S> {
-        HollowRangeDeletionsLock::new(this)
+    /*fn removals_lock(this: Rc<RefCell<Self>>) -> HollowRangeRemovalsLock<S> {
+        HollowRangeRemovalsLock::new(this)
     }*/
 
     pub fn positions_handle(this: Rc<RefCell<Self>>) -> HollowRangePositionsHandle<S> {
@@ -69,8 +69,8 @@ impl<S: Spacing> HollowRangeManager<S> {
         HollowRangeInsertionsHandle::new(this)
     }
 
-    /*fn deletions_handle(this: Rc<RefCell<Self>>) -> HollowRangeDeletionsHandle<S> {
-        HollowRangeDeletionsHandle::new(this)
+    /*fn removals_handle(this: Rc<RefCell<Self>>) -> HollowRangeRemovalsHandle<S> {
+        HollowRangeRemovalsHandle::new(this)
     }*/
 
     pub fn starting_or_ending_before(this: Rc<RefCell<Self>>, position: S) -> Option<HollowRangeLockedPosition<S>> {
