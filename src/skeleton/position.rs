@@ -13,6 +13,7 @@ use crate::{BackwardsIter, BoundType, ElementRef, ElementRefMut, EphemeralPositi
 macro_rules! position {
     ($name:ident; <Kind, S: Spacing$(, $T:ident)?>; $type:ty; $skeleton:ty) => {
         pub struct $name<Kind, S: Spacing$(, $T)?> {
+            // TODO store an Index / a HollowIndex instead (for EphemeralPosition, an EphemeralIndex)
             pub(crate) skeleton: Rc<RefCell<$skeleton>>,
             pub(crate) index: isize,
             pub(crate) position: S,

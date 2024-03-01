@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::collections::HashSet;
 use std::marker::PhantomData;
 use std::rc::{Rc, Weak};
 
@@ -74,6 +75,12 @@ pub(crate) struct Skeleton<Kind, S: Spacing, T> {
     length: S,
     depth: usize,
     first_persistent_index: isize,
+
+    // TODO how to store persistent indices _correctly_?
+    //  (with support for hypers, in the future)
+    //  => rewrite necessary?
+    // dangling_persistent_indices: HashSet<>,
+
     /// When an element is removed, its persistent index is inserted into this set.
     dangling_persistent_indices: IntSet<isize>,
     from_persistent: IntMap<isize, EphemeralIndex<Kind, S, T>>,

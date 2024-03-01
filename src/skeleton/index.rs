@@ -6,11 +6,17 @@ use maybe_owned::MaybeOwned;
 use crate::{BoundType, ElementRef, ElementRefMut, EphemeralIndex, HollowPosition, Position, 
             RangeKind, Skeleton, Spacing};
 
+// TODO rework persistent indices to store not an isize, but a usize with a "generation" counter,
+//  basically the "n" in "This index refers to the nth element ever placed at index i."
+//  then, rework persistent index handling in before-offset insertion of elements and removal of
+//  elements (-> take care that first_persistent_index is always correct!)
+
 macro_rules! index {
     ($name:ident; <Kind, S: Spacing$(, $T:ident)?>; $type:ty; $skeleton:ty) => {
         pub struct $name<Kind, S: Spacing$(, $T)?> {
             pub(crate) skeleton: Rc<RefCell<$skeleton>>,
-            pub(crate) index: isize,
+            pub(crate) index: usize,
+            pub(crate) generation: usize,
         }
 
         impl<Kind, S: Spacing$(, $T)?> Clone for $type {
@@ -18,31 +24,17 @@ macro_rules! index {
                 Self {
                     skeleton: self.skeleton.clone(),
                     index: self.index,
+                    generation: self.generation,
                 }
             }
         }
 
         impl<Kind, S: Spacing$(, $T)?> $type {
-            pub(crate) fn new(skeleton: Rc<RefCell<$skeleton>>, index: isize) -> Self {
+            pub(crate) fn new(skeleton: Rc<RefCell<$skeleton>>, index: usize, generation: usize) -> Self {
                 Self {
                     skeleton,
                     index,
-                }
-            }
-
-            pub(crate) fn at_start(skeleton: Rc<RefCell<$skeleton>>) -> Self {
-                let index = skeleton.borrow().first_persistent_index;
-                Self {
-                    skeleton,
-                    index,
-                }
-            }
-
-            pub(crate) fn at_end(skeleton: Rc<RefCell<$skeleton>>) -> Self {
-                let index = (skeleton.borrow().elements.len() - 1) as isize;
-                Self {
-                    skeleton,
-                    index,
+                    generation,
                 }
             }
 
@@ -73,7 +65,7 @@ macro_rules! index {
 
         impl<Kind: RangeKind, S: Spacing$(, $T)?> $name<Kind, S$(, $T)?> {
             pub fn bound_type(&self) -> BoundType {
-                BoundType::of_signed(self.index)
+                BoundType::of(self.index)
             }
 
             pub fn span(&self) -> S {
@@ -83,9 +75,7 @@ macro_rules! index {
             pub fn into_range(self) -> (Self, Self) {
                 match self.bound_type() {
                     BoundType::Start => {
-                        let end = Self::new(
-                            self.skeleton.clone(),
-                            self.index + 1);
+                        let end = self.;
                         (self, end)
                     }
                     BoundType::End => {
@@ -131,8 +121,8 @@ impl<Kind, S: Spacing, T> Index<Kind, S, T> {
     }
 
     pub(crate) fn ephemeral(&self) -> EphemeralIndex<Kind, S, T> {
-        self.skeleton.borrow().from_persistent.get(&self.index).cloned()
-            .unwrap_or(EphemeralIndex::new(self.skeleton.clone(), self.index as usize))
+        self.skeleton.borrow().from_persistent.get().cloned()
+            .unwrap_or(EphemeralIndex::new(self.skeleton.clone(), self.index))
     }
 
     pub fn position(&self) -> Position<Kind, S, T> {
